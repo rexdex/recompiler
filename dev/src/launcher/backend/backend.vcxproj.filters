@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="networkAddress.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="networkManagerImpl.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="networkSocket.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="launcherOutputTTY.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="runtimeCodeTable.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeImage.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeSymbols.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="backendDLL.cpp" />
+    <ClCompile Include="runtimeRegisterBank.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeCPU.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeDevice.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimePlatform.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeCodeExecutor.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="launcherCommandline.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeEnvironment.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="launcherUtils.cpp">
+      <Filter>launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="native.cpp">
+      <Filter>native</Filter>
+    </ClCompile>
+    <ClCompile Include="runtimeTraceWriter.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="zlib\crc32.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="debugPacket.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\deflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffast.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffixed.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inftrees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\trees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zlib.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zutil.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="networkAddress.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="networkManager.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="networkManagerImpl.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="networkSocket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="launcherOutputTTY.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="launcherBase.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="runtimeImageInfo.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeCodeTable.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeImage.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeSymbols.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimePlatform.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeRegisterBank.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeCPU.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeDevice.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeCodeExecutor.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="launcherUtils.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeEnvironment.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="launcherCommandline.h">
+      <Filter>launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="nativeMemory.h">
+      <Filter>native</Filter>
+    </ClInclude>
+    <ClInclude Include="nativeKernel.h">
+      <Filter>native</Filter>
+    </ClInclude>
+    <ClInclude Include="nativeFileSystem.h">
+      <Filter>native</Filter>
+    </ClInclude>
+    <ClInclude Include="native.h">
+      <Filter>native</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeTraceWriter.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{d0f73f38-09bb-4f85-9483-c0574dad79d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{de1cc548-b6fd-40bb-aec1-29abf2665bda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="launcher">
+      <UniqueIdentifier>{ad115ae2-339c-4d95-8ded-acccef789956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="runtime">
+      <UniqueIdentifier>{a1531701-e96a-466b-846d-ad0405fd95e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native">
+      <UniqueIdentifier>{36aee57b-4674-4269-bd37-cdeb70f5f8c6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

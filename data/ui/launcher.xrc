@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
+	<object class="wxFrame" name="LauncherMainFrame">
+		<style>wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL</style>
+		<size>890,487</size>
+		<title>Universal Emulator _ Debugger</title>
+		<centered>1</centered>
+		<aui_managed>0</aui_managed>
+		<object class="wxToolBar" name="ToolBar">
+			<style>wxTB_DOCKABLE|wxTB_FLAT|wxTB_HORIZONTAL</style>
+			<bitmapsize></bitmapsize>
+			<margins></margins>
+			<packing>1</packing>
+			<separation>5</separation>
+			<object class="tool" name="fileOpen">
+				<label>tool</label>
+				<tooltip>Load executable</tooltip>
+				<longhelp></longhelp>
+				<bitmap>icons\open.png</bitmap>
+			</object>
+		</object>
+		<object class="wxMenuBar" name="MenuBar">
+			<label>MyMenuBar</label>
+			<object class="wxMenu" name="fileMenu">
+				<label>_File</label>
+				<object class="wxMenuItem" name="fileOpen">
+					<label>Load...</label>
+					<help>Load image</help>
+					<bitmap>icons\new.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="fileChangePlatform">
+					<label>Change platform...</label>
+					<help>Change active platform (will restart application)</help>
+					<bitmap>icons\save.png</bitmap>
+				</object>
+			</object>
+		</object>
+	</object>
+</resource>
