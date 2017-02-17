@@ -223,6 +223,19 @@ Project* Project::LoadProject( ILogOutput& log, const std::wstring& projectPath 
 		return nullptr;
 	}
 
+	// print image sections
+	for (int i = 0; i < env->GetImage()->GetNumSections(); ++i)
+	{
+		auto* section = env->GetImage()->GetSection(i);
+		char s[256];
+		sprintf(s, "%hs 0x%08X-0x%08X %c%c%c\n", 
+			section->GetName().c_str(), section->GetVirtualAddress(), section->GetVirtualAddress() + section->GetVirtualSize(),
+			section->CanRead() ? 'r' : '_',
+			section->CanWrite() ? 'w' : '_',
+			section->CanExecute() ? 'x' : '_');
+		OutputDebugStringA(s);
+	}
+
 	// cache the image and decoding context
 	auto* project = new Project();
 	project->m_env = env;
