@@ -1,5 +1,7 @@
 ## Porting Xbox360 executables to Windows
 
+![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
+
 The idea is simple: *what if you could take the Xbox360 game and run it on your PC?* Is this even possible in principle? I was pondering this question few years ago and that should not come as a supprise that there are some obvious technical difficulties in getting this done:
 
 - **Different CPUs** - Xbox360 uses PowerPC based CPU, our PCs are based on x86 architexture. They are different in so many ways that I don't even know where to start :) PowerPC is RISC based, has shitloads of registers but very simple instructions. x86 is totally different on the other hand - not so many registers and many more instructions that are more complicated (addressing modes...). It's obvious that a simple transcription is not feasible.
@@ -36,7 +38,7 @@ Stuff currently implemented:
 + GPU command queue bootstrap
 + Tracing functionality (offline debugging)
 
-![DolphinDemoScreenshot](/images/projects/xbox_remcompiler.jpg)
+![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
  
 ***GPU***:
 
@@ -51,9 +53,6 @@ Stuff currently implemented:
 + Basic offline (trace based) debugger that allows to inspect every executed instruction
 + Basic GPU trace viewer that allows to inspect internal GPU state at each point
 + *Time Machine* tool that makes it possible to find previous instruction that touched given register or memory
-
-{% include subpages.html %}
-More pages (Debugging, GPU emulation) are coming.
 
 ## How to run it ?
 
@@ -305,7 +304,7 @@ By filling in this class the decompiler can express much more about the instruct
 
 After all instructions are disassembled it's important to identify blocks of instructions that can have known single place of entry. This is done by analyzing all the "call" and "jump" instructions that can be resolved. This is not foolproof as it does not identify properly the indirect calls (vtable, function pointers) and indirect jumps (switch statements). The more knowledge about a block we have and the more certnity about the points of entry the faster code we will be able to generate.
 
-![DolphinDemoScreenshot](/images/projects/xbox_blocks.jpg)
+![DolphinDemoScreenshot](/_images/xbox_blocks.jpg)
 
 ## Recompilation
 
@@ -492,3 +491,6 @@ uint64 __fastcall XboxThreads_KeDelayExecutionThread( uint64 ip, cpu::CpuRegs& r
 It takes around 300 functions to get the simple app to start. Most of the are very similar (if not exactly the same) as the Windows counterparts. The rest is mostly guess work.
 
 
+## Future Work
+
+Well, it would be much coller to run an actual game, maybe some day :)
