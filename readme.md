@@ -37,8 +37,6 @@ Stuff currently implemented:
 + Basic IO with file support
 + GPU command queue bootstrap
 + Tracing functionality (offline debugging)
-
-![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
  
 ***GPU***:
 
@@ -304,7 +302,7 @@ By filling in this class the decompiler can express much more about the instruct
 
 After all instructions are disassembled it's important to identify blocks of instructions that can have known single place of entry. This is done by analyzing all the "call" and "jump" instructions that can be resolved. This is not foolproof as it does not identify properly the indirect calls (vtable, function pointers) and indirect jumps (switch statements). The more knowledge about a block we have and the more certnity about the points of entry the faster code we will be able to generate.
 
-![DolphinDemoScreenshot](/_images/xbox_blocks.jpg)
+![DolphinDemoScreenshot](/_images/xex_decompiled.jpg)
 
 ## Recompilation
 
