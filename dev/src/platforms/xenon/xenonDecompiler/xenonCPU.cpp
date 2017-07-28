@@ -338,6 +338,7 @@ enum EMemoryType
 	eMemoryType_VMX,
 	eMemoryType_VMLX,
 	eMemoryType_VMRX,
+	eMemoryType_VMXIndexed,
 };
 
 template< const uint32 BitSize, EMemoryType type >
@@ -401,6 +402,17 @@ const char* GetMemoryLoadFunction()
 		if (BitSize == 128)
 			return "lvx";
 	}
+	else if (type == eMemoryType_VMXIndexed)
+	{
+		if (BitSize == 32)
+			return "lvewx";
+		else if (BitSize == 16)
+			return "lvehx";
+		else if (BitSize == 8)
+			return "lvebx";
+		else
+			return NULL;
+	}
 	else if (type == eMemoryType_VMLX)
 	{
 		if (BitSize == 128)
@@ -462,7 +474,12 @@ const char* GetMemoryStoreFunction()
 	{
 		if (BitSize == 128)
 			return "stvx";
-		else if (BitSize == 32)
+		else
+			return NULL;
+	}
+	else if (type == eMemoryType_VMXIndexed)
+	{
+		if (BitSize == 32)
 			return "stvewx";
 		else if (BitSize == 16)
 			return "stvehx";
@@ -654,10 +671,10 @@ public:
 		outInfo.m_memoryAddressBase = op.GetArg1().m_reg;
 		outInfo.m_memoryAddressIndex = op.GetArg1().m_index;
 		outInfo.m_memoryAddressScale = op.GetArg1().m_scale;
-		outInfo.m_memorySize = BitSize/8;
+		outInfo.m_memorySize = BitSize / 8;
 
 		// direct memory access
-		if ( context.GetMemoryMap().GetMemoryInfo(codeAddress).GetInstructionFlags().IsMappedMemory() )
+		if (context.GetMemoryMap().GetMemoryInfo(codeAddress).GetInstructionFlags().IsMappedMemory())
 			outInfo.m_memoryFlags |= decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap;
 
 		// floating point op
@@ -678,7 +695,7 @@ public:
 			return false;
 
 		// direct memory access
-		if ( exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap )
+		if (exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap)
 		{
 			functionPrefix = "";
 			functionName = "ExportedIOBank.m_memWritePtr";
@@ -687,34 +704,34 @@ public:
 		// format address calculation code
 		char addressCode[128];
 		const auto& arg1 = op.GetArg1();
-		if ( !arg1.m_reg )
+		if (!arg1.m_reg)
 		{
 			// immediate address
-			sprintf_s( addressCode, "0x%08X", arg1.m_imm ); 
+			sprintf_s(addressCode, "0x%08X", arg1.m_imm);
 		}
-		else if ( arg1.m_index )
+		else if (arg1.m_index)
 		{
-			if ( arg1.m_scale != 1 )
+			if (arg1.m_scale != 1)
 			{
-				sprintf_s( addressCode, "regs.%s + %d*regs.%s + 0x%08X", 
+				sprintf_s(addressCode, "regs.%s + %d*regs.%s + 0x%08X",
 					arg1.m_reg->GetName(),
 					arg1.m_scale,
 					arg1.m_index->GetName(),
-					arg1.m_imm );
+					arg1.m_imm);
 			}
 			else
 			{
-				sprintf_s( addressCode, "regs.%s + regs.%s + 0x%08X", 
+				sprintf_s(addressCode, "regs.%s + regs.%s + 0x%08X",
 					arg1.m_reg->GetName(),
 					arg1.m_index->GetName(),
-					arg1.m_imm );
+					arg1.m_imm);
 			}
 		}
 		else
 		{
-			sprintf_s( addressCode, "regs.%s + 0x%08X", 
+			sprintf_s(addressCode, "regs.%s + 0x%08X",
 				arg1.m_reg->GetName(),
-				arg1.m_imm );
+				arg1.m_imm);
 		}
 
 		// emit code
@@ -735,11 +752,11 @@ public:
 		// address update
 		if (UpdateAddress)
 		{
-			PrintCodef( outCode, "\nregs.%s = (uint32)(%s);",
+			PrintCodef(outCode, "\nregs.%s = (uint32)(%s);",
 				arg1.m_reg->GetName(),
-				addressCode );
+				addressCode);
 		}
-		
+
 		// done
 		return true;
 	}
@@ -2603,6 +2620,8 @@ CPU_XenonPPC::CPU_XenonPPC()
 		MOUNTRC( fdivs, CInstructiondDecoderXenon_GENERIC<CR1, REG,REG,REG>() );
 		MOUNT__( fsqrt, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
 		MOUNTRC( fsqrt, CInstructiondDecoderXenon_GENERIC<CR1, REG,REG>() );
+		MOUNT__( frsqrtx, CInstructiondDecoderXenon_GENERIC<0, REG, REG>());
+		MOUNTRC( frsqrtx, CInstructiondDecoderXenon_GENERIC<CR1, REG, REG>());
 		MOUNT__( fre, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
 		MOUNTRC( fre, CInstructiondDecoderXenon_GENERIC<CR1, REG,REG>() );
 
@@ -2642,10 +2661,15 @@ CPU_XenonPPC::CPU_XenonPPC()
 		MOUNT__( fsel, CInstructiondDecoderXenon_GENERIC<0, REG,REG,REG,REG>() );
 		MOUNTRC( fsel, CInstructiondDecoderXenon_GENERIC<CR1, REG,REG,REG,REG>() );
 
+		// VMX indexed load
+		MOUNT__(lvebx, CInstructiondDecoderXenon_MEM_LOAD<8, 0, eMemoryType_VMXIndexed>());
+		MOUNT__(lvehx, CInstructiondDecoderXenon_MEM_LOAD<16, 0, eMemoryType_VMXIndexed>());
+		MOUNT__(lvewx, CInstructiondDecoderXenon_MEM_LOAD<32, 0, eMemoryType_VMXIndexed>());
+		MOUNT__(stvebx, CInstructiondDecoderXenon_MEM_STORE<8, 0, eMemoryType_VMXIndexed>());
+		MOUNT__(stvehx, CInstructiondDecoderXenon_MEM_STORE<16, 0, eMemoryType_VMXIndexed>());
+		MOUNT__(stvewx, CInstructiondDecoderXenon_MEM_STORE<32, 0, eMemoryType_VMXIndexed>());
+
 		// VMX load
-		MOUNT__( lvebx, CInstructiondDecoderXenon_MEM_LOAD<8, 0, eMemoryType_VMX>() );
-		MOUNT__( lvehx, CInstructiondDecoderXenon_MEM_LOAD<16, 0, eMemoryType_VMX>() );
-		MOUNT__( lvewx, CInstructiondDecoderXenon_MEM_LOAD<32, 0, eMemoryType_VMX>() );
 		MOUNT__( lvlx, CInstructiondDecoderXenon_MEM_LOAD<128, 0, eMemoryType_VMLX>() );
 		MOUNT__( lvlxl, CInstructiondDecoderXenon_MEM_LOAD<128, 0, eMemoryType_VMLX>() );
 		MOUNT__( lvrx, CInstructiondDecoderXenon_MEM_LOAD<128, 0, eMemoryType_VMRX>() );
@@ -2654,9 +2678,6 @@ CPU_XenonPPC::CPU_XenonPPC()
 		MOUNT__( lvxl, CInstructiondDecoderXenon_MEM_LOAD<128, 0, eMemoryType_VMX>() );
 
 		// VMX store
-		MOUNT__( stvebx, CInstructiondDecoderXenon_MEM_STORE<8, 0, eMemoryType_VMX>() );
-		MOUNT__( stvehx, CInstructiondDecoderXenon_MEM_STORE<16, 0, eMemoryType_VMX>() );
-		MOUNT__( stvewx, CInstructiondDecoderXenon_MEM_STORE<32, 0, eMemoryType_VMX>() );
 		MOUNT__( stvlx, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMLX>() );
 		MOUNT__( stvlxl, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMLX>() );
 		MOUNT__( stvrx, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMRX>() );

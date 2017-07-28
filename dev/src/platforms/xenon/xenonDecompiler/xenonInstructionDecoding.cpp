@@ -314,6 +314,17 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 128: EMIT(vadduwm, VREG(b6), VREG(b11), VREG(b16));
 				case 640: EMIT(vadduws, VREG(b6), VREG(b11), VREG(b16));
 
+				case 1408: EMIT(vsubcuw, VREG(b6), VREG(b11), VREG(b16));
+				case 1792: EMIT(vsubsbs, VREG(b6), VREG(b11), VREG(b16));
+				case 1856: EMIT(vsubshs, VREG(b6), VREG(b11), VREG(b16));
+				case 1920: EMIT(vsubsws, VREG(b6), VREG(b11), VREG(b16));
+				case 1024: EMIT(vsububm, VREG(b6), VREG(b11), VREG(b16));
+				case 1536: EMIT(vsububs, VREG(b6), VREG(b11), VREG(b16));
+				case 1088: EMIT(vsubuhm, VREG(b6), VREG(b11), VREG(b16));
+				case 1600: EMIT(vsubuhs, VREG(b6), VREG(b11), VREG(b16));
+				case 1152: EMIT(vsubuwm, VREG(b6), VREG(b11), VREG(b16));
+				case 1664: EMIT(vsubuws, VREG(b6), VREG(b11), VREG(b16));
+
 				case 1028: EMIT(vand, VREG(b6), VREG(b11), VREG(b16));
 				case 1092: EMIT(vandc, VREG(b6), VREG(b11), VREG(b16));
 				case 1282: EMIT(vavgsb, VREG(b6), VREG(b11), VREG(b16));
@@ -403,6 +414,15 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 516: EMIT(vsrb, VREG(b6), VREG(b11), VREG(b16));
 				case 580: EMIT(vsrh, VREG(b6), VREG(b11), VREG(b16));
 				case 644: EMIT(vsrw, VREG(b6), VREG(b11), VREG(b16));
+				case 388: EMIT(vslw, VREG(b6), VREG(b11), VREG(b16));
+				case 324: EMIT(vslh, VREG(b6), VREG(b11), VREG(b16));
+				case 260: EMIT(vslb, VREG(b6), VREG(b11), VREG(b16));
+
+				case 266: CHECK(b11==0); EMIT(vrefp, VREG(b6), VREG(b16));
+				case 714: CHECK(b11==0); EMIT(vrfim, VREG(b6), VREG(b16));
+				case 522: CHECK(b11==0); EMIT(vrfin, VREG(b6), VREG(b16));
+				case 650: CHECK(b11==0); EMIT(vrfip, VREG(b6), VREG(b16));
+				case 586: CHECK(b11==0); EMIT(vrfiz, VREG(b6), VREG(b16));
 
 				case 1156:
 				{
@@ -427,15 +447,12 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 68: EMIT(vrlh, VREG(b6), VREG(b11), VREG(b16));
 				case 132: EMIT(vrlw, VREG(b6), VREG(b11), VREG(b16));
 
-				case 260: EMIT(vslb, VREG(b6), VREG(b11), VREG(b16));
-
-				case 266: CHECK(b11==0); EMIT(vrefp, VREG(b6), VREG(b16));
-
 				case 590: CHECK(b11==0); EMIT(vupkhsh, VREG(b6), VREG(b16));
 				case 526: CHECK(b11==0); EMIT(vupkhsb, VREG(b6), VREG(b16));
 				case 846: CHECK(b11==0); EMIT(vupkhpx, VREG(b6), VREG(b16));
 				case 974: CHECK(b11==0); EMIT(vupklpx, VREG(b6), VREG(b16));
 				case 654: CHECK(b11==0); EMIT(vupklsb, VREG(b6), VREG(b16));					
+				case 718: CHECK(b11 == 0); EMIT(vupklsh, VREG(b6), VREG(b16));
 
 				case 330: CHECK(b11==0); EMIT(vrsqrtefp, VREG(b6), VREG(b16));
 			}
@@ -645,12 +662,17 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 					case 3: EMIT(vslw, vreg6, vreg11, vreg16);
 					case 5: EMIT(vsraw, vreg6, vreg11, vreg16);
 					case 7: EMIT(vsrw, vreg6, vreg11, vreg16);
+
+					case 12: EMIT(vrfim, vreg6, vreg16);
+					case 13: EMIT(vrfin, vreg6, vreg16);
+					case 14: EMIT(vrfip, vreg6, vreg16);
+					case 15: EMIT(vrfiz, vreg6, vreg16);
 				}
 			}
 
 			// unknown
-			ERROR("Decode: Unmatched secondary opcode xo21=%d, xo26=%d, xo21e=%d for primary opcode %d", 
-				vxo21, vxo26, vxo21e, pri);
+			ERROR("Decode: Unmatched secondary opcode xo21=%d, xo26=%d, xo21e=%d, xo22=%d for primary opcode %d", 
+				vxo21, vxo26, vxo21e, vxo22, pri);
 		}
 
 		// muli (multiply with immediate)
@@ -828,6 +850,16 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 533: EMIT(lswx, REG(b6), REG0(b11), REG(b16));
 				case 725: EMIT(stswi, REG(b6), REG0(b11), b16);
 				case 661: EMIT(stswx, REG(b6), REG0(b11), REG(b16));
+
+				// lvehx, lvebx, lvewx
+				case 39: EMIT(lvehx, REG(b6), MEMREG0(b11, b16));
+				case 7: EMIT(lvebx, REG(b6), MEMREG0(b11, b16));
+				case 71: EMIT(lvewx, REG(b6), MEMREG0(b11, b16));
+
+				// stvebx, stvehx, stvewx
+				case 135: EMIT(stvebx, REG(b6), MEMREG0(b11, b16));
+				case 167: EMIT(stvehx, REG(b6), MEMREG0(b11, b16));
+				case 199: EMIT(stvewx, REG(b6), MEMREG0(b11, b16));
 
 				// cmpw, cmpd
 				case 0:
@@ -1148,10 +1180,6 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 711: EMIT_RC(mtfsf, flm, FREG(frb));
 				case 70: EMIT_RC(mtfsb0, FCBIT(b6));
 				case 38: EMIT_RC(mtfsb1, FCBIT(b6));
-
-				// fsqrt
-				case 22: EMIT_RC(fsqrt, FREG(b6), FREG(b16));
-				case 24: EMIT_RC(fre, FREG(b6), FREG(b16));
 			}
 
 			const BitField<26,5> xo26(instrWord);
@@ -1160,7 +1188,7 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				// fadd, fsub, fmul, fdiv
 				case 21: EMIT_RC(fadd, FREG(b6), FREG(b11), FREG(b16));
 				case 20: EMIT_RC(fsub, FREG(b6), FREG(b11), FREG(b16));
-				case 25: EMIT_RC(fmul, FREG(b6), FREG(b11), FREG(b21));
+				case 25: EMIT_RC(fmul, FREG(b6), FREG(b11), FREG(b21)); // BEWARE, the second arg is at bit 21
 				case 18: EMIT_RC(fdiv, FREG(b6), FREG(b11), FREG(b16));
 
 				// fmadd, fmsub, fnmadd, fnmsub
@@ -1171,6 +1199,11 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 
 				// fsel
 				case 23: EMIT_RC(fsel, FREG(b6), FREG(b11), FREG(b21), FREG(b16));
+
+				// fsqrt and some other optional instructions
+				case 22: EMIT_RC(fsqrt, FREG(b6), FREG(b16));
+				case 24: EMIT_RC(fre, FREG(b6), FREG(b16));
+				case 26: EMIT_RC(frsqrtx, FREG(b6), FREG(b16));					
 			}
 
 

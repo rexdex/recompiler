@@ -2577,6 +2577,14 @@ namespace cpu
 			if (CREG) setCR1(regs, *val);
 		}
 
+		// floating point inverse square root
+		template<uint8 CREG>
+		static inline void frsqrtex(CpuRegs& regs, TFReg* val, const TFReg a)
+		{
+			*val = (a > 0.0f) ? 1.0f / sqrt(a) : 0.0f;
+			if (CREG) setCR1(regs, *val);
+		}
+
 		// floating point square root
 		template<uint8 CREG>
 		static inline void fsqrts( CpuRegs& regs, TFReg* val, const TFReg a )

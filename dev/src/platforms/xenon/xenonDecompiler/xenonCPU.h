@@ -769,6 +769,8 @@ public:
 		eInstruction_fdivsRC,
 		eInstruction_fsqrt,
 		eInstruction_fsqrtRC,
+		eInstruction_frsqrtx,
+		eInstruction_frsqrtxRC,
 		eInstruction_fre,
 		eInstruction_freRC,
 
