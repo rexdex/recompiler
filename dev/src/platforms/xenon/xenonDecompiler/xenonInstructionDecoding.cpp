@@ -852,9 +852,9 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 661: EMIT(stswx, REG(b6), REG0(b11), REG(b16));
 
 				// lvehx, lvebx, lvewx
-				case 39: EMIT(lvehx, REG(b6), MEMREG0(b11, b16));
-				case 7: EMIT(lvebx, REG(b6), MEMREG0(b11, b16));
-				case 71: EMIT(lvewx, REG(b6), MEMREG0(b11, b16));
+				case 39: EMIT(lvehx, VREG(b6), MEMREG0(b11, b16));
+				case 7: EMIT(lvebx, VREG(b6), MEMREG0(b11, b16));
+				case 71: EMIT(lvewx, VREG(b6), MEMREG0(b11, b16));
 
 				// stvebx, stvehx, stvewx
 				case 135: EMIT(stvebx, REG(b6), MEMREG0(b11, b16));

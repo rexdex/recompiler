@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+#include <intsafe.h>
 #include "..\..\..\launcher\backend\runtimeRegisterBank.h"
 #include "..\..\..\launcher\backend\runtimeImageInfo.h"
 
@@ -253,29 +254,6 @@ namespace cpu
 		}
 	};
 
-	struct XerReg
-	{
-		uint8	so;
-		uint8	ov;		// overflow
-		uint8	ca;		// carry
-		uint8	pa;		// padding
-
-		inline uint32 BuildMask() const
-		{
-			uint32 flags = 0;
-			flags |= so ? 1 : 0;
-			flags |= ov ? 2 : 0;
-			flags |= ca ? 4 : 0;
-			flags |= pa ? 8 : 0;
-			return flags;
-		}
-
-		inline bool operator==(const XerReg& other) const
-		{
-			return *(const uint32*)this == *(const uint32*)&other;
-		}
-	};
-
 	struct FixedReg
 	{
 		union
@@ -300,6 +278,40 @@ namespace cpu
 		};
 	};
 
+	struct XerReg
+	{
+		uint8	so;
+		uint8	ov;		// overflow
+		uint8	ca;		// carry
+		uint8	pa;		// padding
+
+		inline uint32 BuildMask() const
+		{
+			uint32 flags = 0;
+			flags |= so ? 1 : 0;
+			flags |= ov ? 2 : 0;
+			flags |= ca ? 4 : 0;
+			flags |= pa ? 8 : 0;
+			return flags;
+		}
+
+		inline bool operator==(const XerReg& other) const
+		{
+			return *(const uint32*)this == *(const uint32*)&other;
+		}
+
+		inline XerReg& operator=(const uint64 other)
+		{
+			so = (other & 1) != 0;
+			ov = (other & 2) != 0;
+			ca = (other & 4) != 0;
+			return *this;
+		}
+	};
+
+	static const uint8 ByteIndex[32] = { 3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12, 19,18,17,16, 23,22,21,20, 27,26,25,24, 31,30,29,28 };
+	static const uint8 WorldIndex[16] = { 1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14 };
+
 	struct VReg
 	{
 		union
@@ -321,6 +333,11 @@ namespace cpu
 
 			struct
 			{
+				int16 i16[8];
+			};
+
+			struct
+			{
 				uint16 u16[8];
 			};
 
@@ -330,14 +347,178 @@ namespace cpu
 			};
 		};
 
+		//---
+
+		template< uint8 Index >
+		float& AsFloat()
+		{
+			return ((float*)this)[Index];
+		}
+
+		template< uint8 Index >
+		uint32& AsUint32()
+		{
+			return ((uint32*)this)[Index];
+		}
+
+		template< uint8 Index >
+		int32& AsInt32()
+		{
+			return ((int32*)this)[Index];
+		}
+
+		template< uint8 Index >
+		uint16& AsUint16()
+		{
+			return ((uint16*)this)[WorldIndex[Index]];
+		}
+
+		template< uint8 Index >
+		int16& AsInt16()
+		{
+			return ((int16*)this)[WorldIndex[Index]];
+		}
+
+		template< uint8 Index >
+		uint8& AsUint8()
+		{
+			return ((uint8*)this)[WorldIndex[Index]];
+		}
+
+		template< uint8 Index >
+		int8& AsInt8()
+		{
+			return ((int8*)this)[WorldIndex[Index]];
+		}
+
+		//---
+
+		float& AsFloat(const uint8 Index)
+		{
+			return ((float*)this)[Index];
+		}
+
+		uint32& AsUint32(const uint8 Index)
+		{
+			return ((uint32*)this)[Index];
+		}
+
+		int32& AsInt32(const uint8 Index)
+		{
+			return ((int32*)this)[Index];
+		}
+
+		uint16& AsUint16(const uint8 Index)
+		{
+			return ((uint16*)this)[WorldIndex[Index]];
+		}
+
+		int16& AsInt16(const uint8 Index)
+		{
+			return ((int16*)this)[WorldIndex[Index]];
+		}
+
+		uint8& AsUint8(const uint8 Index)
+		{
+			return ((uint8*)this)[WorldIndex[Index]];
+		}
+
+		int8& AsInt8(const uint8 Index)
+		{
+			return ((int8*)this)[WorldIndex[Index]];
+		}
+
+		//---
+
+		float AsFloat(const uint8 Index) const
+		{
+			return ((float*)this)[Index];
+		}
+
+		uint32 AsUint32(const uint8 Index) const
+		{
+			return ((uint32*)this)[Index];
+		}
+
+		int32 AsInt32(const uint8 Index) const
+		{
+			return ((int32*)this)[Index];
+		}
+
+		uint16 AsUint16(const uint8 Index) const
+		{
+			return ((uint16*)this)[WorldIndex[Index]];
+		}
+
+		int16 AsInt16(const uint8 Index) const
+		{
+			return ((int16*)this)[WorldIndex[Index]];
+		}
+
+		uint8& AsUint8(const uint8 Index) const
+		{
+			return ((uint8*)this)[WorldIndex[Index]];
+		}
+
+		int8 AsInt8(const uint8 Index) const
+		{
+			return ((int8*)this)[WorldIndex[Index]];
+		}
+
+		//---
+
+		template< uint8 Index >
+		const float AsFloat() const
+		{
+			return ((const float*)this)[Index];
+		}
+
+		template< uint8 Index >
+		const uint32 AsUint32() const
+		{
+			return ((const uint32*)this)[Index];
+		}
+
+		template< uint8 Index >
+		const int32 AsInt32() const
+		{
+			return ((const int32*)this)[Index];
+		}
+
+		template< uint8 Index >
+		const uint16 AsUint16() const
+		{
+			return ((const uint16*)this)[WorldIndex[Index]];
+		}
+
+		template< uint8 Index >
+		const int16 AsInt16() const
+		{
+			return ((const int16*)this)[WorldIndex[Index]];
+		}
+
+		template< uint8 Index >
+		const uint8 AsUint8() const
+		{
+			return ((const uint8*)this)[ByteIndex[Index]];
+		}
+
+		template< uint8 Index >
+		const int8 AsInt8() const
+		{
+			return ((const int8*)this)[ByteIndex[Index]];
+		}
+
+		//---
+
 		inline bool operator ==(const VReg& other) const
 		{
-			return (u32[0] == other.u32[0]) && (u32[1] == other.u32[1]) && (u32[2] == other.u32[2]) && (u32[3] == other.u32[3]);
+			return (AsUint32<0>() == other.AsUint32<0>()) && (AsUint32<1>() == other.AsUint32<1>()) && (AsUint32<2>() == other.AsUint32<2>()) && (AsUint32<3>() == other.AsUint32<3>());
 		}
 
 		inline bool operator !=(const VReg& other) const
 		{
-			return (u32[0] != other.u32[0]) || (u32[1] != other.u32[1]) || (u32[2] != other.u32[2]) || (u32[3] != other.u32[3]);
+			return (AsUint32<0>() != other.AsUint32<0>()) || (AsUint32<1>() != other.AsUint32<1>()) || (AsUint32<2>() != other.AsUint32<2>()) || (AsUint32<3>() != other.AsUint32<3>());
 		}
 	};
 
@@ -366,6 +547,7 @@ namespace cpu
 		ControlReg	CR[8];
 
 		uint32		FPSCR;
+		uint32		SAT;
 
 		TReg		R0;
 		TReg		R1;
@@ -960,10 +1142,10 @@ namespace cpu
 
 		static inline void lvx(CpuRegs& regs, VReg* value, const TAddr addr)
 		{
-			value->u32[0] = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[0] );
-			value->u32[1] = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[1] );
-			value->u32[2] = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[2] );
-			value->u32[3] = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[3] );
+			value->AsUint32<0>() = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[0] );
+			value->AsUint32<1>() = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[1] );
+			value->AsUint32<2>() = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[2] );
+			value->AsUint32<3>() = _byteswap_ulong( ((const uint32*) (addr & ~0xF))[3] );
 		}
 
 		template< int SH >
@@ -979,10 +1161,10 @@ namespace cpu
 			while (i<16)
 				dest[i++] = 0;
 
-			value->u32[0] = _byteswap_ulong( value->u32[0] );
-			value->u32[1] = _byteswap_ulong( value->u32[1] );
-			value->u32[2] = _byteswap_ulong( value->u32[2] );
-			value->u32[3] = _byteswap_ulong( value->u32[3] );
+			value->AsUint32<0>() = _byteswap_ulong( value->AsUint32<0>() );
+			value->AsUint32<1>() = _byteswap_ulong( value->AsUint32<1>() );
+			value->AsUint32<2>() = _byteswap_ulong( value->AsUint32<2>() );
+			value->AsUint32<3>() = _byteswap_ulong( value->AsUint32<3>() );
 		}
 
 		static inline void lvlx(CpuRegs& regs, VReg* value, const TAddr addr)
@@ -1011,6 +1193,13 @@ namespace cpu
 			}
 		}
 
+		static inline void lvehx(CpuRegs& regs, VReg* value, const TAddr addr)
+		{
+			const TAddr pos = addr & ~1;
+			const VReg* src = (const VReg*)(addr & ~0xF);
+			value->AsUint16((pos >> 1) & 7) = _byteswap_ushort(*(const uint16*)pos);
+		}		
+
 		template< int SH >
 		static inline void lvrx_helper(VReg* value, const VReg* srcValue)
 		{
@@ -1031,10 +1220,10 @@ namespace cpu
 				++i;
 			}
 
-			value->u32[0] = _byteswap_ulong( value->u32[0] );
-			value->u32[1] = _byteswap_ulong( value->u32[1] );
-			value->u32[2] = _byteswap_ulong( value->u32[2] );
-			value->u32[3] = _byteswap_ulong( value->u32[3] );
+			value->AsUint32<0>() = _byteswap_ulong( value->AsUint32<0>() );
+			value->AsUint32<1>() = _byteswap_ulong( value->AsUint32<1>() );
+			value->AsUint32<2>() = _byteswap_ulong( value->AsUint32<2>() );
+			value->AsUint32<3>() = _byteswap_ulong( value->AsUint32<3>() );
 		}
 
 		static inline void lvrx(CpuRegs& regs, VReg* value, const TAddr addr)
@@ -1065,10 +1254,10 @@ namespace cpu
 
 		static inline void stvx(CpuRegs& regs, VReg value, const TAddr addr)
 		{
-			((uint32*)(addr & ~0xF))[0] = _byteswap_ulong( value.u32[0] );
-			((uint32*)(addr & ~0xF))[1] = _byteswap_ulong( value.u32[1] );
-			((uint32*)(addr & ~0xF))[2] = _byteswap_ulong( value.u32[2] );
-			((uint32*)(addr & ~0xF))[3] = _byteswap_ulong( value.u32[3] );
+			((uint32*)(addr & ~0xF))[0] = _byteswap_ulong( value.AsUint32<0>() );
+			((uint32*)(addr & ~0xF))[1] = _byteswap_ulong( value.AsUint32<1>() );
+			((uint32*)(addr & ~0xF))[2] = _byteswap_ulong( value.AsUint32<2>() );
+			((uint32*)(addr & ~0xF))[3] = _byteswap_ulong( value.AsUint32<3>() );
 		}
 
 		static inline void stvehx(CpuRegs& regs, VReg value, const TAddr addr)
@@ -1078,10 +1267,10 @@ namespace cpu
 				uint32 v[4];
 			} temp;
 
-			temp.v[0] = _byteswap_ulong( value.u32[0] );
-			temp.v[1] = _byteswap_ulong( value.u32[1] );
-			temp.v[2] = _byteswap_ulong( value.u32[2] );
-			temp.v[3] = _byteswap_ulong( value.u32[3] );
+			temp.v[0] = _byteswap_ulong( value.AsUint32<0>() );
+			temp.v[1] = _byteswap_ulong( value.AsUint32<1>() );
+			temp.v[2] = _byteswap_ulong( value.AsUint32<2>() );
+			temp.v[3] = _byteswap_ulong( value.AsUint32<3>() );
 
 			if ( addr & 3 )
 			{
@@ -1093,7 +1282,7 @@ namespace cpu
 
 			const uint16 data = *(uint16*)( (uint8*)&temp + part );
 			//printf( "Data=%d (0x%04X)\n", data, data );
-			//printf( "Reg=%08X,%08X,%08X,%08X\n", value.u32[0], value.u32[1], value.u32[2], value.u32[3]);
+			//printf( "Reg=%08X,%08X,%08X,%08X\n", value.AsUint32<0>(), value.AsUint32<1>(), value.AsUint32<2>(), value.AsUint32<3>());
 
 			*(uint16*)addr = data;
 		}
@@ -1105,10 +1294,10 @@ namespace cpu
 				uint32 v[4];
 			} temp;
 
-			temp.v[0] = _byteswap_ulong( value.u32[0] );
-			temp.v[1] = _byteswap_ulong( value.u32[1] );
-			temp.v[2] = _byteswap_ulong( value.u32[2] );
-			temp.v[3] = _byteswap_ulong( value.u32[3] );
+			temp.v[0] = _byteswap_ulong( value.AsUint32<0>() );
+			temp.v[1] = _byteswap_ulong( value.AsUint32<1>() );
+			temp.v[2] = _byteswap_ulong( value.AsUint32<2>() );
+			temp.v[3] = _byteswap_ulong( value.AsUint32<3>() );
 
 			if ( addr & 3 )
 			{
@@ -1120,7 +1309,7 @@ namespace cpu
 
 			const uint32 data = *(uint32*)( (uint8*)&temp + part );
 			//printf( "Data=%d (0x%08X)\n", data, data );
-			//printf( "Reg=%08X,%08X,%08X,%08X\n", value.u32[0], value.u32[1], value.u32[2], value.u32[3]);
+			//printf( "Reg=%08X,%08X,%08X,%08X\n", value.AsUint32<0>(), value.AsUint32<1>(), value.AsUint32<2>(), value.AsUint32<3>());
 
 			*(uint32*)addr = data;
 		}
@@ -1129,10 +1318,10 @@ namespace cpu
 		static inline void stvlx_helper(VReg* value, const VReg& srcValueX)
 		{
 			VReg srcValue;
-			srcValue.u32[0] = _byteswap_ulong( srcValueX.u32[0] );
-			srcValue.u32[1] = _byteswap_ulong( srcValueX.u32[1] );
-			srcValue.u32[2] = _byteswap_ulong( srcValueX.u32[2] );
-			srcValue.u32[3] = _byteswap_ulong( srcValueX.u32[3] );
+			srcValue.AsUint32<0>() = _byteswap_ulong( srcValueX.AsUint32<0>() );
+			srcValue.AsUint32<1>() = _byteswap_ulong( srcValueX.AsUint32<1>() );
+			srcValue.AsUint32<2>() = _byteswap_ulong( srcValueX.AsUint32<2>() );
+			srcValue.AsUint32<3>() = _byteswap_ulong( srcValueX.AsUint32<3>() );
 
 			uint8* dest = (uint8*)value;
 			const uint8* src = (const uint8*)&srcValue;
@@ -1171,10 +1360,10 @@ namespace cpu
 		static inline void stvrx_helper(VReg* value, const VReg& srcValueX)
 		{
 			VReg srcValue;
-			srcValue.u32[0] = _byteswap_ulong( srcValueX.u32[0] );
-			srcValue.u32[1] = _byteswap_ulong( srcValueX.u32[1] );
-			srcValue.u32[2] = _byteswap_ulong( srcValueX.u32[2] );
-			srcValue.u32[3] = _byteswap_ulong( srcValueX.u32[3] );
+			srcValue.AsUint32<0>() = _byteswap_ulong( srcValueX.AsUint32<0>() );
+			srcValue.AsUint32<1>() = _byteswap_ulong( srcValueX.AsUint32<1>() );
+			srcValue.AsUint32<2>() = _byteswap_ulong( srcValueX.AsUint32<2>() );
+			srcValue.AsUint32<3>() = _byteswap_ulong( srcValueX.AsUint32<3>() );
 
 			uint8* dest = (uint8*)value;
 			const uint8* src = (const uint8*)&srcValue;
@@ -1726,6 +1915,32 @@ namespace cpu
 			*(int64*)out = ( ret & 0xFFFFFFFF );
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
+
+		static uint64 mulhi(const uint64 a, const uint64 b)
+		{
+			uint64 a_lo = (uint32)a;
+			uint64 a_hi = a >> 32;
+			uint64 b_lo = (uint32)b;
+			uint64 b_hi = b >> 32;
+
+			uint64 a_x_b_hi = a_hi * b_hi;
+			uint64 a_x_b_mid = a_hi * b_lo;
+			uint64 b_x_a_mid = b_hi * a_lo;
+			uint64 a_x_b_lo = a_lo * b_lo;
+
+			uint64 carry_bit = ((uint64)(uint32)a_x_b_mid + (uint64)(uint32)b_x_a_mid + (a_x_b_lo >> 32)) >> 32;
+			uint64 multhi = a_x_b_hi + (a_x_b_mid >> 32) + (b_x_a_mid >> 32) + carry_bit;
+			return multhi;
+		}
+
+		// mullhw - Multiply Low Halfword to Word Signed
+		template <uint8 CTRL>
+		static inline void mulhdu(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
+		{
+			*out = mulhi(a, b);
+			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
+		}
+
 
 		//---------------------------------------------------------------------------------
 
@@ -2579,7 +2794,7 @@ namespace cpu
 
 		// floating point inverse square root
 		template<uint8 CREG>
-		static inline void frsqrtex(CpuRegs& regs, TFReg* val, const TFReg a)
+		static inline void frsqrtx(CpuRegs& regs, TFReg* val, const TFReg a)
 		{
 			*val = (a > 0.0f) ? 1.0f / sqrt(a) : 0.0f;
 			if (CREG) setCR1(regs, *val);
@@ -2843,10 +3058,10 @@ namespace cpu
 		{
 			ASM_CHECK(CTRL==0);
 			ASM_CHECK(SEL<=3);
-			out->u32[0] = a.u32[SEL];
-			out->u32[1] = a.u32[SEL];
-			out->u32[2] = a.u32[SEL];
-			out->u32[3] = a.u32[SEL];
+			out->AsUint32<0>() = a.AsUint32<SEL>();
+			out->AsUint32<1>() = a.AsUint32<SEL>();
+			out->AsUint32<2>() = a.AsUint32<SEL>();
+			out->AsUint32<3>() = a.AsUint32<SEL>();
 		}
 
 		template <uint8 CTRL, uint8 SEL>
@@ -2854,14 +3069,14 @@ namespace cpu
 		{
 			ASM_CHECK(CTRL==0);
 			ASM_CHECK(SEL<=7);
-			out->u16[0] = a.u16[SEL^1];
-			out->u16[1] = a.u16[SEL^1];
-			out->u16[2] = a.u16[SEL^1];
-			out->u16[3] = a.u16[SEL^1];
-			out->u16[4] = a.u16[SEL^1];
-			out->u16[5] = a.u16[SEL^1];
-			out->u16[6] = a.u16[SEL^1];
-			out->u16[7] = a.u16[SEL^1];
+			out->AsUint16<0>() = a.AsUint16<SEL>();
+			out->AsUint16<1>() = a.AsUint16<SEL>();
+			out->AsUint16<2>() = a.AsUint16<SEL>();
+			out->AsUint16<3>() = a.AsUint16<SEL>();
+			out->AsUint16<4>() = a.AsUint16<SEL>();
+			out->AsUint16<5>() = a.AsUint16<SEL>();
+			out->AsUint16<6>() = a.AsUint16<SEL>();
+			out->AsUint16<7>() = a.AsUint16<SEL>();
 		}
 
 		template <uint8 CTRL, uint8 SEL>
@@ -2869,106 +3084,106 @@ namespace cpu
 		{
 			ASM_CHECK(CTRL==0);
 			ASM_CHECK(SEL<=15);
-			uint8 RSEL = (SEL & ~3) + (3 - (SEL&3));
-			out->u8[0] = a.u8[RSEL];
-			out->u8[1] = a.u8[RSEL];
-			out->u8[2] = a.u8[RSEL];
-			out->u8[3] = a.u8[RSEL];
-			out->u8[4] = a.u8[RSEL];
-			out->u8[5] = a.u8[RSEL];
-			out->u8[6] = a.u8[RSEL];
-			out->u8[7] = a.u8[RSEL];
-			out->u8[8] = a.u8[RSEL];
-			out->u8[9] = a.u8[RSEL];
-			out->u8[10] = a.u8[RSEL];
-			out->u8[11] = a.u8[RSEL];
-			out->u8[12] = a.u8[RSEL];
-			out->u8[13] = a.u8[RSEL];
-			out->u8[14] = a.u8[RSEL];
-			out->u8[15] = a.u8[RSEL];
+			out->AsUint8<0>() = a.AsUint8<SEL>();
+			out->AsUint8<1>() = a.AsUint8<SEL>();
+			out->AsUint8<2>() = a.AsUint8<SEL>();
+			out->AsUint8<3>() = a.AsUint8<SEL>();
+			out->AsUint8<4>() = a.AsUint8<SEL>();
+			out->AsUint8<5>() = a.AsUint8<SEL>();
+			out->AsUint8<6>() = a.AsUint8<SEL>();
+			out->AsUint8<7>() = a.AsUint8<SEL>();
+			out->AsUint8<8>() = a.AsUint8<SEL>();
+			out->AsUint8<9>() = a.AsUint8<SEL>();
+			out->AsUint8<10>() = a.AsUint8<SEL>();
+			out->AsUint8<11>() = a.AsUint8<SEL>();
+			out->AsUint8<12>() = a.AsUint8<SEL>();
+			out->AsUint8<13>() = a.AsUint8<SEL>();
+			out->AsUint8<14>() = a.AsUint8<SEL>();
+			out->AsUint8<15>() = a.AsUint8<SEL>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vor( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] | b.u32[0];
-			out->u32[1] = a.u32[1] | b.u32[1];
-			out->u32[2] = a.u32[2] | b.u32[2];
-			out->u32[3] = a.u32[3] | b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() | b.AsUint32<0>();
+			out->AsUint32<1>() = a.AsUint32<1>() | b.AsUint32<1>();
+			out->AsUint32<2>() = a.AsUint32<2>() | b.AsUint32<2>();
+			out->AsUint32<3>() = a.AsUint32<3>() | b.AsUint32<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vxor( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] ^ b.u32[0];
-			out->u32[1] = a.u32[1] ^ b.u32[1];
-			out->u32[2] = a.u32[2] ^ b.u32[2];
-			out->u32[3] = a.u32[3] ^ b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() ^ b.AsUint32<0>();
+			out->AsUint32<1>() = a.AsUint32<1>() ^ b.AsUint32<1>();
+			out->AsUint32<2>() = a.AsUint32<2>() ^ b.AsUint32<2>();
+			out->AsUint32<3>() = a.AsUint32<3>() ^ b.AsUint32<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vnor( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = ~(a.u32[0] | b.u32[0]);
-			out->u32[1] = ~(a.u32[1] | b.u32[1]);
-			out->u32[2] = ~(a.u32[2] | b.u32[2]);
-			out->u32[3] = ~(a.u32[3] | b.u32[3]);
+			out->AsUint32<0>() = ~(a.AsUint32<0>() | b.AsUint32<0>());
+			out->AsUint32<1>() = ~(a.AsUint32<1>() | b.AsUint32<1>());
+			out->AsUint32<2>() = ~(a.AsUint32<2>() | b.AsUint32<2>());
+			out->AsUint32<3>() = ~(a.AsUint32<3>() | b.AsUint32<3>());
 		}
 
 		template <uint8 CTRL>
 		static inline void vand( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] & b.u32[0];
-			out->u32[1] = a.u32[1] & b.u32[1];
-			out->u32[2] = a.u32[2] & b.u32[2];
-			out->u32[3] = a.u32[3] & b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() & b.AsUint32<0>();
+			out->AsUint32<1>() = a.AsUint32<1>() & b.AsUint32<1>();
+			out->AsUint32<2>() = a.AsUint32<2>() & b.AsUint32<2>();
+			out->AsUint32<3>() = a.AsUint32<3>() & b.AsUint32<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vandc( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] & ~b.u32[0];
-			out->u32[1] = a.u32[1] & ~b.u32[1];
-			out->u32[2] = a.u32[2] & ~b.u32[2];
-			out->u32[3] = a.u32[3] & ~b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() & ~b.AsUint32<0>();
+			out->AsUint32<1>() = a.AsUint32<1>() & ~b.AsUint32<1>();
+			out->AsUint32<2>() = a.AsUint32<2>() & ~b.AsUint32<2>();
+			out->AsUint32<3>() = a.AsUint32<3>() & ~b.AsUint32<3>();
 		}
 
 		template <uint8 CTRL, uint8 MASK, uint8 ROT>
 		static inline void vrlimi128( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			if (MASK & 8) out->u32[0] = a.u32[ (0+ROT) & 3 ];
-			if (MASK & 4) out->u32[1] = a.u32[ (1+ROT) & 3 ];
-			if (MASK & 2) out->u32[2] = a.u32[ (2+ROT) & 3 ];
-			if (MASK & 1) out->u32[3] = a.u32[ (3+ROT) & 3 ];
+			if (MASK & 8) out->AsUint32<0>() = a.AsUint32< (0+ROT) & 3 >();
+			if (MASK & 4) out->AsUint32<1>() = a.AsUint32< (1+ROT) & 3 >();
+			if (MASK & 2) out->AsUint32<2>() = a.AsUint32< (2+ROT) & 3 >();
+			if (MASK & 1) out->AsUint32<3>() = a.AsUint32< (3+ROT) & 3 >();
 		}
 
 		template <uint8 CTRL>
 		static inline void vmrghw( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0];
-			out->u32[1] = b.u32[0];
-			out->u32[2] = a.u32[1];
-			out->u32[3] = b.u32[1];
+			out->AsUint32<0>() = a.AsUint32<0>();
+			out->AsUint32<1>() = b.AsUint32<0>();
+			out->AsUint32<2>() = a.AsUint32<1>();
+			out->AsUint32<3>() = b.AsUint32<1>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vmrglw( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[2];
-			out->u32[1] = b.u32[2];
-			out->u32[2] = a.u32[3];
-			out->u32[3] = b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<2>();
+			out->AsUint32<1>() = b.AsUint32<2>();
+			out->AsUint32<2>() = a.AsUint32<3>();
+			out->AsUint32<3>() = b.AsUint32<3>();
 		}
 
 		static const uint8 Reindex[32] = {3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12, 19,18,17,16, 23,22,21,20, 27,26,25,24, 31,30,29,28};
+		static const uint8 ReindexWords[16] = { 1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14 };
 
 		static inline uint8 vperm_helper(const TVReg& a, const TVReg& b, uint8 index)
 		{
@@ -2979,86 +3194,186 @@ namespace cpu
 		static inline void vperm( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b, const TVReg m )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u8[Reindex[0]] = vperm_helper(a,b,Reindex[m.u8[Reindex[0]]]);
-			out->u8[Reindex[1]] = vperm_helper(a,b,Reindex[m.u8[Reindex[1]]]);
-			out->u8[Reindex[2]] = vperm_helper(a,b,Reindex[m.u8[Reindex[2]]]);
-			out->u8[Reindex[3]] = vperm_helper(a,b,Reindex[m.u8[Reindex[3]]]);
-			out->u8[Reindex[4]] = vperm_helper(a,b,Reindex[m.u8[Reindex[4]]]);
-			out->u8[Reindex[5]] = vperm_helper(a,b,Reindex[m.u8[Reindex[5]]]);
-			out->u8[Reindex[6]] = vperm_helper(a,b,Reindex[m.u8[Reindex[6]]]);
-			out->u8[Reindex[7]] = vperm_helper(a,b,Reindex[m.u8[Reindex[7]]]);
-			out->u8[Reindex[8]] = vperm_helper(a,b,Reindex[m.u8[Reindex[8]]]);
-			out->u8[Reindex[9]] = vperm_helper(a,b,Reindex[m.u8[Reindex[9]]]);
-			out->u8[Reindex[10]] = vperm_helper(a,b,Reindex[m.u8[Reindex[10]]]);
-			out->u8[Reindex[11]] = vperm_helper(a,b,Reindex[m.u8[Reindex[11]]]);
-			out->u8[Reindex[12]] = vperm_helper(a,b,Reindex[m.u8[Reindex[12]]]);
-			out->u8[Reindex[13]] = vperm_helper(a,b,Reindex[m.u8[Reindex[13]]]);
-			out->u8[Reindex[14]] = vperm_helper(a,b,Reindex[m.u8[Reindex[14]]]);
-			out->u8[Reindex[15]] = vperm_helper(a,b,Reindex[m.u8[Reindex[15]]]);
+			out->AsUint8<0>() = vperm_helper(a, b, Reindex[m.u8[Reindex[0]]]);
+			out->AsUint8<1>() = vperm_helper(a, b, Reindex[m.u8[Reindex[1]]]);
+			out->AsUint8<2>() = vperm_helper(a, b, Reindex[m.u8[Reindex[2]]]);
+			out->AsUint8<3>() = vperm_helper(a, b, Reindex[m.u8[Reindex[3]]]);
+			out->AsUint8<4>() = vperm_helper(a, b, Reindex[m.u8[Reindex[4]]]);
+			out->AsUint8<5>() = vperm_helper(a, b, Reindex[m.u8[Reindex[5]]]);
+			out->AsUint8<6>() = vperm_helper(a, b, Reindex[m.u8[Reindex[6]]]);
+			out->AsUint8<7>() = vperm_helper(a, b, Reindex[m.u8[Reindex[7]]]);
+			out->AsUint8<8>() = vperm_helper(a, b, Reindex[m.u8[Reindex[8]]]);
+			out->AsUint8<9>() = vperm_helper(a, b, Reindex[m.u8[Reindex[9]]]);
+			out->AsUint8<10>() = vperm_helper(a, b, Reindex[m.u8[Reindex[10]]]);
+			out->AsUint8<11>() = vperm_helper(a, b, Reindex[m.u8[Reindex[11]]]);
+			out->AsUint8<12>() = vperm_helper(a, b, Reindex[m.u8[Reindex[12]]]);
+			out->AsUint8<13>() = vperm_helper(a, b, Reindex[m.u8[Reindex[13]]]);
+			out->AsUint8<14>() = vperm_helper(a, b, Reindex[m.u8[Reindex[14]]]);
+			out->AsUint8<15>() = vperm_helper(a, b, Reindex[m.u8[Reindex[15]]]);
 		}
+
+		template <uint8 CTRL>
+		static inline void vmrglb(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0>() = a.AsUint8<0>();
+			out->AsUint8<1>() = b.AsUint8<0>();
+			out->AsUint8<2>() = a.AsUint8<1>();
+			out->AsUint8<3>() = b.AsUint8<1>();
+			out->AsUint8<4>() = a.AsUint8<2>();
+			out->AsUint8<5>() = b.AsUint8<2>();
+			out->AsUint8<6>() = a.AsUint8<3>();
+			out->AsUint8<7>() = b.AsUint8<3>();
+			out->AsUint8<8>() = a.AsUint8<4>();
+			out->AsUint8<9>() = b.AsUint8<4>();
+			out->AsUint8<10>() = a.AsUint8<5>();
+			out->AsUint8<11>() = b.AsUint8<5>();
+			out->AsUint8<12>() = a.AsUint8<6>();
+			out->AsUint8<13>() = b.AsUint8<6>();
+			out->AsUint8<14>() = a.AsUint8<7>();
+			out->AsUint8<15>() = b.AsUint8<7>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vmrghb(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0>() = a.AsUint8<8>();
+			out->AsUint8<1>() = b.AsUint8<8>();
+			out->AsUint8<2>() = a.AsUint8<9>();
+			out->AsUint8<3>() = b.AsUint8<9>();
+			out->AsUint8<4>() = a.AsUint8<10>();
+			out->AsUint8<5>() = b.AsUint8<10>();
+			out->AsUint8<6>() = a.AsUint8<11>();
+			out->AsUint8<7>() = b.AsUint8<11>();
+			out->AsUint8<8>() = a.AsUint8<12>();
+			out->AsUint8<9>() = b.AsUint8<12>();
+			out->AsUint8<10>() = a.AsUint8<13>();
+			out->AsUint8<11>() = b.AsUint8<13>();
+			out->AsUint8<12>() = a.AsUint8<14>();
+			out->AsUint8<13>() = b.AsUint8<14>();
+			out->AsUint8<14>() = a.AsUint8<15>();
+			out->AsUint8<15>() = b.AsUint8<15>();
+		}		
 
 		template <uint8 SH>
 		static inline uint8 vsldoi_helper( const TVReg& a, const TVReg& b )
 		{
-			return (SH < 16) ? a.u8[Reindex[SH]] : b.u8[Reindex[SH&15]];
+			return (SH < 16) ? a.AsUint8<SH>() : b.AsUint8<SH&15>();
 		}
 
 		template <uint8 CTRL, uint8 SHIFT>
 		static inline void vsldoi( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
-			ASM_CHECK(CTRL==0);
-			/*out->u8[0] = vsldoi_helper<SHIFT+0>(a,b);
-			out->u8[1] = vsldoi_helper<SHIFT+1>(a,b);
-			out->u8[2] = vsldoi_helper<SHIFT+2>(a,b);
-			out->u8[3] = vsldoi_helper<SHIFT+3>(a,b);
-			out->u8[4] = vsldoi_helper<SHIFT+4>(a,b);
-			out->u8[5] = vsldoi_helper<SHIFT+5>(a,b);
-			out->u8[6] = vsldoi_helper<SHIFT+6>(a,b);
-			out->u8[7] = vsldoi_helper<SHIFT+7>(a,b);
-			out->u8[8] = vsldoi_helper<SHIFT+8>(a,b);
-			out->u8[9] = vsldoi_helper<SHIFT+9>(a,b);
-			out->u8[10] = vsldoi_helper<SHIFT+10>(a,b);
-			out->u8[11] = vsldoi_helper<SHIFT+11>(a,b);
-			out->u8[12] = vsldoi_helper<SHIFT+12>(a,b);
-			out->u8[13] = vsldoi_helper<SHIFT+13>(a,b);
-			out->u8[14] = vsldoi_helper<SHIFT+14>(a,b);
-			out->u8[15] = vsldoi_helper<SHIFT+15>(a,b);*/
-			out->u8[3] = vsldoi_helper<SHIFT+0>(a,b);
-			out->u8[2] = vsldoi_helper<SHIFT+1>(a,b);
-			out->u8[1] = vsldoi_helper<SHIFT+2>(a,b);
-			out->u8[0] = vsldoi_helper<SHIFT+3>(a,b);
-			out->u8[7] = vsldoi_helper<SHIFT+4>(a,b);
-			out->u8[6] = vsldoi_helper<SHIFT+5>(a,b);
-			out->u8[5] = vsldoi_helper<SHIFT+6>(a,b);
-			out->u8[4] = vsldoi_helper<SHIFT+7>(a,b);
-			out->u8[11] = vsldoi_helper<SHIFT+8>(a,b);
-			out->u8[10] = vsldoi_helper<SHIFT+9>(a,b);
-			out->u8[9] = vsldoi_helper<SHIFT+10>(a,b);
-			out->u8[8] = vsldoi_helper<SHIFT+11>(a,b);
-			out->u8[15] = vsldoi_helper<SHIFT+12>(a,b);
-			out->u8[14] = vsldoi_helper<SHIFT+13>(a,b);
-			out->u8[13] = vsldoi_helper<SHIFT+14>(a,b);
-			out->u8[12] = vsldoi_helper<SHIFT+15>(a,b);
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0>() = vsldoi_helper<SHIFT+0>(a,b);
+			out->AsUint8<1>() = vsldoi_helper<SHIFT+1>(a,b);
+			out->AsUint8<2>() = vsldoi_helper<SHIFT+2>(a,b);
+			out->AsUint8<3>() = vsldoi_helper<SHIFT+3>(a,b);
+			out->AsUint8<4>() = vsldoi_helper<SHIFT+4>(a,b);
+			out->AsUint8<5>() = vsldoi_helper<SHIFT+5>(a,b);
+			out->AsUint8<6>() = vsldoi_helper<SHIFT+6>(a,b);
+			out->AsUint8<7>() = vsldoi_helper<SHIFT+7>(a,b);
+			out->AsUint8<8>() = vsldoi_helper<SHIFT+8>(a,b);
+			out->AsUint8<9>() = vsldoi_helper<SHIFT+9>(a,b);
+			out->AsUint8<10>() = vsldoi_helper<SHIFT+10>(a,b);
+			out->AsUint8<11>() = vsldoi_helper<SHIFT+11>(a,b);
+			out->AsUint8<12>() = vsldoi_helper<SHIFT+12>(a,b);
+			out->AsUint8<13>() = vsldoi_helper<SHIFT+13>(a,b);
+			out->AsUint8<14>() = vsldoi_helper<SHIFT+14>(a,b);
+			out->AsUint8<15>() = vsldoi_helper<SHIFT+15>(a,b);
+		}
+
+		template <uint8 CTRL>
+		static inline void vslh(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = a.AsUint16<0>() << (b.AsUint8<0>() & 0xF);
+			out->AsUint16<1>() = a.AsUint16<1>() << (b.AsUint8<1>() & 0xF);
+			out->AsUint16<2>() = a.AsUint16<2>() << (b.AsUint8<2>() & 0xF);
+			out->AsUint16<3>() = a.AsUint16<3>() << (b.AsUint8<3>() & 0xF);
+			out->AsUint16<4>() = a.AsUint16<4>() << (b.AsUint8<4>() & 0xF);
+			out->AsUint16<5>() = a.AsUint16<5>() << (b.AsUint8<5>() & 0xF);
+			out->AsUint16<6>() = a.AsUint16<6>() << (b.AsUint8<6>() & 0xF);
+			out->AsUint16<7>() = a.AsUint16<7>() << (b.AsUint8<7>() & 0xF);
+		}
+
+		template <uint8 CTRL>
+		static inline void vsrh(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = a.AsUint16<0>() >> (b.AsUint8<0>() & 0xF);
+			out->AsUint16<1>() = a.AsUint16<1>() >> (b.AsUint8<1>() & 0xF);
+			out->AsUint16<2>() = a.AsUint16<2>() >> (b.AsUint8<2>() & 0xF);
+			out->AsUint16<3>() = a.AsUint16<3>() >> (b.AsUint8<3>() & 0xF);
+			out->AsUint16<4>() = a.AsUint16<4>() >> (b.AsUint8<4>() & 0xF);
+			out->AsUint16<5>() = a.AsUint16<5>() >> (b.AsUint8<5>() & 0xF);
+			out->AsUint16<6>() = a.AsUint16<6>() >> (b.AsUint8<6>() & 0xF);
+			out->AsUint16<7>() = a.AsUint16<7>() >> (b.AsUint8<7>() & 0xF);
+		}
+
+		template <uint8 CTRL>
+		static inline void vslb(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0 >() = a.AsUint8<0 >() << (b.AsUint8<0 >() & 0x7);
+			out->AsUint8<1 >() = a.AsUint8<1 >() << (b.AsUint8<1 >() & 0x7);
+			out->AsUint8<2 >() = a.AsUint8<2 >() << (b.AsUint8<2 >() & 0x7);
+			out->AsUint8<3 >() = a.AsUint8<3 >() << (b.AsUint8<3 >() & 0x7);
+			out->AsUint8<4 >() = a.AsUint8<4 >() << (b.AsUint8<4 >() & 0x7);
+			out->AsUint8<5 >() = a.AsUint8<5 >() << (b.AsUint8<5 >() & 0x7);
+			out->AsUint8<6 >() = a.AsUint8<6 >() << (b.AsUint8<6 >() & 0x7);
+			out->AsUint8<7 >() = a.AsUint8<7 >() << (b.AsUint8<7 >() & 0x7);
+			out->AsUint8<8 >() = a.AsUint8<8 >() << (b.AsUint8<8 >() & 0x7);
+			out->AsUint8<9 >() = a.AsUint8<9 >() << (b.AsUint8<9 >() & 0x7);
+			out->AsUint8<10>() = a.AsUint8<10>() << (b.AsUint8<10>() & 0x7);
+			out->AsUint8<11>() = a.AsUint8<11>() << (b.AsUint8<11>() & 0x7);
+			out->AsUint8<12>() = a.AsUint8<12>() << (b.AsUint8<12>() & 0x7);
+			out->AsUint8<13>() = a.AsUint8<13>() << (b.AsUint8<13>() & 0x7);
+			out->AsUint8<14>() = a.AsUint8<14>() << (b.AsUint8<14>() & 0x7);
+			out->AsUint8<15>() = a.AsUint8<15>() << (b.AsUint8<15>() & 0x7);
+		}
+
+		template <uint8 CTRL>
+		static inline void vsrb(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0 >() = a.AsUint8<0>() >> (b.AsUint8<0>() & 0x7);
+			out->AsUint8<1 >() = a.AsUint8<1>() >> (b.AsUint8<1>() & 0x7);
+			out->AsUint8<2 >() = a.AsUint8<2>() >> (b.AsUint8<2>() & 0x7);
+			out->AsUint8<3 >() = a.AsUint8<3>() >> (b.AsUint8<3>() & 0x7);
+			out->AsUint8<4 >() = a.AsUint8<4>() >> (b.AsUint8<4>() & 0x7);
+			out->AsUint8<5 >() = a.AsUint8<5>() >> (b.AsUint8<5>() & 0x7);
+			out->AsUint8<6 >() = a.AsUint8<6>() >> (b.AsUint8<6>() & 0x7);
+			out->AsUint8<7 >() = a.AsUint8<7>() >> (b.AsUint8<7>() & 0x7);
+			out->AsUint8<8 >() = a.AsUint8<8>() >> (b.AsUint8<8>() & 0x7);
+			out->AsUint8<9 >() = a.AsUint8<9>() >> (b.AsUint8<9>() & 0x7);
+			out->AsUint8<10>() = a.AsUint8<10>() >> (b.AsUint8<10>() & 0x7);
+			out->AsUint8<11>() = a.AsUint8<11>() >> (b.AsUint8<11>() & 0x7);
+			out->AsUint8<12>() = a.AsUint8<12>() >> (b.AsUint8<12>() & 0x7);
+			out->AsUint8<13>() = a.AsUint8<13>() >> (b.AsUint8<13>() & 0x7);
+			out->AsUint8<14>() = a.AsUint8<14>() >> (b.AsUint8<14>() & 0x7);
+			out->AsUint8<15>() = a.AsUint8<15>() >> (b.AsUint8<15>() & 0x7);
 		}
 
 		template <uint8 CTRL>
 		static inline void vsel( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b, const TVReg m )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = (a.u32[0] & ~m.u32[0]) | (b.u32[0] & m.u32[0]);
-			out->u32[1] = (a.u32[1] & ~m.u32[1]) | (b.u32[1] & m.u32[1]);
-			out->u32[2] = (a.u32[2] & ~m.u32[2]) | (b.u32[2] & m.u32[2]);
-			out->u32[3] = (a.u32[3] & ~m.u32[3]) | (b.u32[3] & m.u32[3]);
+			out->AsUint32<0>() = (a.AsUint32<0>() & ~m.AsUint32<0>()) | (b.AsUint32<0>() & m.AsUint32<0>());
+			out->AsUint32<1>() = (a.AsUint32<1>() & ~m.AsUint32<1>()) | (b.AsUint32<1>() & m.AsUint32<1>());
+			out->AsUint32<2>() = (a.AsUint32<2>() & ~m.AsUint32<2>()) | (b.AsUint32<2>() & m.AsUint32<2>());
+			out->AsUint32<3>() = (a.AsUint32<3>() & ~m.AsUint32<3>()) | (b.AsUint32<3>() & m.AsUint32<3>());
 		}
 
 		template <uint8 CTRL, uint8 val>
 		static inline void vpermwi128( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[(val>>6) & 3];
-			out->u32[1] = a.u32[(val>>4) & 3];
-			out->u32[2] = a.u32[(val>>2) & 3];
-			out->u32[3] = a.u32[(val>>0) & 3];
+			out->AsUint32<0>() = a.AsUint32<(val>>6) & 3>();
+			out->AsUint32<1>() = a.AsUint32<(val>>4) & 3>();
+			out->AsUint32<2>() = a.AsUint32<(val>>2) & 3>();
+			out->AsUint32<3>() = a.AsUint32<(val>>0) & 3>();
 		}
 
 		template< int N >
@@ -3153,19 +3468,7 @@ namespace cpu
 					out[i] = (a[i] >= b[i]) ? valToSet : 0;
 				}
 			}
-
-			template< typename T >
-			static inline void AddSaturate( T& out, const T& a, const T& b )
-			{
-				for ( int i=0; i<N; ++i )
-				{
-					uint32 ret = a[i];
-					ret += (uint32)b[i];
-					ret = (ret > 255) ? 255 : 0;
-					out[i] = (uint8) ret;
-				}
-			}
-
+		
 		}; // CompareHelper
 
 		template <uint8 CTRL>
@@ -3187,10 +3490,10 @@ namespace cpu
 		template <uint8 CTRL>
 		static inline void vcmpequw(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
-			out->u32[0] = (a.u32[0] == b.u32[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.u32[1] == b.u32[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.u32[2] == b.u32[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.u32[3] == b.u32[3]) ? 0xFFFFFFFF : 0;
+			out->AsUint32<0>() = (a.AsUint32<0>() == b.AsUint32<0>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<1>() = (a.AsUint32<1>() == b.AsUint32<1>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<2>() = (a.AsUint32<2>() == b.AsUint32<2>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<3>() = (a.AsUint32<3>() == b.AsUint32<3>()) ? 0xFFFFFFFF : 0;
 
 			if (CTRL == 1)
 			{
@@ -3206,11 +3509,10 @@ namespace cpu
 		template <uint8 CTRL>
 		static inline void vcmpeqfp(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
-			ASM_CHECK(CTRL == 0);
-			out->u32[0] = (a.f[0] == b.f[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.f[1] == b.f[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.f[2] == b.f[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.f[3] == b.f[3]) ? 0xFFFFFFFF : 0;
+			out->AsUint32<0>() = (a.AsFloat<0>() == b.AsFloat<0>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<1>() = (a.AsFloat<1>() == b.AsFloat<1>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<2>() = (a.AsFloat<2>() == b.AsFloat<2>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<3>() = (a.AsFloat<3>() == b.AsFloat<3>()) ? 0xFFFFFFFF : 0;
 
 			if (CTRL == 1)
 			{
@@ -3226,11 +3528,10 @@ namespace cpu
 		template <uint8 CTRL>
 		static inline void vcmpgefp(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
-			ASM_CHECK(CTRL == 0);
-			out->u32[0] = (a.f[0] >= b.f[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.f[1] >= b.f[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.f[2] >= b.f[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.f[3] >= b.f[3]) ? 0xFFFFFFFF : 0;
+			out->AsUint32<0>() = (a.AsFloat<0>() >= b.AsFloat<0>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<1>() = (a.AsFloat<1>() >= b.AsFloat<1>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<2>() = (a.AsFloat<2>() >= b.AsFloat<2>()) ? 0xFFFFFFFF : 0;
+			out->AsUint32<3>() = (a.AsFloat<3>() >= b.AsFloat<3>()) ? 0xFFFFFFFF : 0;
 
 			if (CTRL == 1)
 			{
@@ -3250,11 +3551,236 @@ namespace cpu
 			CompareHelper<16>::SetIfGreater( out->u8, a.u8, b.u8, 0xFF );
 		}
 
+		static inline uint8 vsat8(CpuRegs& regs, uint32 val)
+		{
+			if (val > 255)
+			{
+				regs.SAT = 1;
+				val = 255;
+			}
+			return (uint8)val;
+		}
+
+		static inline uint8 vsat8i(CpuRegs& regs, int16 val)
+		{
+			if (val > 255)
+			{
+				regs.SAT = 1;
+				val = 255;
+			}
+			else if (val < 0)
+			{
+				regs.SAT = 1;
+				val = 0;
+			}
+			return (uint8)val;
+		}
+
 		template <uint8 CTRL>
 		static inline void vaddubs( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			CompareHelper<16>::AddSaturate8( out->u8, a.u8, b.u8 );
+			out->AsUint8<0 >() = vsat8(regs, (uint32)a.AsUint8<0 >() + (uint32)b.AsUint8<0 >());
+			out->AsUint8<1 >() = vsat8(regs, (uint32)a.AsUint8<1 >() + (uint32)b.AsUint8<1 >());
+			out->AsUint8<2 >() = vsat8(regs, (uint32)a.AsUint8<2 >() + (uint32)b.AsUint8<2 >());
+			out->AsUint8<3 >() = vsat8(regs, (uint32)a.AsUint8<3 >() + (uint32)b.AsUint8<3 >());
+			out->AsUint8<4 >() = vsat8(regs, (uint32)a.AsUint8<4 >() + (uint32)b.AsUint8<4 >());
+			out->AsUint8<5 >() = vsat8(regs, (uint32)a.AsUint8<5 >() + (uint32)b.AsUint8<5 >());
+			out->AsUint8<6 >() = vsat8(regs, (uint32)a.AsUint8<6 >() + (uint32)b.AsUint8<6 >());
+			out->AsUint8<7 >() = vsat8(regs, (uint32)a.AsUint8<7 >() + (uint32)b.AsUint8<7 >());
+			out->AsUint8<8 >() = vsat8(regs, (uint32)a.AsUint8<8 >() + (uint32)b.AsUint8<8 >());
+			out->AsUint8<9 >() = vsat8(regs, (uint32)a.AsUint8<9 >() + (uint32)b.AsUint8<9 >());
+			out->AsUint8<10>() = vsat8(regs, (uint32)a.AsUint8<10>() + (uint32)b.AsUint8<10>());
+			out->AsUint8<11>() = vsat8(regs, (uint32)a.AsUint8<11>() + (uint32)b.AsUint8<11>());
+			out->AsUint8<12>() = vsat8(regs, (uint32)a.AsUint8<12>() + (uint32)b.AsUint8<12>());
+			out->AsUint8<13>() = vsat8(regs, (uint32)a.AsUint8<13>() + (uint32)b.AsUint8<13>());
+			out->AsUint8<14>() = vsat8(regs, (uint32)a.AsUint8<14>() + (uint32)b.AsUint8<14>());
+			out->AsUint8<15>() = vsat8(regs, (uint32)a.AsUint8<15>() + (uint32)b.AsUint8<15>());			
+		}
+
+		template <uint8 CTRL>
+		static inline void vadduhm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = a.AsUint16<0>() + b.AsUint16<0>();
+			out->AsUint16<1>() = a.AsUint16<1>() + b.AsUint16<1>();
+			out->AsUint16<2>() = a.AsUint16<2>() + b.AsUint16<2>();
+			out->AsUint16<3>() = a.AsUint16<3>() + b.AsUint16<3>();
+			out->AsUint16<4>() = a.AsUint16<4>() + b.AsUint16<4>();
+			out->AsUint16<5>() = a.AsUint16<5>() + b.AsUint16<5>();
+			out->AsUint16<6>() = a.AsUint16<6>() + b.AsUint16<6>();
+			out->AsUint16<7>() = a.AsUint16<7>() + b.AsUint16<7>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vsubuhm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt16<0>() = a.AsInt16<0>() - b.AsInt16<0>();
+			out->AsInt16<1>() = a.AsInt16<1>() - b.AsInt16<1>();
+			out->AsInt16<2>() = a.AsInt16<2>() - b.AsInt16<2>();
+			out->AsInt16<3>() = a.AsInt16<3>() - b.AsInt16<3>();
+			out->AsInt16<4>() = a.AsInt16<4>() - b.AsInt16<4>();
+			out->AsInt16<5>() = a.AsInt16<5>() - b.AsInt16<5>();
+			out->AsInt16<6>() = a.AsInt16<6>() - b.AsInt16<6>();
+			out->AsInt16<7>() = a.AsInt16<7>() - b.AsInt16<7>();
+		}
+
+		static inline uint16 vsat16(CpuRegs& regs, int32 val)
+		{
+			if (val > 65535)
+			{
+				regs.SAT = 1;
+				val = 65535;
+			}
+			else if (val < 0)
+			{
+				regs.SAT = 1;
+				val = 0;
+			}
+			return (uint16)val;
+		}
+
+		static inline int16 vsat16i(CpuRegs& regs, int32 val)
+		{
+			if (val > SHORT_MAX)
+			{
+				regs.SAT = 1;
+				val = SHORT_MAX;
+			}
+			else if (val < SHORT_MIN)
+			{
+				regs.SAT = 1;
+				val = SHORT_MIN;
+			}
+			return (int16)val;
+		}
+
+		template <uint8 CTRL>
+		static inline void vadduhs(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = vsat16(regs, (int32)a.AsInt16<0>() + (int32)b.AsInt16<0>());
+			out->AsUint16<1>() = vsat16(regs, (int32)a.AsInt16<1>() + (int32)b.AsInt16<1>());
+			out->AsUint16<2>() = vsat16(regs, (int32)a.AsInt16<2>() + (int32)b.AsInt16<2>());
+			out->AsUint16<3>() = vsat16(regs, (int32)a.AsInt16<3>() + (int32)b.AsInt16<3>());
+			out->AsUint16<4>() = vsat16(regs, (int32)a.AsInt16<4>() + (int32)b.AsInt16<4>());
+			out->AsUint16<5>() = vsat16(regs, (int32)a.AsInt16<5>() + (int32)b.AsInt16<5>());
+			out->AsUint16<6>() = vsat16(regs, (int32)a.AsInt16<6>() + (int32)b.AsInt16<6>());
+			out->AsUint16<7>() = vsat16(regs, (int32)a.AsInt16<7>() + (int32)b.AsInt16<7>());
+		}
+
+		template <uint8 CTRL>
+		static inline void vaddubm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0 >() = a.AsUint8<0 >() + b.AsUint8<0 >();
+			out->AsUint8<1 >() = a.AsUint8<1 >() + b.AsUint8<1 >();
+			out->AsUint8<2 >() = a.AsUint8<2 >() + b.AsUint8<2 >();
+			out->AsUint8<3 >() = a.AsUint8<3 >() + b.AsUint8<3 >();
+			out->AsUint8<4 >() = a.AsUint8<4 >() + b.AsUint8<4 >();
+			out->AsUint8<5 >() = a.AsUint8<5 >() + b.AsUint8<5 >();
+			out->AsUint8<6 >() = a.AsUint8<6 >() + b.AsUint8<6 >();
+			out->AsUint8<7 >() = a.AsUint8<7 >() + b.AsUint8<7 >();
+			out->AsUint8<8 >() = a.AsUint8<8 >() + b.AsUint8<8 >();
+			out->AsUint8<9 >() = a.AsUint8<9 >() + b.AsUint8<9 >();
+			out->AsUint8<10>() = a.AsUint8<10>() + b.AsUint8<10>();
+			out->AsUint8<11>() = a.AsUint8<11>() + b.AsUint8<11>();
+			out->AsUint8<12>() = a.AsUint8<12>() + b.AsUint8<12>();
+			out->AsUint8<13>() = a.AsUint8<13>() + b.AsUint8<13>();
+			out->AsUint8<14>() = a.AsUint8<14>() + b.AsUint8<14>();
+			out->AsUint8<15>() = a.AsUint8<15>() + b.AsUint8<15>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vadduwm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint32<0>() = a.AsUint32<0>() + b.AsUint32<0>();
+			out->AsUint32<1>() = a.AsUint32<1>() + b.AsUint32<1>();
+			out->AsUint32<2>() = a.AsUint32<2>() + b.AsUint32<2>();
+			out->AsUint32<3>() = a.AsUint32<3>() + b.AsUint32<3>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vsubuwm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = a.AsInt32<0>() - b.AsInt32<0>();
+			out->AsInt32<1>() = a.AsInt32<1>() - b.AsInt32<1>();
+			out->AsInt32<2>() = a.AsInt32<2>() - b.AsInt32<2>();
+			out->AsInt32<3>() = a.AsInt32<3>() - b.AsInt32<3>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vaddshs(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt16<0>() = vsat16i(regs, (int32)a.AsInt16<0>() + (int32)b.AsInt16<0>());
+			out->AsInt16<1>() = vsat16i(regs, (int32)a.AsInt16<1>() + (int32)b.AsInt16<1>());
+			out->AsInt16<2>() = vsat16i(regs, (int32)a.AsInt16<2>() + (int32)b.AsInt16<2>());
+			out->AsInt16<3>() = vsat16i(regs, (int32)a.AsInt16<3>() + (int32)b.AsInt16<3>());
+			out->AsInt16<4>() = vsat16i(regs, (int32)a.AsInt16<4>() + (int32)b.AsInt16<4>());
+			out->AsInt16<5>() = vsat16i(regs, (int32)a.AsInt16<5>() + (int32)b.AsInt16<5>());
+			out->AsInt16<6>() = vsat16i(regs, (int32)a.AsInt16<6>() + (int32)b.AsInt16<6>());
+			out->AsInt16<7>() = vsat16i(regs, (int32)a.AsInt16<7>() + (int32)b.AsInt16<7>());
+		}
+
+		static inline uint32 vsat32(CpuRegs& regs, uint64 val)
+		{
+			if (val > UINT_MAX)
+			{
+				regs.SAT = 1;
+				val = UINT_MAX;
+			}
+			return (uint32)val;
+		}
+
+		template <uint8 CTRL>
+		static inline void vadduws(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint32<0>() = vsat32((uint64)a.AsUint32<0>() + (uint64)b.AsUint32<0>());
+			out->AsUint32<1>() = vsat32((uint64)a.AsUint32<1>() + (uint64)b.AsUint32<1>());
+			out->AsUint32<2>() = vsat32((uint64)a.AsUint32<2>() + (uint64)b.AsUint32<2>());
+			out->AsUint32<3>() = vsat32((uint64)a.AsUint32<3>() + (uint64)b.AsUint32<3>());
+		}
+
+
+		template <uint8 CTRL>
+		static inline void vpkswss(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt16<0>() = vsat16i(regs, a.AsInt32<0>());
+			out->AsInt16<1>() = vsat16i(regs, a.AsInt32<1>());
+			out->AsInt16<2>() = vsat16i(regs, a.AsInt32<2>());
+			out->AsInt16<3>() = vsat16i(regs, a.AsInt32<3>());
+			out->AsInt16<4>() = vsat16i(regs, b.AsInt32<0>());
+			out->AsInt16<5>() = vsat16i(regs, b.AsInt32<1>());
+			out->AsInt16<6>() = vsat16i(regs, b.AsInt32<2>());
+			out->AsInt16<7>() = vsat16i(regs, b.AsInt32<3>());
+		}
+
+		template <uint8 CTRL>
+		static inline void vpkshus(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint8<0>() = vsat8i(regs, a.AsInt16<0>());
+			out->AsUint8<1>() = vsat8i(regs, a.AsInt16<1>());
+			out->AsUint8<2>() = vsat8i(regs, a.AsInt16<2>());
+			out->AsUint8<3>() = vsat8i(regs, a.AsInt16<3>());
+			out->AsUint8<4>() = vsat8i(regs, a.AsInt16<4>());
+			out->AsUint8<5>() = vsat8i(regs, a.AsInt16<5>());
+			out->AsUint8<6>() = vsat8i(regs, a.AsInt16<6>());
+			out->AsUint8<7>() = vsat8i(regs, a.AsInt16<7>());
+			out->AsUint8<8>() = vsat8i(regs, b.AsInt16<0>());
+			out->AsUint8<9>() = vsat8i(regs, b.AsInt16<1>());
+			out->AsUint8<10>() = vsat8i(regs, b.AsInt16<2>());
+			out->AsUint8<11>() = vsat8i(regs, b.AsInt16<3>());
+			out->AsUint8<12>() = vsat8i(regs, b.AsInt16<4>());
+			out->AsUint8<13>() = vsat8i(regs, b.AsInt16<5>());
+			out->AsUint8<14>() = vsat8i(regs, b.AsInt16<6>());
+			out->AsUint8<15>() = vsat8i(regs, b.AsInt16<7>());
 		}
 
 		template <uint8 CTRL>
@@ -3263,10 +3789,10 @@ namespace cpu
 			ASM_CHECK(CTRL==0);
 			static const uint32 bit0 = 0x80000000;
 			static const uint32 bit1 = 0x40000000;
-			out->u32[0] = ((a.f[0] <= b.f[0]) ? 0 : bit0) | ((a.f[0] >= b.f[0]) ? 0 : bit1);
-			out->u32[1] = ((a.f[1] <= b.f[1]) ? 0 : bit0) | ((a.f[1] >= b.f[1]) ? 0 : bit1);
-			out->u32[2] = ((a.f[2] <= b.f[2]) ? 0 : bit0) | ((a.f[2] >= b.f[2]) ? 0 : bit1);
-			out->u32[3] = ((a.f[3] <= b.f[3]) ? 0 : bit0) | ((a.f[3] >= b.f[3]) ? 0 : bit1);
+			out->AsUint32<0>() = ((a.AsFloat<0>() <= b.AsFloat<0>()) ? 0 : bit0) | ((a.AsFloat<0>() >= b.AsFloat<0>()) ? 0 : bit1);
+			out->AsUint32<1>() = ((a.AsFloat<1>() <= b.AsFloat<1>()) ? 0 : bit0) | ((a.AsFloat<1>() >= b.AsFloat<1>()) ? 0 : bit1);
+			out->AsUint32<2>() = ((a.AsFloat<2>() <= b.AsFloat<2>()) ? 0 : bit0) | ((a.AsFloat<2>() >= b.AsFloat<2>()) ? 0 : bit1);
+			out->AsUint32<3>() = ((a.AsFloat<3>() <= b.AsFloat<3>()) ? 0 : bit0) | ((a.AsFloat<3>() >= b.AsFloat<3>()) ? 0 : bit1);
 		}
 
 		template <uint8 VAL>
@@ -3281,167 +3807,175 @@ namespace cpu
 		static inline void vspltisw( CpuRegs& regs, TVReg* out )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = vspltisw_helper<VAL>();
-			out->u32[1] = vspltisw_helper<VAL>();
-			out->u32[2] = vspltisw_helper<VAL>();
-			out->u32[3] = vspltisw_helper<VAL>();
+			out->AsUint32<0>() = vspltisw_helper<VAL>();
+			out->AsUint32<1>() = vspltisw_helper<VAL>();
+			out->AsUint32<2>() = vspltisw_helper<VAL>();
+			out->AsUint32<3>() = vspltisw_helper<VAL>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vmulfp128( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = a.f[0] * b.f[0];
-			out->f[1] = a.f[1] * b.f[1];
-			out->f[2] = a.f[2] * b.f[2];
-			out->f[3] = a.f[3] * b.f[3];
+			out->AsFloat<0>() = a.AsFloat<0>() * b.AsFloat<0>();
+			out->AsFloat<1>() = a.AsFloat<1>() * b.AsFloat<1>();
+			out->AsFloat<2>() = a.AsFloat<2>() * b.AsFloat<2>();
+			out->AsFloat<3>() = a.AsFloat<3>() * b.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vsubfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = a.f[0] - b.f[0];
-			out->f[1] = a.f[1] - b.f[1];
-			out->f[2] = a.f[2] - b.f[2];
-			out->f[3] = a.f[3] - b.f[3];
+			out->AsFloat<0>() = a.AsFloat<0>() - b.AsFloat<0>();
+			out->AsFloat<1>() = a.AsFloat<1>() - b.AsFloat<1>();
+			out->AsFloat<2>() = a.AsFloat<2>() - b.AsFloat<2>();
+			out->AsFloat<3>() = a.AsFloat<3>() - b.AsFloat<3>();
 		}		
 
 		template <uint8 CTRL>
 		static inline void vaddfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = a.f[0] + b.f[0];
-			out->f[1] = a.f[1] + b.f[1];
-			out->f[2] = a.f[2] + b.f[2];
-			out->f[3] = a.f[3] + b.f[3];
+			out->AsFloat<0>() = a.AsFloat<0>() + b.AsFloat<0>();
+			out->AsFloat<1>() = a.AsFloat<1>() + b.AsFloat<1>();
+			out->AsFloat<2>() = a.AsFloat<2>() + b.AsFloat<2>();
+			out->AsFloat<3>() = a.AsFloat<3>() + b.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vrsqrtefp( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			const float r0 =  sqrtf(a.f[0]);
-			const float r1 =  sqrtf(a.f[1]);
-			const float r2 =  sqrtf(a.f[2]);
-			const float r3 =  sqrtf(a.f[3]);
-			out->f[0] = (r0>0.0f) ? (1.0f / r0) : 0.0f;
-			out->f[1] = (r1>0.0f) ? (1.0f / r1) : 0.0f;
-			out->f[2] = (r2>0.0f) ? (1.0f / r2) : 0.0f;
-			out->f[3] = (r3>0.0f) ? (1.0f / r3) : 0.0f;
+			const float r0 =  sqrtf(a.AsFloat<0>());
+			const float r1 =  sqrtf(a.AsFloat<1>());
+			const float r2 =  sqrtf(a.AsFloat<2>());
+			const float r3 =  sqrtf(a.AsFloat<3>());
+			out->AsFloat<0>() = (r0>0.0f) ? (1.0f / r0) : 0.0f;
+			out->AsFloat<1>() = (r1>0.0f) ? (1.0f / r1) : 0.0f;
+			out->AsFloat<2>() = (r2>0.0f) ? (1.0f / r2) : 0.0f;
+			out->AsFloat<3>() = (r3>0.0f) ? (1.0f / r3) : 0.0f;
 		}	
 
 		template <uint8 CTRL>
 		static inline void vrfim( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = floorf(a.f[0]);
-			out->f[1] = floorf(a.f[1]);
-			out->f[2] = floorf(a.f[2]);
-			out->f[3] = floorf(a.f[3]);
+			out->AsFloat<0>() = floorf(a.AsFloat<0>());
+			out->AsFloat<1>() = floorf(a.AsFloat<1>());
+			out->AsFloat<2>() = floorf(a.AsFloat<2>());
+			out->AsFloat<3>() = floorf(a.AsFloat<3>());
 		}	
 
 		template <uint8 CTRL>
 		static inline void vrfin( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = (float)((a.f[0] > 0.0f) ? (int)(a.f[0] + 0.5f) : (int)(a.f[0] - 0.5f));
-			out->f[1] = (float)((a.f[1] > 0.0f) ? (int)(a.f[1] + 0.5f) : (int)(a.f[1] - 0.5f));
-			out->f[2] = (float)((a.f[2] > 0.0f) ? (int)(a.f[2] + 0.5f) : (int)(a.f[2] - 0.5f));
-			out->f[3] = (float)((a.f[3] > 0.0f) ? (int)(a.f[3] + 0.5f) : (int)(a.f[3] - 0.5f));
+			out->AsFloat<0>() = (float)((a.AsFloat<0>() > 0.0f) ? (int)(a.AsFloat<0>() + 0.5f) : (int)(a.AsFloat<0>() - 0.5f));
+			out->AsFloat<1>() = (float)((a.AsFloat<1>() > 0.0f) ? (int)(a.AsFloat<1>() + 0.5f) : (int)(a.AsFloat<1>() - 0.5f));
+			out->AsFloat<2>() = (float)((a.AsFloat<2>() > 0.0f) ? (int)(a.AsFloat<2>() + 0.5f) : (int)(a.AsFloat<2>() - 0.5f));
+			out->AsFloat<3>() = (float)((a.AsFloat<3>() > 0.0f) ? (int)(a.AsFloat<3>() + 0.5f) : (int)(a.AsFloat<3>() - 0.5f));
 		}	
 
 		template <uint8 CTRL>
 		static inline void vrfiz( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = (float)(int)(a.f[0]);
-			out->f[1] = (float)(int)(a.f[1]);
-			out->f[2] = (float)(int)(a.f[2]);
-			out->f[3] = (float)(int)(a.f[3]);
+			out->AsFloat<0>() = (float)(int)(a.AsFloat<0>());
+			out->AsFloat<1>() = (float)(int)(a.AsFloat<1>());
+			out->AsFloat<2>() = (float)(int)(a.AsFloat<2>());
+			out->AsFloat<3>() = (float)(int)(a.AsFloat<3>());
 		}	
 
 		template <uint8 CTRL>
 		static inline void vrfip( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = ceilf(a.f[0]);
-			out->f[1] = ceilf(a.f[1]);
-			out->f[2] = ceilf(a.f[2]);
-			out->f[3] = ceilf(a.f[3]);
+			out->AsFloat<0>() = ceilf(a.AsFloat<0>());
+			out->AsFloat<1>() = ceilf(a.AsFloat<1>());
+			out->AsFloat<2>() = ceilf(a.AsFloat<2>());
+			out->AsFloat<3>() = ceilf(a.AsFloat<3>());
 		}	
 
 		template <uint8 CTRL>
 		static inline void vmaddfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b, const TVReg c )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = (a.f[0] * b.f[0]) + c.f[0];
-			out->f[1] = (a.f[1] * b.f[1]) + c.f[1];
-			out->f[2] = (a.f[2] * b.f[2]) + c.f[2];
-			out->f[3] = (a.f[3] * b.f[3]) + c.f[3];
+			out->AsFloat<0>() = (a.AsFloat<0>() * b.AsFloat<0>()) + c.AsFloat<0>();
+			out->AsFloat<1>() = (a.AsFloat<1>() * b.AsFloat<1>()) + c.AsFloat<1>();
+			out->AsFloat<2>() = (a.AsFloat<2>() * b.AsFloat<2>()) + c.AsFloat<2>();
+			out->AsFloat<3>() = (a.AsFloat<3>() * b.AsFloat<3>()) + c.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vnmsubfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b, const TVReg c )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = -((a.f[0] * b.f[0]) - c.f[0]);
-			out->f[1] = -((a.f[1] * b.f[1]) - c.f[1]);
-			out->f[2] = -((a.f[2] * b.f[2]) - c.f[2]);
-			out->f[3] = -((a.f[3] * b.f[3]) - c.f[3]);
+			out->AsFloat<0>() = -((a.AsFloat<0>() * b.AsFloat<0>()) - c.AsFloat<0>());
+			out->AsFloat<1>() = -((a.AsFloat<1>() * b.AsFloat<1>()) - c.AsFloat<1>());
+			out->AsFloat<2>() = -((a.AsFloat<2>() * b.AsFloat<2>()) - c.AsFloat<2>());
+			out->AsFloat<3>() = -((a.AsFloat<3>() * b.AsFloat<3>()) - c.AsFloat<3>());
 		}
 
 		template <uint8 CTRL>
 		static inline void vrefp( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = 1.0f / a.f[0];
-			out->f[1] = 1.0f / a.f[1];
-			out->f[2] = 1.0f / a.f[2];
-			out->f[3] = 1.0f / a.f[3];
+			out->AsFloat<0>() = 1.0f / a.AsFloat<0>();
+			out->AsFloat<1>() = 1.0f / a.AsFloat<1>();
+			out->AsFloat<2>() = 1.0f / a.AsFloat<2>();
+			out->AsFloat<3>() = 1.0f / a.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vslw( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] << b.u32[0];
-			out->u32[1] = a.u32[1] << b.u32[1];
-			out->u32[2] = a.u32[2] << b.u32[2];
-			out->u32[3] = a.u32[3] << b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() << (b.AsUint32<0>() & 31);
+			out->AsUint32<1>() = a.AsUint32<1>() << (b.AsUint32<1>() & 31);
+			out->AsUint32<2>() = a.AsUint32<2>() << (b.AsUint32<2>() & 31);
+			out->AsUint32<3>() = a.AsUint32<3>() << (b.AsUint32<3>() & 31);
 		}
 
 		template <uint8 CTRL>
 		static inline void vsrw( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->u32[0] = a.u32[0] >> b.u32[0];
-			out->u32[1] = a.u32[1] >> b.u32[1];
-			out->u32[2] = a.u32[2] >> b.u32[2];
-			out->u32[3] = a.u32[3] >> b.u32[3];
+			out->AsUint32<0>() = a.AsUint32<0>() >> (b.AsUint32<0>() & 31);
+			out->AsUint32<1>() = a.AsUint32<1>() >> (b.AsUint32<1>() & 31);
+			out->AsUint32<2>() = a.AsUint32<2>() >> (b.AsUint32<2>() & 31);
+			out->AsUint32<3>() = a.AsUint32<3>() >> (b.AsUint32<3>() & 31);
 		}
 
 		template <uint8 CTRL>
-		static inline void vslb( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
+		static inline void vsrah(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
-			ASM_CHECK(CTRL==0);
-			for ( int i=0; i<16; ++i )
-				out->u8[i] = a.u8[i] << b.u8[i];
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = (uint16)((int16)a.AsUint16<0>() >> (b.AsUint16<0>() & 15));
+			out->AsUint16<1>() = (uint16)((int16)a.AsUint16<1>() >> (b.AsUint16<1>() & 15));
+			out->AsUint16<2>() = (uint16)((int16)a.AsUint16<2>() >> (b.AsUint16<2>() & 15));
+			out->AsUint16<3>() = (uint16)((int16)a.AsUint16<3>() >> (b.AsUint16<3>() & 15));
+			out->AsUint16<4>() = (uint16)((int16)a.AsUint16<4>() >> (b.AsUint16<4>() & 15));
+			out->AsUint16<5>() = (uint16)((int16)a.AsUint16<5>() >> (b.AsUint16<5>() & 15));
+			out->AsUint16<6>() = (uint16)((int16)a.AsUint16<6>() >> (b.AsUint16<6>() & 15));
+			out->AsUint16<7>() = (uint16)((int16)a.AsUint16<7>() >> (b.AsUint16<7>() & 15));
 		}
-		
+
 		template <uint8 CTRL>
-		static inline void vsrb( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
+		static inline void vsraw(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
-			ASM_CHECK(CTRL==0);
-			for ( int i=0; i<16; ++i )
-				out->u8[i] = a.u8[i] >> b.u8[i];
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = a.AsInt32<0>() >> (b.AsUint32<0>() & 31);
+			out->AsInt32<1>() = a.AsInt32<1>() >> (b.AsUint32<1>() & 31);
+			out->AsInt32<2>() = a.AsInt32<2>() >> (b.AsUint32<2>() & 31);
+			out->AsInt32<3>() = a.AsInt32<3>() >> (b.AsUint32<3>() & 31);
 		}
 
 		template <uint8 CTRL>
 		static inline void vslo( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			uint32 shift = (b.u32[0] >> 3) & 0xF; // bytes to shift!
+			uint32 shift = (b.AsUint32<0>() >> 3) & 0xF; // bytes to shift!
 			for ( uint32 i=0; i<16; ++i )
 				out->u8[Reindex[i]] = (shift <= i) ? a.u8[Reindex[i + shift]] : 0;
 		}
@@ -3450,9 +3984,31 @@ namespace cpu
 		static inline void vsro( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			uint32 shift = (b.u32[0] >> 3) & 0xF; // bytes to shift!
+			uint32 shift = (b.AsUint32<0>() >> 3) & 0xF; // bytes to shift!
 			for ( uint32 i=0; i<16; ++i )
 				out->u8[Reindex[i]] = (i >= shift) ? a.u8[Reindex[i - shift]] : 0;
+		}
+
+		template <uint8 CTRL, uint8 SHIFT>
+		static inline void vcfsx(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			double div = 1.0 / (double)(1 << SHIFT);
+			out->AsFloat<0>() = (float)((double)a.AsInt32<0>() * div);
+			out->AsFloat<1>() = (float)((double)a.AsInt32<1>() * div);
+			out->AsFloat<2>() = (float)((double)a.AsInt32<2>() * div);
+			out->AsFloat<3>() = (float)((double)a.AsInt32<3>() * div);
+		}
+
+		template <uint8 CTRL, uint8 SHIFT>
+		static inline void vcuxwfp(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			double div = 1.0 / (double)(1 << SHIFT);
+			out->AsFloat<0>() = (float)((double)a.AsUint32<0>() * div);
+			out->AsFloat<1>() = (float)((double)a.AsUint32<1>() * div);
+			out->AsFloat<2>() = (float)((double)a.AsUint32<2>() * div);
+			out->AsFloat<3>() = (float)((double)a.AsUint32<3>() * div);
 		}
 
 		template <uint8 CTRL>
@@ -3460,15 +4016,15 @@ namespace cpu
 		{
 			ASM_CHECK(CTRL==0);
 
-			float tmp = (a.f[0] * b.f[0]);
-			tmp += (a.f[1] * b.f[1]);
-			tmp += (a.f[2] * b.f[2]);
-			tmp += (a.f[3] * b.f[3]);
+			float tmp = (a.AsFloat<0>() * b.AsFloat<0>());
+			tmp += (a.AsFloat<1>() * b.AsFloat<1>());
+			tmp += (a.AsFloat<2>() * b.AsFloat<2>());
+			tmp += (a.AsFloat<3>() * b.AsFloat<3>());
 
-			out->f[0] = tmp;
-			out->f[1] = tmp;
-			out->f[2] = tmp;
-			out->f[3] = tmp;
+			out->AsFloat<0>() = tmp;
+			out->AsFloat<1>() = tmp;
+			out->AsFloat<2>() = tmp;
+			out->AsFloat<3>() = tmp;
 		}
 
 		template <uint8 CTRL, uint8 SEL>
@@ -3480,19 +4036,28 @@ namespace cpu
 				out->u8[i] = SEL;
 		}	
 
+		template <uint8 CTRL, uint16 SEL>
+		static inline void vspltish(CpuRegs& regs, TVReg* out)
+		{
+			ASM_CHECK(CTRL == 0);
+
+			for (int i = 0; i < 8; ++i)
+				out->u16[i] = SEL;
+		}
+
 		template <uint8 CTRL>
 		static inline void vdot3fp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
 
-			float tmp = (a.f[0] * b.f[0]);
-			tmp += (a.f[1] * b.f[1]);
-			tmp += (a.f[2] * b.f[2]);
+			float tmp = (a.AsFloat<0>() * b.AsFloat<0>());
+			tmp += (a.AsFloat<1>() * b.AsFloat<1>());
+			tmp += (a.AsFloat<2>() * b.AsFloat<2>());
 
-			out->f[0] = tmp;
-			out->f[1] = tmp;
-			out->f[2] = tmp;
-			out->f[3] = tmp;
+			out->AsFloat<0>() = tmp;
+			out->AsFloat<1>() = tmp;
+			out->AsFloat<2>() = tmp;
+			out->AsFloat<3>() = tmp;
 		}
 
 		template <uint8 CTRL, uint8 MODE>
@@ -3503,16 +4068,16 @@ namespace cpu
 
 			if (MODE==0)
 			{
-				const uint32 val = (a.u32[3]);
+				const uint32 val = (a.AsUint32<3>());
 				const uint32 x = (val >> 16) & 0xFF;
 				const uint32 y = (val >> 8) & 0xFF;
 				const uint32 z = (val >> 0) & 0xFF;
 				const uint32 w = (val >> 24) & 0xFF;
 				
-				out->f[0] = x / 255.0f;
-				out->f[1] = y / 255.0f;
-				out->f[2] = z / 255.0f;
-				out->f[3] = w / 255.0f;
+				out->AsFloat<0>() = x / 255.0f;
+				out->AsFloat<1>() = y / 255.0f;
+				out->AsFloat<2>() = z / 255.0f;
+				out->AsFloat<3>() = w / 255.0f;
 			}
 			else if (MODE==1)
 			{
@@ -3525,31 +4090,31 @@ namespace cpu
 				x.f = 3.0f;
 				y.f = 3.0f;
 
-				//fprintf(stdout, "Packed=%08X,%08X,%08X,%08X\n", a.u32[0], a.u32[1], a.u32[2], a.u32[3]);
+				//fprintf(stdout, "Packed=%08X,%08X,%08X,%08X\n", a.AsUint32<0>(), a.AsUint32<1>(), a.AsUint32<2>(), a.AsUint32<3>());
 
-				x.i += (const short&) a.u16[0];
-				y.i += (const short&) a.u16[1];
+				x.i += (const short&) a.AsUint16<0>();
+				y.i += (const short&) a.AsUint16<1>();
 
-				out->f[0] = x.f;
-				out->f[1] = y.f;
-				out->f[2] = 0.0f;
-				out->f[3] = 1.0f;
+				out->AsFloat<0>() = x.f;
+				out->AsFloat<1>() = y.f;
+				out->AsFloat<2>() = 0.0f;
+				out->AsFloat<3>() = 1.0f;
 
-				//fprintf(stdout, "Unpacked=%f,%f,%f,%f\n", out->f[0], out->f[1], out->f[2], out->f[3]);
+				//fprintf(stdout, "Unpacked=%f,%f,%f,%f\n", out->AsFloat<0>(), out->AsFloat<1>(), out->AsFloat<2>(), out->AsFloat<3>());
 			}
 			else if (MODE == 3)
 			{
-				out->u32[0] = math::FromHalf( a.u16[1] );
-				out->u32[1] = math::FromHalf( a.u16[0] );
-				out->u32[2] = 0;
-				out->u32[3] = 0;
+				out->AsUint32<0>() = math::FromHalf( a.AsUint16<1>() );
+				out->AsUint32<1>() = math::FromHalf( a.AsUint16<0>() );
+				out->AsUint32<2>() = 0;
+				out->AsUint32<3>() = 0;
 			}
 			else if (MODE == 5)
 			{
-				out->u32[0] = math::FromHalf( a.u16[1] );
-				out->u32[1] = math::FromHalf( a.u16[0] );
-				out->u32[2] = math::FromHalf( a.u16[3] );
-				out->u32[3] = math::FromHalf( a.u16[2] );
+				out->AsUint32<0>() = math::FromHalf( a.AsUint16<1>() );
+				out->AsUint32<1>() = math::FromHalf( a.AsUint16<0>() );
+				out->AsUint32<2>() = math::FromHalf( a.AsUint16<3>() );
+				out->AsUint32<3>() = math::FromHalf( a.AsUint16<2>() );
 			}
 		}
 
@@ -3594,24 +4159,24 @@ namespace cpu
 		{
 			if (MASK == 1)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = a;	out->u16[6] = b; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = a;	out->u16[4] = b; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = a;	out->u16[2] = b; }
-				else					{	out->u16[1] = a;	out->u16[0] = b; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = a;	out->AsUint16<6>() = b; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = a;	out->AsUint16<4>() = b; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = a;	out->AsUint16<2>() = b; }
+				else					{	out->AsUint16<1>() = a;	out->AsUint16<0>() = b; }
 			}
 			else if (MASK == 2)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = a;	out->u16[6] = b;  out->u16[5] = 0;	out->u16[4] = 0; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = a;	out->u16[4] = b;  out->u16[3] = 0;	out->u16[2] = 0; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = a;	out->u16[2] = b;  out->u16[1] = 0;	out->u16[0] = 0; }
-				else					{	out->u16[1] = a;	out->u16[0] = b; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = a;	out->AsUint16<6>() = b;  out->AsUint16<5>() = 0;	out->AsUint16<4>() = 0; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = a;	out->AsUint16<4>() = b;  out->AsUint16<3>() = 0;	out->AsUint16<2>() = 0; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = a;	out->AsUint16<2>() = b;  out->AsUint16<1>() = 0;	out->AsUint16<0>() = 0; }
+				else					{	out->AsUint16<1>() = a;	out->AsUint16<0>() = b; }
 			}
 			else if (MASK == 3)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = a;	out->u16[6] = b;  out->u16[5] = 0;	out->u16[4] = 0; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = a;	out->u16[4] = b;  out->u16[3] = 0;	out->u16[2] = 0; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = a;	out->u16[2] = b;  out->u16[1] = 0;	out->u16[0] = 0; }
-				else					{	out->u16[7] = 0;	out->u16[6] = 0; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = a;	out->AsUint16<6>() = b;  out->AsUint16<5>() = 0;	out->AsUint16<4>() = 0; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = a;	out->AsUint16<4>() = b;  out->AsUint16<3>() = 0;	out->AsUint16<2>() = 0; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = a;	out->AsUint16<2>() = b;  out->AsUint16<1>() = 0;	out->AsUint16<0>() = 0; }
+				else					{	out->AsUint16<7>() = 0;	out->AsUint16<6>() = 0; }
 			}
 		}
 
@@ -3620,24 +4185,24 @@ namespace cpu
 		{
 			if (MASK == 1)
 			{
-				if ( SHIFT == 0 )		{	out->u32[3] = a; }
-				else if ( SHIFT == 1 )	{	out->u32[2] = a; }
-				else if ( SHIFT == 2 )	{	out->u32[1] = a; }
-				else					{	out->u32[0] = a; }
+				if ( SHIFT == 0 )		{	out->AsUint32<3>() = a; }
+				else if ( SHIFT == 1 )	{	out->AsUint32<2>() = a; }
+				else if ( SHIFT == 2 )	{	out->AsUint32<1>() = a; }
+				else					{	out->AsUint32<0>() = a; }
 			}
 			else if (MASK == 2)
 			{
-				if ( SHIFT == 0 )		{	out->u32[3] = a; out->u32[2] = 0; }
-				else if ( SHIFT == 1 )	{	out->u32[2] = a; out->u32[1] = 0; }
-				else if ( SHIFT == 2 )	{	out->u32[1] = a; out->u32[0] = 0; }
-				else					{	out->u32[0] = a; }
+				if ( SHIFT == 0 )		{	out->AsUint32<3>() = a; out->AsUint32<2>() = 0; }
+				else if ( SHIFT == 1 )	{	out->AsUint32<2>() = a; out->AsUint32<1>() = 0; }
+				else if ( SHIFT == 2 )	{	out->AsUint32<1>() = a; out->AsUint32<0>() = 0; }
+				else					{	out->AsUint32<0>() = a; }
 			}
 			else if (MASK == 3)
 			{
-				if ( SHIFT == 0 )		{	out->u32[3] = a; out->u32[2] = 0; }
-				else if ( SHIFT == 1 )	{	out->u32[2] = a; out->u32[1] = 0; }
-				else if ( SHIFT == 2 )	{	out->u32[1] = a; out->u32[0] = 0; }
-				else					{	out->u32[3] = 0; }
+				if ( SHIFT == 0 )		{	out->AsUint32<3>() = a; out->AsUint32<2>() = 0; }
+				else if ( SHIFT == 1 )	{	out->AsUint32<2>() = a; out->AsUint32<1>() = 0; }
+				else if ( SHIFT == 2 )	{	out->AsUint32<1>() = a; out->AsUint32<0>() = 0; }
+				else					{	out->AsUint32<3>() = 0; }
 			}
 		}
 
@@ -3646,24 +4211,24 @@ namespace cpu
 		{
 			if (MASK == 1)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = c;	out->u16[6] = d; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = c;	out->u16[4] = d; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = c;	out->u16[2] = d; }
-				else					{	out->u16[1] = c;	out->u16[0] = d; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = c;	out->AsUint16<6>() = d; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = c;	out->AsUint16<4>() = d; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = c;	out->AsUint16<2>() = d; }
+				else					{	out->AsUint16<1>() = c;	out->AsUint16<0>() = d; }
 			}
 			else if (MASK == 2)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = c;	out->u16[6] = d;	out->u16[5] = a;	out->u16[4] = b; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = c;	out->u16[4] = d;	out->u16[3] = a;	out->u16[2] = b; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = c;	out->u16[2] = d;	out->u16[1] = a;	out->u16[0] = b; }
-				else					{	out->u16[1] = c;	out->u16[0] = d; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = c;	out->AsUint16<6>() = d;	out->AsUint16<5>() = a;	out->AsUint16<4>() = b; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = c;	out->AsUint16<4>() = d;	out->AsUint16<3>() = a;	out->AsUint16<2>() = b; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = c;	out->AsUint16<2>() = d;	out->AsUint16<1>() = a;	out->AsUint16<0>() = b; }
+				else					{	out->AsUint16<1>() = c;	out->AsUint16<0>() = d; }
 			}
 			else if (MASK == 3)
 			{
-				if ( SHIFT == 0 )		{	out->u16[7] = c;	out->u16[6] = d;	out->u16[5] = a;	out->u16[4] = b; }
-				else if ( SHIFT == 1 )	{	out->u16[5] = c;	out->u16[4] = d;	out->u16[3] = a;	out->u16[2] = b; }
-				else if ( SHIFT == 2 )	{	out->u16[3] = c;	out->u16[2] = d;	out->u16[1] = a;	out->u16[0] = b; }
-				else					{	out->u16[7] = a;	out->u16[6] = b; }
+				if ( SHIFT == 0 )		{	out->AsUint16<7>() = c;	out->AsUint16<6>() = d;	out->AsUint16<5>() = a;	out->AsUint16<4>() = b; }
+				else if ( SHIFT == 1 )	{	out->AsUint16<5>() = c;	out->AsUint16<4>() = d;	out->AsUint16<3>() = a;	out->AsUint16<2>() = b; }
+				else if ( SHIFT == 2 )	{	out->AsUint16<3>() = c;	out->AsUint16<2>() = d;	out->AsUint16<1>() = a;	out->AsUint16<0>() = b; }
+				else					{	out->AsUint16<7>() = a;	out->AsUint16<6>() = b; }
 			}
 		}
 
@@ -3675,24 +4240,24 @@ namespace cpu
 
 			if (MASK == 1)
 			{
-				if ( SHIFT == 0 )		{	out->u32[3] = lo;	}
-				else if ( SHIFT == 1 )	{	out->u32[2] = lo;	}
-				else if ( SHIFT == 2 )	{	out->u32[1] = lo;	}
-				else					{	out->u32[0] = lo;	}
+				if ( SHIFT == 0 )		{	out->AsUint32<3>() = lo;	}
+				else if ( SHIFT == 1 )	{	out->AsUint32<2>() = lo;	}
+				else if ( SHIFT == 2 )	{	out->AsUint32<1>() = lo;	}
+				else					{	out->AsUint32<0>() = lo;	}
 			}
 			else if (MASK == 2)
 			{
-				if ( SHIFT == 0 )		{	out->u32[2] = hi;	out->u32[3] = lo; }
-				else if ( SHIFT == 1 )	{	out->u32[1] = hi;	out->u32[2] = lo; }
-				else if ( SHIFT == 2 )	{	out->u32[0] = hi;	out->u32[1] = lo; }
-				else					{						out->u32[0] = lo; }
+				if ( SHIFT == 0 )		{	out->AsUint32<2>() = hi;	out->AsUint32<3>() = lo; }
+				else if ( SHIFT == 1 )	{	out->AsUint32<1>() = hi;	out->AsUint32<2>() = lo; }
+				else if ( SHIFT == 2 )	{	out->AsUint32<0>() = hi;	out->AsUint32<1>() = lo; }
+				else					{						out->AsUint32<0>() = lo; }
 			}
 			else if (MASK == 3)
 			{
-				if ( SHIFT == 0 )		{	out->u32[2] = hi;	out->u32[3] = lo; }
-				else if ( SHIFT == 1 )	{	out->u32[1] = hi;	out->u32[2] = lo; }
-				else if ( SHIFT == 2 )	{	out->u32[0] = hi;	out->u32[1] = lo; }
-				else					{	out->u32[3] = hi; }
+				if ( SHIFT == 0 )		{	out->AsUint32<2>() = hi;	out->AsUint32<3>() = lo; }
+				else if ( SHIFT == 1 )	{	out->AsUint32<1>() = hi;	out->AsUint32<2>() = lo; }
+				else if ( SHIFT == 2 )	{	out->AsUint32<0>() = hi;	out->AsUint32<1>() = lo; }
+				else					{	out->AsUint32<3>() = hi; }
 			}
 		}
 
@@ -3704,17 +4269,17 @@ namespace cpu
 
 			if (MODE==0) // D3DCOLOR
 			{
-				const uint32 x = a.u32[0] & 0xFF;
-				const uint32 y = a.u32[1] & 0xFF;
-				const uint32 z = a.u32[2] & 0xFF;
-				const uint32 w = a.u32[3] & 0xFF;
+				const uint32 x = a.AsUint32<0>() & 0xFF;
+				const uint32 y = a.AsUint32<1>() & 0xFF;
+				const uint32 z = a.AsUint32<2>() & 0xFF;
+				const uint32 w = a.AsUint32<3>() & 0xFF;
 				const uint32 ret = (w<<24) | (x<<16) | (y<<8) | (z<<0);
 				vpkd3d128_write2<MASK, SHIFT>( out, ret );
 			}
 			else if (MODE==1) // NORM2
 			{
-				const uint16 x = (uint16)(a.u32[0] & 0xFFFF);
-				const uint16 y = (uint16)(a.u32[1] & 0xFFFF);
+				const uint16 x = (uint16)(a.AsUint32<0>() & 0xFFFF);
+				const uint16 y = (uint16)(a.AsUint32<1>() & 0xFFFF);
 				vpkd3d128_write2<MASK, SHIFT>( out, x, y );
 			}
 			else if (MODE==2) // NORMPACKED2
@@ -3724,24 +4289,24 @@ namespace cpu
 			}
 			else if (MODE==3) // FLOAT16_2
 			{
-				const uint16 v0 = math::ToHalf( a.u32[0] );
-				const uint16 v1 = math::ToHalf( a.u32[1] );
+				const uint16 v0 = math::ToHalf( a.AsUint32<0>() );
+				const uint16 v1 = math::ToHalf( a.AsUint32<1>() );
 				vpkd3d128_write2<MASK, SHIFT>( out, v0, v1 );
 			}
 			else if (MODE==4) // NORM4
 			{
-				const uint16 x = (uint16)(a.u32[0] & 0xFFFF);
-				const uint16 y = (uint16)(a.u32[1] & 0xFFFF);
-				const uint16 z = (uint16)(a.u32[2] & 0xFFFF);
-				const uint16 w = (uint16)(a.u32[3] & 0xFFFF);
+				const uint16 x = (uint16)(a.AsUint32<0>() & 0xFFFF);
+				const uint16 y = (uint16)(a.AsUint32<1>() & 0xFFFF);
+				const uint16 z = (uint16)(a.AsUint32<2>() & 0xFFFF);
+				const uint16 w = (uint16)(a.AsUint32<3>() & 0xFFFF);
 				vpkd3d128_write4<MASK, SHIFT>( out, x, y, z, w );
 			}
 			else if (MODE==5) // FLOAT16_4
 			{
-				const uint16 v0 = math::ToHalf( a.u32[0] );
-				const uint16 v1 = math::ToHalf( a.u32[1] );
-				const uint16 v2 = math::ToHalf( a.u32[2] );
-				const uint16 v3 = math::ToHalf( a.u32[3] );
+				const uint16 v0 = math::ToHalf( a.AsUint32<0>() );
+				const uint16 v1 = math::ToHalf( a.AsUint32<1>() );
+				const uint16 v2 = math::ToHalf( a.AsUint32<2>() );
+				const uint16 v3 = math::ToHalf( a.AsUint32<3>() );
 				vpkd3d128_write4<MASK, SHIFT>( out, v0, v1, v2, v3 );
 			}
 			else if (MODE==6) // NORMPACKED64
@@ -3751,16 +4316,64 @@ namespace cpu
 			}
 		}
 
+		template <uint8 CTRL>
+		static inline void vupkhsb(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<1>() = (uint16)(int16)(int8)a.u8[8 + 3];
+			out->AsUint16<0>() = (uint16)(int16)(int8)a.u8[8 + 2];
+			out->AsUint16<3>() = (uint16)(int16)(int8)a.u8[8 + 1];
+			out->AsUint16<2>() = (uint16)(int16)(int8)a.u8[8 + 0];
+			out->AsUint16<5>() = (uint16)(int16)(int8)a.u8[8 + 7];
+			out->AsUint16<4>() = (uint16)(int16)(int8)a.u8[8 + 6];
+			out->AsUint16<7>() = (uint16)(int16)(int8)a.u8[8 + 5];
+			out->AsUint16<6>() = (uint16)(int16)(int8)a.u8[8 + 4];
+		}
+
+		template <uint8 CTRL>
+		static inline void vupklsb(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<1>() = (uint16)(int16)(int8)a.u8[3];
+			out->AsUint16<0>() = (uint16)(int16)(int8)a.u8[2];
+			out->AsUint16<3>() = (uint16)(int16)(int8)a.u8[1];
+			out->AsUint16<2>() = (uint16)(int16)(int8)a.u8[0];
+			out->AsUint16<5>() = (uint16)(int16)(int8)a.u8[7];
+			out->AsUint16<4>() = (uint16)(int16)(int8)a.u8[6];
+			out->AsUint16<7>() = (uint16)(int16)(int8)a.u8[5];
+			out->AsUint16<6>() = (uint16)(int16)(int8)a.u8[4];
+		}
+
+		template <uint8 CTRL>
+		static inline void vupkhsh(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = a.AsInt16<4>();
+			out->AsInt32<1>() = a.AsInt16<5>();
+			out->AsInt32<2>() = a.AsInt16<6>();
+			out->AsInt32<3>() = a.AsInt16<7>();
+		}
+
+		template <uint8 CTRL>
+		static inline void vupklsh(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = a.AsInt16<0>();
+			out->AsInt32<1>() = a.AsInt16<1>();
+			out->AsInt32<2>() = a.AsInt16<2>();
+			out->AsInt32<3>() = a.AsInt16<3>();
+		}
+
 		template <uint8 CTRL, uint8 SHIFT>
 		static inline void vcfpsxws( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
 
 			const float mul = (float)( 1 << SHIFT );
-			out->i32[0] = (int)( a.f[0] * mul );
-			out->i32[1] = (int)( a.f[1] * mul );
-			out->i32[2] = (int)( a.f[2] * mul );
-			out->i32[3] = (int)( a.f[3] * mul );
+			out->AsInt32<0>() = (int)( a.AsFloat<0>() * mul );
+			out->AsInt32<1>() = (int)( a.AsFloat<1>() * mul );
+			out->AsInt32<2>() = (int)( a.AsFloat<2>() * mul );
+			out->AsInt32<3>() = (int)( a.AsFloat<3>() * mul );
 		}
 		
 		template <uint8 CTRL, uint8 SHIFT>
@@ -3769,10 +4382,10 @@ namespace cpu
 			ASM_CHECK(CTRL==0);
 
 			const float mul = (float)( 1 << SHIFT );
-			out->u32[0] = (uint32)( a.f[0] * mul );
-			out->u32[1] = (uint32)( a.f[1] * mul );
-			out->u32[2] = (uint32)( a.f[2] * mul );
-			out->u32[3] = (uint32)( a.f[3] * mul );
+			out->AsUint32<0>() = (uint32)( a.AsFloat<0>() * mul );
+			out->AsUint32<1>() = (uint32)( a.AsFloat<1>() * mul );
+			out->AsUint32<2>() = (uint32)( a.AsFloat<2>() * mul );
+			out->AsUint32<3>() = (uint32)( a.AsFloat<3>() * mul );
 		}
 
 		template <uint8 CTRL, uint8 SHIFT>
@@ -3781,60 +4394,69 @@ namespace cpu
 			ASM_CHECK(CTRL==0);
 
 			const float mul = (float)( 1 << SHIFT );
-			out->f[0] = (float)a.i32[0] / mul;
-			out->f[1] = (float)a.i32[1] / mul;
-			out->f[2] = (float)a.i32[2] / mul;
-			out->f[3] = (float)a.i32[3] / mul;
+			out->AsFloat<0>() = (float)a.AsInt32<0>() / mul;
+			out->AsFloat<1>() = (float)a.AsInt32<1>() / mul;
+			out->AsFloat<2>() = (float)a.AsInt32<2>() / mul;
+			out->AsFloat<3>() = (float)a.AsInt32<3>() / mul;
 		}						
 
 		template <uint8 CTRL>
 		static inline void vcmpgtfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
-			ASM_CHECK(CTRL==0);
-			out->u32[0] = (a.f[0] > b.f[0]) ? 0xFFFFFFFF : 0x00000000;
-			out->u32[1] = (a.f[1] > b.f[1]) ? 0xFFFFFFFF : 0x00000000;
-			out->u32[2] = (a.f[2] > b.f[2]) ? 0xFFFFFFFF : 0x00000000;
-			out->u32[3] = (a.f[3] > b.f[3]) ? 0xFFFFFFFF : 0x00000000;
+			out->AsUint32<0>() = (a.AsFloat<0>() > b.AsFloat<0>()) ? 0xFFFFFFFF : 0x00000000;
+			out->AsUint32<1>() = (a.AsFloat<1>() > b.AsFloat<1>()) ? 0xFFFFFFFF : 0x00000000;
+			out->AsUint32<2>() = (a.AsFloat<2>() > b.AsFloat<2>()) ? 0xFFFFFFFF : 0x00000000;
+			out->AsUint32<3>() = (a.AsFloat<3>() > b.AsFloat<3>()) ? 0xFFFFFFFF : 0x00000000;
+
+			if (CTRL == 1)
+			{
+				const bool allEqual = CompareHelper<4>::AllSet(out->u32, 0xFFFFFFFF);
+				const bool allNotEqual = CompareHelper<4>::AllSet(out->u32, 0x0);
+				regs.CR[6].so = 0;
+				regs.CR[6].eq = allNotEqual ? 1 : 0;
+				regs.CR[6].gt = 0;
+				regs.CR[6].lt = allEqual ? 1 : 0;
+			}
 		}
 
 		template <uint8 CTRL>
 		static inline void vminfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = (a.f[0] < b.f[0]) ? a.f[0] : b.f[0];
-			out->f[1] = (a.f[1] < b.f[1]) ? a.f[1] : b.f[1];
-			out->f[2] = (a.f[2] < b.f[2]) ? a.f[2] : b.f[2];
-			out->f[3] = (a.f[3] < b.f[3]) ? a.f[3] : b.f[3];
+			out->AsFloat<0>() = (a.AsFloat<0>() < b.AsFloat<0>()) ? a.AsFloat<0>() : b.AsFloat<0>();
+			out->AsFloat<1>() = (a.AsFloat<1>() < b.AsFloat<1>()) ? a.AsFloat<1>() : b.AsFloat<1>();
+			out->AsFloat<2>() = (a.AsFloat<2>() < b.AsFloat<2>()) ? a.AsFloat<2>() : b.AsFloat<2>();
+			out->AsFloat<3>() = (a.AsFloat<3>() < b.AsFloat<3>()) ? a.AsFloat<3>() : b.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vmaxfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = (a.f[0] > b.f[0]) ? a.f[0] : b.f[0];
-			out->f[1] = (a.f[1] > b.f[1]) ? a.f[1] : b.f[1];
-			out->f[2] = (a.f[2] > b.f[2]) ? a.f[2] : b.f[2];
-			out->f[3] = (a.f[3] > b.f[3]) ? a.f[3] : b.f[3];
+			out->AsFloat<0>() = (a.AsFloat<0>() > b.AsFloat<0>()) ? a.AsFloat<0>() : b.AsFloat<0>();
+			out->AsFloat<1>() = (a.AsFloat<1>() > b.AsFloat<1>()) ? a.AsFloat<1>() : b.AsFloat<1>();
+			out->AsFloat<2>() = (a.AsFloat<2>() > b.AsFloat<2>()) ? a.AsFloat<2>() : b.AsFloat<2>();
+			out->AsFloat<3>() = (a.AsFloat<3>() > b.AsFloat<3>()) ? a.AsFloat<3>() : b.AsFloat<3>();
 		}
 
 		template <uint8 CTRL>
 		static inline void vlogefp( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = logf( a.f[0] );
-			out->f[1] = logf( a.f[1] );
-			out->f[2] = logf( a.f[2] );
-			out->f[3] = logf( a.f[3] );
+			out->AsFloat<0>() = logf( a.AsFloat<0>() );
+			out->AsFloat<1>() = logf( a.AsFloat<1>() );
+			out->AsFloat<2>() = logf( a.AsFloat<2>() );
+			out->AsFloat<3>() = logf( a.AsFloat<3>() );
 		}
 
 		template <uint8 CTRL>
 		static inline void vexptefp( CpuRegs& regs, TVReg* out, const TVReg a )
 		{
 			ASM_CHECK(CTRL==0);
-			out->f[0] = expf( a.f[0] );
-			out->f[1] = expf( a.f[1] );
-			out->f[2] = expf( a.f[2] );
-			out->f[3] = expf( a.f[3] );
+			out->AsFloat<0>() = expf( a.AsFloat<0>() );
+			out->AsFloat<1>() = expf( a.AsFloat<1>() );
+			out->AsFloat<2>() = expf( a.AsFloat<2>() );
+			out->AsFloat<3>() = expf( a.AsFloat<3>() );
 		}
 
 		template <uint8 CTRL>
