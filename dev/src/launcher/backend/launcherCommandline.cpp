@@ -65,7 +65,7 @@ namespace launcher
 	const std::wstring Commandline::GetOptionValueW(const char* name) const
 	{
 		for (const auto& option : m_options)
-			if (option.m_name == name)
+			if (option.m_name == name && !option.m_values.empty())
 				return option.m_values[0];
 
 		return std::wstring();
