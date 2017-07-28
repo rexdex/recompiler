@@ -2649,6 +2649,14 @@ namespace cpu
 			if (CREG) setCR1(regs, *val);
 		}
 
+		// fnmadds
+		template<uint8 CREG>
+		static inline void fnmadds(CpuRegs& regs, TFReg* val, const TFReg a, const TFReg b, const TFReg c)
+		{
+			*val = -(TFReg)(((float)a) * ((float)b)) + ((float)c);
+			if (CREG) setCR1(regs, *val);
+		}
+
 		// fmul
 		template<uint8 CREG>
 		static inline void fmul( CpuRegs& regs, TFReg* val, const TFReg a, const TFReg b )
@@ -2749,7 +2757,7 @@ namespace cpu
 			}
 
 			//regs.FPCC = cr;
-		}		
+		}	
 
 		//---------------------------------------------------------------------------------
 
@@ -2794,8 +2802,8 @@ namespace cpu
 		static inline void mfocrf( CpuRegs& regs, const uint32 mask, TReg& out )
 		{
 			ASM_CHECK(CTRL==0);
-			const uint32 mask = 0xF0000000 >> (4*mask);
-			out = regs.GetControlRegsFlags & mask;
+			const uint32 localMask = 0xF0000000 >> (4*mask);
+			out = regs.GetControlRegsFlags() & localMask;
 		}		
 
 		template <uint8 CTRL>
@@ -3053,36 +3061,6 @@ namespace cpu
 			out->u32[3] = a.u32[(val>>0) & 3];
 		}
 
-		template <uint8 CTRL>
-		static inline void vcmpequw( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
-		{
-			ASM_CHECK(CTRL==0);
-			out->u32[0] = (a.u32[0] == b.u32[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.u32[1] == b.u32[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.u32[2] == b.u32[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.u32[3] == b.u32[3]) ? 0xFFFFFFFF : 0;
-		}
-
-		template <uint8 CTRL>
-		static inline void vcmpeqfp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
-		{
-			ASM_CHECK(CTRL==0);
-			out->u32[0] = (a.f[0] == b.f[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.f[1] == b.f[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.f[2] == b.f[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.f[3] == b.f[3]) ? 0xFFFFFFFF : 0;
-		}
-
-		template <uint8 CTRL>
-		static inline void vcmpgefp( CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b )
-		{
-			ASM_CHECK(CTRL==0);
-			out->u32[0] = (a.f[0] >= b.f[0]) ? 0xFFFFFFFF : 0;
-			out->u32[1] = (a.f[1] >= b.f[1]) ? 0xFFFFFFFF : 0;
-			out->u32[2] = (a.f[2] >= b.f[2]) ? 0xFFFFFFFF : 0;
-			out->u32[3] = (a.f[3] >= b.f[3]) ? 0xFFFFFFFF : 0;
-		}
-
 		template< int N >
 		struct CompareHelper
 		{
@@ -3104,6 +3082,18 @@ namespace cpu
 				for ( int i=0; i<N; ++i )
 				{
 					if (a[i] != b[i])
+						return false;
+				}
+
+				return true;
+			}
+
+			template< typename T, typename R >
+			static inline bool AllSet(const T& a, const R& val)
+			{
+				for (int i = 0; i < N; ++i)
+				{
+					if (a[i] != val)
 						return false;
 				}
 
@@ -3187,6 +3177,65 @@ namespace cpu
 			{
 				const bool allEqual = CompareHelper<16>::AllEqual(a.u8, b.u8);
 				const bool allNotEqual = CompareHelper<16>::AllNotEqual(a.u8, b.u8);
+				regs.CR[6].so = 0;
+				regs.CR[6].eq = allNotEqual ? 1 : 0;
+				regs.CR[6].gt = 0;
+				regs.CR[6].lt = allEqual ? 1 : 0;
+			}
+		}
+
+		template <uint8 CTRL>
+		static inline void vcmpequw(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			out->u32[0] = (a.u32[0] == b.u32[0]) ? 0xFFFFFFFF : 0;
+			out->u32[1] = (a.u32[1] == b.u32[1]) ? 0xFFFFFFFF : 0;
+			out->u32[2] = (a.u32[2] == b.u32[2]) ? 0xFFFFFFFF : 0;
+			out->u32[3] = (a.u32[3] == b.u32[3]) ? 0xFFFFFFFF : 0;
+
+			if (CTRL == 1)
+			{
+				const bool allEqual = CompareHelper<4>::AllSet(out->u32, 0xFFFFFFFF);
+				const bool allNotEqual = CompareHelper<4>::AllSet(out->u32, 0x0);
+				regs.CR[6].so = 0;
+				regs.CR[6].eq = allNotEqual ? 1 : 0;
+				regs.CR[6].gt = 0;
+				regs.CR[6].lt = allEqual ? 1 : 0;
+			}
+		}
+
+		template <uint8 CTRL>
+		static inline void vcmpeqfp(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->u32[0] = (a.f[0] == b.f[0]) ? 0xFFFFFFFF : 0;
+			out->u32[1] = (a.f[1] == b.f[1]) ? 0xFFFFFFFF : 0;
+			out->u32[2] = (a.f[2] == b.f[2]) ? 0xFFFFFFFF : 0;
+			out->u32[3] = (a.f[3] == b.f[3]) ? 0xFFFFFFFF : 0;
+
+			if (CTRL == 1)
+			{
+				const bool allEqual = CompareHelper<4>::AllSet(out->u32, 0xFFFFFFFF);
+				const bool allNotEqual = CompareHelper<4>::AllSet(out->u32, 0x0);
+				regs.CR[6].so = 0;
+				regs.CR[6].eq = allNotEqual ? 1 : 0;
+				regs.CR[6].gt = 0;
+				regs.CR[6].lt = allEqual ? 1 : 0;
+			}
+		}
+
+		template <uint8 CTRL>
+		static inline void vcmpgefp(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->u32[0] = (a.f[0] >= b.f[0]) ? 0xFFFFFFFF : 0;
+			out->u32[1] = (a.f[1] >= b.f[1]) ? 0xFFFFFFFF : 0;
+			out->u32[2] = (a.f[2] >= b.f[2]) ? 0xFFFFFFFF : 0;
+			out->u32[3] = (a.f[3] >= b.f[3]) ? 0xFFFFFFFF : 0;
+
+			if (CTRL == 1)
+			{
+				const bool allEqual = CompareHelper<4>::AllSet(out->u32, 0xFFFFFFFF);
+				const bool allNotEqual = CompareHelper<4>::AllSet(out->u32, 0x0);
 				regs.CR[6].so = 0;
 				regs.CR[6].eq = allNotEqual ? 1 : 0;
 				regs.CR[6].gt = 0;
