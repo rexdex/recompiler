@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "platform", "platform", "{AD1892D3-0E58-447E-ABBD-32EF1C4310A9}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "framework\backend\backend.vcxproj", "{654994E2-500B-46E3-8E8B-CF743548964A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "frontend", "framework\frontend\frontend.vcxproj", "{405B3396-2B1F-4D36-9B7B-AF5E107D5760}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E02E5D06-9881-4A29-B41E-CEAA2FDACB02} = {E02E5D06-9881-4A29-B41E-CEAA2FDACB02}
+		{E42A8A26-BBC0-442B-8A3A-6D4860AF5FFD} = {E42A8A26-BBC0-442B-8A3A-6D4860AF5FFD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xenonDecompiler", "platforms\xenon\xenonDecompiler\xenonDecompiler.vcxproj", "{E42A8A26-BBC0-442B-8A3A-6D4860AF5FFD}"
 EndProject
@@ -22,6 +26,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "launcher\backend\backend.vcxproj", "{E0C33224-2CE6-46A7-9AC0-CDF57218E360}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "launcher", "launcher\frontend\launcher.vcxproj", "{BC01375D-0666-48F5-A3E7-89F3BDFE4CC7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BC01375D-057C-48F5-A3E7-89F3BDFE4CC7} = {BC01375D-057C-48F5-A3E7-89F3BDFE4CC7}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xenonLauncher", "platforms\xenon\xenonLauncher\xenonLauncher.vcxproj", "{BC01375D-057C-48F5-A3E7-89F3BDFE4CC7}"
 EndProject
