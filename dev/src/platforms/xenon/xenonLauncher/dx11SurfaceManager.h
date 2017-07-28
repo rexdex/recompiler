@@ -37,9 +37,6 @@ public:
 	void ClearColor( const uint32 index, const float* clearColor, const bool flushToEDRAM );
 	void ClearDepth( const float depthClear, const uint32 stencilClear, const bool flushToEDRAM );
 
-	/// Clear EDRAM (clearing shader)
-	void ClearEDRAM( const float* clearColor );
-
 	/// Copy out data from EDRAM
 	bool ResolveColor( const uint32 srcIndex, const XenonColorRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect );
 
@@ -107,9 +104,6 @@ private:
 
 	/// Surface cache
 	CDX11SurfaceCache*		m_cache;
-
-	/// EDRAM memory emulator
-	CDX11SurfaceMemory*		m_memory;
 
 	/// Pending setup
 	EDRAMSetup				m_incomingSetup;

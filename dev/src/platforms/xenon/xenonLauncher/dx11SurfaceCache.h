@@ -32,9 +32,7 @@ public:
 	void SetEDRAMPlacement( const int32 placement );
 
 	/// translate format
-	static DXGI_FORMAT TranslateFormatUnorm( XenonColorRenderTargetFormat format );
-	static DXGI_FORMAT TranslateFormatUint( XenonColorRenderTargetFormat format );
-	static DXGI_FORMAT TranslateTyplessFormat( XenonColorRenderTargetFormat format );
+	static void TranslateFormat( XenonColorRenderTargetFormat format, DXGI_FORMAT& outTextureFormat, DXGI_FORMAT& outViewFormat );
 	static uint32 GetFormatPixelSize( XenonColorRenderTargetFormat format );
 	static uint32 GetFormatPixelSizeWithMSAA( XenonColorRenderTargetFormat format, XenonMsaaSamples msaa );
 	static uint32 GetMSSASampleCount( XenonMsaaSamples msaa );
@@ -45,12 +43,8 @@ public:
 	/// Get render target view
 	inline ID3D11RenderTargetView* GetBindableView() const { return m_rtv; }
 
-	// Get the raw view for compute shaders
-	inline ID3D11UnorderedAccessView* GetRawView() const { return m_uav; }
-
 	// Get the read only view
-	inline ID3D11ShaderResourceView* GetROViewUint() const { return m_srvUint; }
-	inline ID3D11ShaderResourceView* GetROViewUnorm() const { return m_srvUnorm; }
+	inline ID3D11ShaderResourceView* GetReadOnlyView() const { return m_srv; }
 
 	/// Get texture data
 	inline ID3D11Texture2D* GetTexture() const { return m_texture; }
@@ -59,10 +53,8 @@ private:
 	CDX11AbstractRenderTarget();
 
 	ID3D11Texture2D*				m_texture;
-	ID3D11ShaderResourceView*		m_srvUint; // NOT USED DIRECTLY - used for copying the RT into proper texture (Resolve)
-	ID3D11ShaderResourceView*		m_srvUnorm; // NOT USED DIRECTLY - used for copying the RT into proper texture (Resolve)
+	ID3D11ShaderResourceView*		m_srv;
 	ID3D11RenderTargetView*			m_rtv;
-	ID3D11UnorderedAccessView*		m_uav; // TYPELESS!
 
 	XenonColorRenderTargetFormat	m_sourceFormat; // source format
 	XenonMsaaSamples				m_sourceMSAA;
@@ -113,11 +105,14 @@ public:
 	/// Get depth stencil view
 	inline ID3D11DepthStencilView* GetBindableView() const { return m_dsv; }
 
+	/// Get raw view
+	inline ID3D11ShaderResourceView* GetReadOnlyView() const { return m_srv; }
+
 private:
 	CDX11AbstractDepthStencil();
 	
 	ID3D11Texture2D*				m_texture;
-	ID3D11ShaderResourceView*		m_srv; // NOT USED DIRECTLY - used for copying the RT into proper texture (Resolve)
+	ID3D11ShaderResourceView*		m_srv;
 	ID3D11DepthStencilView*			m_dsv;
 
 	XenonDepthRenderTargetFormat	m_sourceFormat; // source format

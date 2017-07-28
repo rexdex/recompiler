@@ -1,17 +1,33 @@
 #include "build.h"
 #include "runtimeSymbols.h"
 #include "runtimeRegisterBank.h"
+#include "..\..\platforms\xenon\xenonLauncher\xenonCPU.h"
 
 namespace runtime
 {
 
 	static void DefaultGlobalRead(uint64 address, const uint32 size, void* outPtr)
 	{
-		GLog.Err("Unhandled memory read at 0x%08llx, size %d", address, size);
+		switch (size)
+		{
+			case 1: *(uint8*)outPtr = mem::loadAddr<uint8>(address); break;
+			case 2: *(uint16*)outPtr = mem::loadAddr<uint16>(address); break;
+			case 4: *(uint32*)outPtr = mem::loadAddr<uint32>(address); break;
+			case 8: *(uint64*)outPtr = mem::loadAddr<uint64>(address); break;
+		}
+		//GLog.Err("Unhandled memory read at 0x%08llx, size %d", address, size);
 	}
 
 	static void DefaultGlobalWrite(uint64 address, const uint32 size, const void* dataPtr)
 	{
+		switch (size)
+		{
+			case 1: mem::storeAddr<uint8>(address, *(const uint8*)dataPtr); break;
+			case 2: mem::storeAddr<uint16>(address, *(const uint16*)dataPtr); break;
+			case 4: mem::storeAddr<uint32>(address, *(const uint32*)dataPtr); break;
+			case 8: mem::storeAddr<uint64>(address, *(const uint64*)dataPtr); break;
+		}
+
 		GLog.Err("Unhandled memory writer at 0x%08llx, size %d", address, size);
 	}
 

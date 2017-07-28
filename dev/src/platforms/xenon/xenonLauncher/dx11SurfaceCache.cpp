@@ -8,10 +8,8 @@
 
 CDX11AbstractRenderTarget::CDX11AbstractRenderTarget()
 	: m_texture( nullptr )
-	, m_srvUint( nullptr )
-	, m_srvUnorm( nullptr )
+	, m_srv( nullptr )
 	, m_rtv( nullptr )
-	, m_uav( nullptr )
 	, m_edramPlacement( -1 )
 	, m_sourceFormat( (XenonColorRenderTargetFormat) -1 )
 	, m_sourceMSAA( (XenonMsaaSamples)-1 )
@@ -24,24 +22,10 @@ CDX11AbstractRenderTarget::CDX11AbstractRenderTarget()
 CDX11AbstractRenderTarget::~CDX11AbstractRenderTarget()
 {
 	/// release shader view
-	if ( m_srvUint )
+	if ( m_srv )
 	{
-		m_srvUint->Release();
-		m_srvUint = nullptr;
-	}
-
-	/// release shader view
-	if ( m_srvUnorm )
-	{
-		m_srvUnorm->Release();
-		m_srvUnorm = nullptr;
-	}
-
-	// release unordered access view
-	if ( m_uav )
-	{
-		m_uav->Release();
-		m_uav = nullptr;
+		m_srv->Release();
+		m_srv = nullptr;
 	}
 
 	/// relase render target view
@@ -97,73 +81,57 @@ void CDX11AbstractRenderTarget::Clear( const float* clearColor )
 	m_runtimeContext->ClearRenderTargetView( m_rtv, clearColor );
 }
 
-DXGI_FORMAT CDX11AbstractRenderTarget::TranslateFormatUnorm( XenonColorRenderTargetFormat format )
+void CDX11AbstractRenderTarget::TranslateFormat(XenonColorRenderTargetFormat format, DXGI_FORMAT& outTextureFormat, DXGI_FORMAT& outViewFormat)
 {
 	switch ( format )
 	{
-		case XenonColorRenderTargetFormat::Format_8_8_8_8: return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA: return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		case XenonColorRenderTargetFormat::Format_2_10_10_10: return DXGI_FORMAT_R10G10B10A2_UNORM;
-		case XenonColorRenderTargetFormat::Format_16_16: return DXGI_FORMAT_R16G16_UNORM;
-		case XenonColorRenderTargetFormat::Format_16_16_16_16: return DXGI_FORMAT_R16G16B16A16_UNORM;
-		case XenonColorRenderTargetFormat::Format_16_16_FLOAT: return DXGI_FORMAT_R16G16_FLOAT;
-		case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-		case XenonColorRenderTargetFormat::Format_32_FLOAT: return DXGI_FORMAT_R32_FLOAT;
-		case XenonColorRenderTargetFormat::Format_32_32_FLOAT: return DXGI_FORMAT_R32G32_FLOAT;
+		case XenonColorRenderTargetFormat::Format_8_8_8_8: 
+			outTextureFormat = DXGI_FORMAT_R8G8B8A8_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA:
+			outTextureFormat = DXGI_FORMAT_R8G8B8A8_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_2_10_10_10:
+			outTextureFormat = DXGI_FORMAT_R10G10B10A2_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_16_16: 
+			outTextureFormat = DXGI_FORMAT_R16G16_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R16G16_UNORM;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_16_16_16_16: 
+			outTextureFormat = DXGI_FORMAT_R16G16B16A16_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R16G16B16A16_UNORM;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_16_16_FLOAT:
+			outTextureFormat = DXGI_FORMAT_R16G16_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R16G16_FLOAT;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT:
+			outTextureFormat = DXGI_FORMAT_R16G16B16A16_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_32_FLOAT:
+			outTextureFormat = DXGI_FORMAT_R32_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R32_FLOAT;
+			return;
+
+		case XenonColorRenderTargetFormat::Format_32_32_FLOAT:
+			outTextureFormat = DXGI_FORMAT_R32G32_TYPELESS;
+			outViewFormat = DXGI_FORMAT_R32G32_FLOAT;
+			return;
 	}
 
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT_unknown
-
 	DEBUG_CHECK( "Untranslatable RT format" );
-	return DXGI_FORMAT_UNKNOWN;
-}
-
-DXGI_FORMAT CDX11AbstractRenderTarget::TranslateFormatUint( XenonColorRenderTargetFormat format )
-{
-	switch ( format )
-	{
-		case XenonColorRenderTargetFormat::Format_8_8_8_8: return DXGI_FORMAT_R8G8B8A8_UINT;
-		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA: return DXGI_FORMAT_R8G8B8A8_UINT;
-		case XenonColorRenderTargetFormat::Format_2_10_10_10: return DXGI_FORMAT_R10G10B10A2_UINT;
-		case XenonColorRenderTargetFormat::Format_16_16: return DXGI_FORMAT_R16G16_UINT;
-		case XenonColorRenderTargetFormat::Format_16_16_16_16: return DXGI_FORMAT_R16G16B16A16_UINT;
-	}
-
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT_unknown
-	//case XenonColorRenderTargetFormat::Format_16_16_FLOAT: return DXGI_FORMAT_R16G16_UINT;
-	//case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT: return DXGI_FORMAT_R16G16B16A16_UINT;
-	//case XenonColorRenderTargetFormat::Format_32_FLOAT: return DXGI_FORMAT_R32_UINT;
-	//case XenonColorRenderTargetFormat::Format_32_32_FLOAT: return DXGI_FORMAT_R32G32_UINT;
-
-	DEBUG_CHECK( "Untranslatable RT format" );
-	return DXGI_FORMAT_UNKNOWN;
-}
-
-DXGI_FORMAT CDX11AbstractRenderTarget::TranslateTyplessFormat( XenonColorRenderTargetFormat format )
-{
-	switch ( format )
-	{
-		case XenonColorRenderTargetFormat::Format_8_8_8_8: return DXGI_FORMAT_R8G8B8A8_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA: return DXGI_FORMAT_R8G8B8A8_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_2_10_10_10: return DXGI_FORMAT_R10G10B10A2_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_16_16: return DXGI_FORMAT_R16G16_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_16_16_16_16: return DXGI_FORMAT_R16G16B16A16_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_16_16_FLOAT: return DXGI_FORMAT_R16G16_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT: return DXGI_FORMAT_R16G16B16A16_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_32_FLOAT: return DXGI_FORMAT_R32_TYPELESS;
-		case XenonColorRenderTargetFormat::Format_32_32_FLOAT: return DXGI_FORMAT_R32G32_TYPELESS;
-	}
-
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown
-	//case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT_unknown
-
-	DEBUG_CHECK( "Untranslatable RT format" );
-	return DXGI_FORMAT_UNKNOWN;
 }
 
 uint32 CDX11AbstractRenderTarget::GetFormatPixelSize( XenonColorRenderTargetFormat format )
@@ -212,15 +180,14 @@ uint32 CDX11AbstractRenderTarget::GetFormatPixelSizeWithMSAA( XenonColorRenderTa
 CDX11AbstractRenderTarget* CDX11AbstractRenderTarget::Create( ID3D11Device* device, XenonColorRenderTargetFormat format, XenonMsaaSamples msaa, const uint32 pitch )
 {
 	// get the format
-	const DXGI_FORMAT fullFormatUnorm = TranslateFormatUnorm( format );
-	const DXGI_FORMAT fullFormatUint = TranslateFormatUint( format );
-	const DXGI_FORMAT typlessFormat = TranslateTyplessFormat( format );
+	DXGI_FORMAT textureFormat = DXGI_FORMAT_UNKNOWN, viewFormat = DXGI_FORMAT_UNKNOWN;
+	TranslateFormat(format, textureFormat, viewFormat);
 
 	// setup texture desc
 	D3D11_TEXTURE2D_DESC desc;
 	memset( &desc, 0, sizeof(desc) );
 	desc.ArraySize = 1;
-	desc.Format = typlessFormat;
+	desc.Format = textureFormat;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS;
 	desc.CPUAccessFlags = 0;
 	desc.MipLevels = 1; // this is a raw render target
@@ -252,7 +219,7 @@ CDX11AbstractRenderTarget* CDX11AbstractRenderTarget::Create( ID3D11Device* devi
 	// create render target view
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 	memset( &rtvDesc, 0, sizeof(rtvDesc) );
-	rtvDesc.Format = fullFormatUnorm;
+	rtvDesc.Format = viewFormat;
 	rtvDesc.Texture2D.MipSlice = 0;
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	ID3D11RenderTargetView* rtv = nullptr;
@@ -265,69 +232,29 @@ CDX11AbstractRenderTarget* CDX11AbstractRenderTarget::Create( ID3D11Device* devi
 	}
 
 	// create shader resource view for normalized read
-	ID3D11ShaderResourceView* srvUnorm = nullptr;
-	if ( fullFormatUnorm != DXGI_FORMAT_UNKNOWN )
+	ID3D11ShaderResourceView* srv = nullptr;
+	if (viewFormat != DXGI_FORMAT_UNKNOWN )
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		memset( &srvDesc, 0, sizeof(srvDesc) );
-		srvDesc.Format = fullFormatUnorm;
+		srvDesc.Format = viewFormat;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
-		hRet = device->CreateShaderResourceView( tex, &srvDesc, &srvUnorm );
-		if ( !srvUnorm || FAILED(hRet) )
+		hRet = device->CreateShaderResourceView( tex, &srvDesc, &srv);
+		if ( !srv || FAILED(hRet) )
 		{
 			rtv->Release();
 			tex->Release();
 			GLog.Err( "D3D: Failed to create SRV for RT texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
 			return nullptr;
 		}
-	}
-
-	// create shader resource view for integer read
-	ID3D11ShaderResourceView* srvUint = nullptr;
-	if ( fullFormatUint != DXGI_FORMAT_UNKNOWN )
-	{
-		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-		memset( &srvDesc, 0, sizeof(srvDesc) );
-		srvDesc.Format = fullFormatUint;
-		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = 1;
-		hRet = device->CreateShaderResourceView( tex, &srvDesc, &srvUint );
-		if ( !srvUint || FAILED(hRet) )
-		{
-			if ( srvUnorm ) srvUnorm->Release();
-			rtv->Release();
-			tex->Release();
-			GLog.Err( "D3D: Failed to create SRV for RT texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
-			return nullptr;
-		}
-	}
-
-	// create unordered access view
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-	memset( &uavDesc, 0, sizeof(uavDesc) );
-	uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UINT;	//desc.Format; // the UAV must match the format of the surface, we have a separate compute shader for each format though
-	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
-	uavDesc.Texture2D.MipSlice = 0;
-	ID3D11UnorderedAccessView* uav = nullptr;
-	hRet = device->CreateUnorderedAccessView( tex, &uavDesc, &uav );
-	if ( !uav || FAILED(hRet) )
-	{
-		if ( srvUnorm ) srvUnorm->Release();
-		if ( srvUint ) srvUint->Release();
-		rtv->Release();
-		tex->Release();
-		GLog.Err( "D3D: Failed to create UAV for RT texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
-		return nullptr;
 	}
 
 	// build final RT wrapper
 	CDX11AbstractRenderTarget* ret = new CDX11AbstractRenderTarget();
 	ret->m_texture = tex;
-	ret->m_srvUnorm = srvUnorm;
-	ret->m_srvUint = srvUint;
+	ret->m_srv = srv;
 	ret->m_rtv = rtv;
-	ret->m_uav = uav;
 	ret->m_actualFormat = desc.Format;
 	ret->m_sourceFormat = format;
 	ret->m_sourceMSAA = msaa;
@@ -470,9 +397,9 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 	D3D11_TEXTURE2D_DESC desc;
 	memset( &desc, 0, sizeof(desc) );
 	desc.ArraySize = 1;
-	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
-	desc.Format = TranslateFormat( format );
+	desc.Format = DXGI_FORMAT_R24G8_TYPELESS;// TranslateFormat(format);
 	desc.MipLevels = 1; // this is a raw render target
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -502,8 +429,7 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 	// create depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	memset( &dsvDesc, 0, sizeof(dsvDesc) );
-	dsvDesc.Format = desc.Format;
-
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	if ( desc.SampleDesc.Count == 1 )
 	{
 		dsvDesc.Texture2D.MipSlice = 0;
@@ -524,26 +450,26 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 		return nullptr;
 	}
 
-/*	// create shader resource view
+	// create shader resource view
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	memset( &srvDesc, 0, sizeof(srvDesc) );
-	srvDesc.Format = desc.Format;
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 0;
+	srvDesc.Texture2D.MipLevels = 1;
 	ID3D11ShaderResourceView* srv = nullptr;
 	hRet = device->CreateShaderResourceView( tex, &srvDesc, &srv );
 	if ( !srv || FAILED(hRet) )
 	{
-		rtv->Release();
+		dsv->Release();
 		tex->Release();
-		GLog.Err( "D3D: Failed to create SRV for RTV texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
+		GLog.Err( "D3D: Failed to create SRV for DS texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
 		return nullptr;
-	}*/
+	}
 
 	// build final RT wrapper
 	CDX11AbstractDepthStencil* ret = new CDX11AbstractDepthStencil();
 	ret->m_texture = tex;
-	ret->m_srv = nullptr;
+	ret->m_srv = srv;
 	ret->m_dsv = dsv;
 	ret->m_actualFormat = desc.Format;
 	ret->m_sourceFormat = format;

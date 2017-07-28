@@ -132,8 +132,10 @@ const uint32 CDX11SurfaceMemory::TranslateToGenericFormat_EDRAM( const XenonColo
 		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA: return GENERIC_FORMAT_8_8_8_8_GAMMA;
 		case XenonColorRenderTargetFormat::Format_2_10_10_10: return GENERIC_FORMAT_10_10_10_2;
 		case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown: return GENERIC_FORMAT_10_10_10_2_GAMMA;
+		case XenonColorRenderTargetFormat::Format_16_16: return GENERIC_FORMAT_16_16;
 	}
 
+	GLog.Err("Unsupported EDRAM format: %u", format);
 	DEBUG_CHECK( !"Unsupported render target format for EDRAM" );
 	return 0;
 }
@@ -152,8 +154,10 @@ const uint32 CDX11SurfaceMemory::TranslateToGenericFormat_Surface( const XenonCo
 		case XenonColorRenderTargetFormat::Format_8_8_8_8_GAMMA: return GENERIC_FORMAT_8_8_8_8_GAMMA;
 		case XenonColorRenderTargetFormat::Format_2_10_10_10: return GENERIC_FORMAT_10_10_10_2;
 		case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown: return GENERIC_FORMAT_10_10_10_2_GAMMA;
+		case XenonColorRenderTargetFormat::Format_16_16: return GENERIC_FORMAT_16_16;			
 	}
 
+	GLog.Err("Unsupported EDRAM format: %u", format);
 	DEBUG_CHECK( !"Unsupported render target format for surface" );
 	return 0;
 }
@@ -170,8 +174,11 @@ const uint32 CDX11SurfaceMemory::TranslateToGenericFormat_Surface( const XenonTe
 	{
 		case XenonTextureFormat::Format_8_8_8_8: return GENERIC_FORMAT_8_8_8_8;
 		case XenonTextureFormat::Format_2_10_10_10: return GENERIC_FORMAT_10_10_10_2;
+		case XenonTextureFormat::Format_16_16: return GENERIC_FORMAT_16_16;			
+		case XenonTextureFormat::Format_16_16_FLOAT: return GENERIC_FORMAT_16_16_FLOAT;
 	}
 
+	GLog.Err("Unsupported EDRAM format: %u", format);
 	DEBUG_CHECK( !"Unsupported texture format for surface" );
 	return 0;
 }
@@ -219,7 +226,7 @@ void CDX11SurfaceMemory::CopyIntoEDRAM( class CDX11AbstractRenderTarget* rt )
 
 	// dispatch the copy from EDRAM into the texture
 	// TODO: add support for 64-bit EDRAM formats
-	DispatchPixels( m_upload32, copyWidth, copyHeight, rt->GetROViewUint() );
+	//DispatchPixels( m_upload32, copyWidth, copyHeight, rt->GetROViewUint() );
 }
 
 void CDX11SurfaceMemory::ClearInEDRAM( const XenonColorRenderTargetFormat format, const uint32 edramBase, const uint32 edramPitch, const uint32 height, const float* clearColor )
@@ -304,11 +311,44 @@ void CDX11SurfaceMemory::CopyFromEDRAM( class CDX11AbstractRenderTarget* rt )
 
 	// dispatch the copy from EDRAM into the texture
 	// TODO: add support for 64-bit formats
-	DispatchPixels( m_download32, maxCopyWidth, maxCopyHeight, rt->GetRawView() );
+//	DispatchPixels( m_download32, maxCopyWidth, maxCopyHeight, rt->GetRawView() );
 }
 
 void CDX11SurfaceMemory::CopyIntoEDRAM( class CDX11AbstractDepthStencil* ds )
 {
+	// copy current depth buffer content into texture accessible by compute shader
+	//ds->TransferToEDRAMCopy();
+
+	// number of EDRAM blocks left - that's how much we need to copy
+	const uint32 maxBlocks = 1024 * 10;
+	const uint32 tailingBlocks = maxBlocks - ds->GetEDRAMPlacement();
+	const uint32 tailingHeight = (tailingBlocks * 1024) / ds->GetMemoryPitch();
+
+	// determine copy placement
+	const uint32 copyX = 0;
+	const uint32 copyY = 0;
+	const uint32 copyWidth = std::min<uint32>(ds->GetPhysicalWidth(), ds->GetMemoryPitch());
+	const uint32 copyHeight = std::min<uint32>(ds->GetPhysicalHeight(), tailingHeight);
+
+	// configure EDRAM placement
+	m_settings.Get().m_edramBaseAddr = ds->GetEDRAMPlacement();
+	m_settings.Get().m_edramPitch = ds->GetMemoryPitch(); // in pixels
+	m_settings.Get().m_edramOffsetX = 0; // no offset in simple copy
+	m_settings.Get().m_edramOffsetY = 0;
+	m_settings.Get().m_edramFormat = TranslateToGenericFormat_EDRAM(ds->GetFormat());
+
+	// configure the target surface
+	m_settings.Get().m_copySurfaceTargetX = copyX;
+	m_settings.Get().m_copySurfaceTargetY = copyY;
+	m_settings.Get().m_copySurfaceTotalWidth = ds->GetPhysicalWidth();
+	m_settings.Get().m_copySurfaceTotalHeight = ds->GetPhysicalHeight();
+	m_settings.Get().m_copySurfaceWidth = copyWidth;
+	m_settings.Get().m_copySurfaceHeight = copyHeight;
+	m_settings.Get().m_copySurfaceFormat = TranslateToGenericFormat_Surface(ds->GetFormat());
+
+	// dispatch the copy from EDRAM into the texture
+	// TODO: add support for 64-bit EDRAM formats
+	//DispatchPixels(m_upload32, copyWidth, copyHeight, ds->GetRawView());
 }
 
 void CDX11SurfaceMemory::CopyFromEDRAM( class CDX11AbstractDepthStencil* ds )
@@ -345,7 +385,7 @@ void CDX11SurfaceMemory::Resolve( const XenonColorRenderTargetFormat srcFormat, 
 	// dispatch the copy from EDRAM into the texture
 	// TODO: add support for floating point formats
 	// TODO: add support for 64-bit formats
-	DispatchPixels( m_download32, width, height, destSurf->GetRawViewUint() );	
+//	DispatchPixels( m_download32, width, height, destSurf->GetRawView() );	
 }
 
 bool CDX11SurfaceMemory::LoadShaders()
@@ -409,6 +449,8 @@ void CDX11SurfaceMemory::DispatchFlat( const CDX11ComputeShader& shader, const u
 
 void CDX11SurfaceMemory::DispatchPixels( const CDX11ComputeShader& shader, const uint32 width, const uint32 height, ID3D11UnorderedAccessView* additionalUAV )
 {
+	DEBUG_CHECK(additionalUAV != nullptr);
+
 	// unset render targets
 	ID3D11RenderTargetView* rtv[] = {nullptr, nullptr, nullptr, nullptr};
 	m_mainContext->OMSetRenderTargets( 4, rtv, nullptr );
@@ -444,6 +486,8 @@ void CDX11SurfaceMemory::DispatchPixels( const CDX11ComputeShader& shader, const
 
 void CDX11SurfaceMemory::DispatchPixels( const CDX11ComputeShader& shader, const uint32 width, const uint32 height, ID3D11ShaderResourceView* shaderView )
 {
+	DEBUG_CHECK(shaderView != nullptr);
+
 	// unset render targets
 	ID3D11RenderTargetView* rtv[] = {nullptr, nullptr, nullptr, nullptr};
 	m_mainContext->OMSetRenderTargets( 4, rtv, nullptr );

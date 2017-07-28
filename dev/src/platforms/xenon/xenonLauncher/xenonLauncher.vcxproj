@@ -279,6 +279,25 @@ popd
   <ItemGroup>
     <None Include="export.def" />
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\quadList.gs.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pushd $(FrameworkSdkDir)\x64\
+fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+$(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+del %(FullPath).fxc
+popd
+    </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pushd $(FrameworkSdkDir)\x64\
+fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+$(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+del %(FullPath).fxc
+popd
+    </Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

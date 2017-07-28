@@ -389,7 +389,7 @@ namespace xenon
 		: IKernelWaitObject(kernel, KernelObjectType::Event, name)
 		, m_event(nativeEvent)
 	{
-		GLog.Log("****CREATE: %d", GetIndex());
+		//GLog.Log("****CREATE: %d", GetIndex());
 	}	
 
 	KernelEvent::~KernelEvent()
@@ -400,7 +400,7 @@ namespace xenon
 
 	uint32 KernelEvent::Set(uint32 priority_increment, bool wait)
 	{
-		GLog.Log("****SET: %d", GetIndex());
+		//GLog.Log("****SET: %d", GetIndex());
 		return m_event->Set();
 	}
 
@@ -411,7 +411,7 @@ namespace xenon
 
 	uint32 KernelEvent::Reset()
 	{
-		GLog.Log("****RESET: %d", GetIndex());
+		//GLog.Log("****RESET: %d", GetIndex());
 		return m_event->Reset();
 	}
 
@@ -419,7 +419,7 @@ namespace xenon
 	{
 		const auto timeoutValue = optTimeout ? TimeoutTicksToMs(*optTimeout) : native::TimeoutInfinite;
 		const auto result = m_event->Wait(timeoutValue, alertable);
-		GLog.Log("****WAIT: %d, %d", GetIndex(), result);
+		//GLog.Log("****WAIT: %d, %d", GetIndex(), result);
 		return ConvWaitResult(result);
 	}
 

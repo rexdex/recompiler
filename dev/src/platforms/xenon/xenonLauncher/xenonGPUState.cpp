@@ -8,7 +8,7 @@
 #include "xenonGPUTextures.h"
 #include "xenonGPUDumpWriter.h"
 
-//#pragma optimize("",off)
+#pragma optimize("",off)
 
 namespace Helper
 {
@@ -48,13 +48,17 @@ namespace Helper
 			case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT: return XenonTextureFormat::Format_2_10_10_10_FLOAT;
 			case XenonColorRenderTargetFormat::Format_16_16: return XenonTextureFormat::Format_16_16;
 			case XenonColorRenderTargetFormat::Format_16_16_16_16: return XenonTextureFormat::Format_16_16_16_16;
-			case XenonColorRenderTargetFormat::Format_16_16_FLOAT: return XenonTextureFormat::Format_16_16_FLOAT;
-			case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT: return XenonTextureFormat::Format_16_16_16_16_FLOAT;
+			//case XenonColorRenderTargetFormat::Format_16_16_FLOAT: return XenonTextureFormat::Format_16_16_FLOAT;
+			//case XenonColorRenderTargetFormat::Format_16_16_16_16_FLOAT: return XenonTextureFormat::Format_16_16_16_16_FLOAT;
 			case XenonColorRenderTargetFormat::Format_2_10_10_10_unknown: return XenonTextureFormat::Format_2_10_10_10;
 			case XenonColorRenderTargetFormat::Format_2_10_10_10_FLOAT_unknown: return XenonTextureFormat::Format_2_10_10_10_FLOAT;
 			case XenonColorRenderTargetFormat::Format_32_FLOAT: return XenonTextureFormat::Format_32_FLOAT;
 			case XenonColorRenderTargetFormat::Format_32_32_FLOAT: return XenonTextureFormat::Format_32_32_FLOAT;
 		}
+
+		GLog.Err("Unsupported texture format: %u", format);
+		DEBUG_CHECK(!"Unsupported color format");
+		return XenonTextureFormat::Format_Unknown;
 	}
 
 	static inline XenonTextureFormat ColorFormatToTextureFormat( XenonColorFormat format )
@@ -65,8 +69,10 @@ namespace Helper
 			case XenonColorFormat::Format_8_8_8_8: return XenonTextureFormat::Format_8_8_8_8;
 			case XenonColorFormat::Format_2_10_10_10: return XenonTextureFormat::Format_2_10_10_10;
 			case XenonColorFormat::Format_32_FLOAT: return XenonTextureFormat::Format_32_FLOAT;
+			case XenonColorFormat::Format_16_16: return XenonTextureFormat::Format_16_16;
 		}
 
+		GLog.Err("Unsupported texture format: %u", format);
 		DEBUG_CHECK( !"Unsupported color format" );
 		return XenonTextureFormat::Format_Unknown;
 	}
@@ -81,9 +87,6 @@ CXenonGPUState::CXenonGPUState()
 
 bool CXenonGPUState::IssueDraw( IXenonGPUAbstractLayer* abstractLayer, IXenonGPUDumpWriter* traceDump, const CXenonGPURegisters& regs, const CXenonGPUDirtyRegisterTracker& dirtyRegs, const DrawIndexState& ds )
 {
-	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveTriangleList )
-		return false;
-
 	// global state
 	const XenonModeControl enableMode = (XenonModeControl)( regs[XenonGPURegister::REG_RB_MODECONTROL].m_dword & 0x7 );
 	if ( enableMode == XenonModeControl::Ignore )
@@ -408,8 +411,8 @@ bool CXenonGPUState::UpdateBlendState( IXenonGPUAbstractLayer* abstractLayer, co
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_BLEND_ALPHA, m_blendState.regRbBlendRGBA[3] );
 
 	// check if state is up to date
-	if ( !stateChanged )
-		return true;
+	/*if ( !stateChanged )
+		return true;*/
 
 	// apply the state
 	return ApplyBlendState( abstractLayer, m_blendState );
@@ -437,7 +440,7 @@ bool CXenonGPUState::ApplyRenderTargets( IXenonGPUAbstractLayer* abstractLayer, 
 
 	// extract specific settings
 	const XenonModeControl enableMode = (XenonModeControl)( rtState.regModeControl & 0x7 );
-	const XenonMsaaSamples surfaceMSAA = (XenonMsaaSamples)( (rtState.regSurfaceInfo >> 16) & 3 );
+	const XenonMsaaSamples surfaceMSAA = XenonMsaaSamples::MSSA1X;// (XenonMsaaSamples)((rtState.regSurfaceInfo >> 16) & 3);
 	const uint32 surfacePitch = rtState.regSurfaceInfo & 0x3FFF;
 
 	// Get/create all color render targets, if we are using them.

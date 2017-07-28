@@ -76,11 +76,11 @@ CDX11GeometryDrawer::CDX11GeometryDrawer( ID3D11Device* dev, ID3D11DeviceContext
 
 	// create shader cache
 	m_shaderCache = new CDX11ShaderCache( dev );
-	m_shaderCache->SetDumpPath( L"Q://shaderdump//" );
+	m_shaderCache->SetDumpPath( L"Q:/shaderdump/" );
 
 	// create microcode cache
 	m_microcodeCache = new CDX11MicrocodeCache();
-	m_microcodeCache->SetDumpPath( L"Q://shaderdump//" );
+	m_microcodeCache->SetDumpPath( L"Q:/shaderdump/" );
 
 	// create constant buffer
 	m_vertexViewportState.Create( dev );
@@ -511,8 +511,8 @@ bool CDX11GeometryDrawer::RealizeIndexBuffer( struct CXenonGPUState::DrawIndexSt
 				writePtr[1] = baseIndex + 1;
 				writePtr[2] = baseIndex + 2;
 				writePtr[3] = baseIndex + 0;
-				writePtr[4] = baseIndex + 3;
-				writePtr[5] = baseIndex + 2;
+				writePtr[4] = baseIndex + 2;
+				writePtr[5] = baseIndex + 3;
 			}
 		}
 		else
@@ -549,7 +549,7 @@ bool CDX11GeometryDrawer::RealizeIndexBuffer( struct CXenonGPUState::DrawIndexSt
 	}
 	else if ( primitiveType == XenonPrimitiveType::PrimitiveRectangleList )
 	{
-		return false;
+		return true;
 	}
 
 	// set data
@@ -668,10 +668,6 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	if ( !vs || !ps )
 		return false;
 
-	// quad list - generate ad hock vertex&index buffer
-	//if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveQuadList )
-		//return true;
-
 	// bind shaders
 	m_mainContext->PSSetShader( ps->GetBindableShader(), nullptr, 0 );
 	m_mainContext->VSSetShader( vs->GetBindableShader(), nullptr, 0 );
@@ -755,11 +751,6 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	// set primitive type and topology
 	m_mainContext->IASetPrimitiveTopology( primitiveTopology );
 	m_mainContext->IASetInputLayout( vs->GetBindableInputLayout() );
-
-	// cra
-	D3D11_VIEWPORT viewport[10];
-	UINT numViewports = 10;
-	m_mainContext->RSGetViewports( &numViewports, &viewport[0] );
 
 	// final touch - bind the extra "fake pipeline" stuff for vertex shader
 	m_mainContext->VSSetConstantBuffers( 2, 1, m_vertexViewportState.GetBufferForBinding( m_mainContext ) );

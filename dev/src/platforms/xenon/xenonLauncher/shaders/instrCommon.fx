@@ -22,7 +22,7 @@ float4 FRACs( float a ) { return frac(a.xxxx); }
 float4 MAXs( float4 a ) { return max(a.x,a.y).xxxx; }
 float4 MINs( float4 a ) { return min(a.x,a.y).xxxx; }
 float4 ADDs( float4 a ) { return (a.x + a.z).xxxx; } // watch out!
-float4 SUBs( float4 a ) { return (a.x - a.z).xxxx; } // watch out!
+float4 SUBs( float4 a ) { return (a.z - a.x).xxxx; } // watch out!
 
 float4 SETGTv( float4 a, float4 b ) { return float4( a.x>b.x ? 1.0 : 0.0, a.y>b.y ? 1.0 : 0.0, a.z>b.z ? 1.0 : 0.0, a.w>b.w ? 1.0 : 0.0 ); }   
 float4 SETEv( float4 a, float4 b ) { return float4( a.x==b.x ? 1.0 : 0.0, a.y==b.y ? 1.0 : 0.0, a.z==b.z ? 1.0 : 0.0, a.w==b.w ? 1.0 : 0.0 ); }   

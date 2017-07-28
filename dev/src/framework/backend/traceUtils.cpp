@@ -267,6 +267,14 @@ namespace trace
 				PrependStringWithSeparator(str, "%f", *(const double*)(rawData + i));
 		}
 
+		if (format != RegDisplayFormat::Hex)
+		{
+			std::string temp;
+			for (auto i = 0; i < numBytes; ++i)
+				PrependString(temp, "%02X", (uint8)rawData[i]);
+			str += " (" + temp + ")";
+		}
+
 		return str;
 	}
 

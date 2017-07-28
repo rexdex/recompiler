@@ -406,6 +406,9 @@
     <CustomBuild Include="shaders\edramClear32.fx">
       <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
     </CustomBuild>
+    <CustomBuild Include="shaders\quadList.gs.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="export.def" />

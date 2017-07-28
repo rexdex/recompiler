@@ -5,7 +5,7 @@
 #include "dx11TextureManager.h"
 #include "xenonGPUUtils.h"
 
-//#pragma optimize("",off)
+#pragma optimize("",off)
 
 //-------------------------------------------------------
 
@@ -105,20 +105,10 @@ CDX11SurfaceManager::CDX11SurfaceManager( ID3D11Device* dev, ID3D11DeviceContext
 {
 	// create surface cache
 	m_cache = new CDX11SurfaceCache( dev );
-
-	// create memory emulator
-	m_memory = new CDX11SurfaceMemory( dev, context );
 }
 
 CDX11SurfaceManager::~CDX11SurfaceManager()
 {
-	// release memory emulator
-	if ( m_memory )
-	{
-		delete m_memory;
-		m_memory = nullptr;
-	}
-
 	// release surface cache
 	if ( m_cache )
 	{
@@ -136,7 +126,8 @@ void CDX11SurfaceManager::BindColorRenderTarget( const uint32 index, const Xenon
 	data.m_format = format;
 	data.m_msaa = msaa;
 	data.m_base = base;
-	data.m_pitch = pitch;
+	//data.m_pitch = pitch;
+	data.m_pitch = std::max<uint32>(2560, pitch);
 }
 
 void CDX11SurfaceManager::BindDepthStencil( const XenonDepthRenderTargetFormat format, const XenonMsaaSamples msaa, const uint32 base, const uint32 pitch )
@@ -147,7 +138,8 @@ void CDX11SurfaceManager::BindDepthStencil( const XenonDepthRenderTargetFormat f
 	data.m_format = format;
 	data.m_msaa = msaa;
 	data.m_base = base;
-	data.m_pitch = pitch;
+	data.m_pitch = std::max<uint32>(2560, pitch);
+	//data.m_pitch = pitch;
 }
 
 void CDX11SurfaceManager::UnbindColorRenderTarget( const uint32 index )
@@ -166,8 +158,6 @@ void CDX11SurfaceManager::UnbindDepthStencil()
 
 void CDX11SurfaceManager::Reset()
 {
-	// clear EDRAM memory (for debug purposes mostly)
-	m_memory->Reset();
 }
 
 bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHeight )
@@ -187,9 +177,6 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 			auto* ds = m_runtimeSetup.m_surfaceDepth;
 			m_runtimeSetup.m_surfaceDepth = nullptr;
 
-			// flush part of this surface that was used directly into the EDRAM memory
-			m_memory->CopyIntoEDRAM( ds );
-
 			// release the surface EDRAM binding (this allows it to be reused for something else)
 			ds->SetEDRAMPlacement( -1 );
 		}
@@ -202,10 +189,6 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 			{
 				auto* rt = m_runtimeSetup.m_surfaceColor[rtIndex];
 				m_runtimeSetup.m_surfaceColor[rtIndex] = nullptr;
-
-				// flush part of this surface that was used directly into the EDRAM memory
-				DEBUG_CHECK( rt->GetEDRAMPlacement() >= 0 );
-				m_memory->CopyIntoEDRAM( rt );
 
 				// release the surface EDRAM binding (this allows it to be reused for something else)
 				rt->SetEDRAMPlacement( -1 );
@@ -228,11 +211,6 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 				// allocate from surface cache
 				m_runtimeSetup.m_surfaceDepth = m_cache->GetDepthStencil( setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base );
 				DEBUG_CHECK( m_runtimeSetup.m_surfaceDepth != nullptr );
-
-				// copy content of this surface FROM what ever is in the EDRAM
-				// NOTE: in MANY cases this is not necessary
-				// NOTE: we only copy the part we will be using
-				m_memory->CopyFromEDRAM( m_runtimeSetup.m_surfaceDepth );
 			}
 			else
 			{
@@ -263,11 +241,6 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 					// allocate from surface cache
 					surfaceRef = m_cache->GetRenderTarget( setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base );
 					DEBUG_CHECK( surfaceRef != nullptr );
-
-					// copy content of this surface FROM what ever is in the edram
-					// NOTE: in MANY cases this is not necessary
-					// NOTE: we only copy the part we will be using
-					m_memory->CopyFromEDRAM( surfaceRef );
 				}
 				else
 				{
@@ -314,10 +287,6 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 
 		// set on the actual device
 		m_context->OMSetRenderTargets( ARRAYSIZE(rtViews), rtViews, dsView );
-
-		// hack
-		if ( dsView )
-			m_context->ClearDepthStencilView( dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0 );
 	}
 
 	// export the main color surface width
@@ -386,8 +355,20 @@ bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorR
 	DEBUG_CHECK( destRect.x + destRect.w <= (int)destSurf->GetWidth() );
 	DEBUG_CHECK( destRect.y + destRect.h <= (int)destSurf->GetHeight() );
 
+	// setup source area
+	D3D11_BOX srcBox;
+	srcBox.left = srcRect.x;
+	srcBox.top = srcRect.y;
+	srcBox.right = srcRect.x + destRect.w;
+	srcBox.bottom = srcRect.y + destRect.h;
+	srcBox.front = 0;
+	srcBox.back = 1;
+
+	// copy data
+	m_context->CopySubresourceRegion(destTexture->GetRuntimeTexture(), 0, destRect.x, destRect.y, 0, rt->GetTexture(), 0, &srcBox);
+
 	// resolve using the memory manager (it has all the means to do so)
-	m_memory->Resolve( srcFormat, srcBase, rt->GetMemoryPitch(), srcRect.x, srcRect.y, destRect.x, destRect.y, destRect.w, destRect.h, destSurf );
+	//m_memory->Resolve( srcFormat, srcBase, rt->GetMemoryPitch(), srcRect.x, srcRect.y, destRect.x, destRect.y, destRect.w, destRect.h, destSurf );
 	return true;
 }
 
@@ -401,26 +382,6 @@ void CDX11SurfaceManager::ClearColor( const uint32 index, const float* clearColo
 	{
 		// clear the surface		
 		rt->Clear( clearColor );
-
-		// copy the FULL surface to EDRAM
-		if ( flushToEDRAM )
-		{
-			m_memory->CopyIntoEDRAM( rt );
-		}
-	}
-}
-
-void CDX11SurfaceManager::ClearEDRAM( const float* clearColor )
-{
-	// hacks for special "shaders" that are used to clear the EDRAM
-
-	const auto& color0 = m_runtimeSetup.m_desc.m_color[0];
-	if ( color0.m_msaa == XenonMsaaSamples::MSSA4X )
-	{
-		const auto base = color0.m_base;
-		const auto pitch = color0.m_pitch;
-		const auto height = (1024*1024*10) / color0.m_pitch; // TODO: remove the depth surface from this!
-		m_memory->ClearInEDRAM( color0.m_format, base, pitch, height, clearColor );
 	}
 }
 
@@ -432,12 +393,6 @@ void CDX11SurfaceManager::ClearDepth( const float depthClear, const uint32 stenc
 	{
 		// clear the surface
 		rt->Clear( true, true, depthClear, stencilClear );
-
-		// copy the FULL surface to EDRAM
-		if ( flushToEDRAM )
-		{
-			m_memory->CopyIntoEDRAM( rt );
-		}
 	}
 }
 

@@ -19,6 +19,8 @@
 #define FORMAT_8_8_8_8_GAMMA		2
 #define FORMAT_10_10_10_2			3
 #define FORMAT_10_10_10_2_GAMMA		4
+#define FORMAT_16_16				5
+#define FORMAT_16_16_FLOAT			6
 
 cbuffer SETTINGS : register (b0)
 {
@@ -169,6 +171,18 @@ float4 DecodeGamma( float4 val )
 	return ret;
 }
 
+// decode half float from lower part of uint (16-bits)
+float DecodeHalfFloat(uint h)
+{
+	return f16tof32(h);
+}
+
+// encode a floating point value as a half float
+uint EncodeHalfFloat(float x)
+{
+	return f32tof16(x);
+}
+
 //-----------------------------------------------------------------------------
 
 // decode EDRAM as 8_8_8_8 color, range returned 0-1
@@ -183,6 +197,26 @@ float4 Decode_EDRAM_8_8_8_8( RWBuffer<uint> edram, uint edramOffset )
 	return float4( dataR / 255.0f, dataG / 255.0f, dataB / 255.0f, dataA / 255.0f );
 }
 
+// decode EDRAM as 16_16 color, range returned 0-1
+float4 Decode_EDRAM_16_16(RWBuffer<uint> edram, uint edramOffset)
+{
+	uint edramValue = edram[edramOffset];
+	uint dataX = (edramValue >> 0) & 0xFFFF;
+	uint dataY = (edramValue >> 16) & 0xFFFF;
+
+	return float4(dataX / 65535.0f, dataY / 65535.0f, 0.0f, 0.0f);
+}
+
+// decode EDRAM as 16_16_FLOAT color, range returned 0-1
+float4 Decode_EDRAM_16_16_FLOAT(RWBuffer<uint> edram, uint edramOffset)
+{
+	uint edramValue = edram[edramOffset];
+	uint dataX = (edramValue >> 0) & 0xFFFF;
+	uint dataY = (edramValue >> 16) & 0xFFFF;
+
+	return float4(DecodeHalfFloat(dataX), DecodeHalfFloat(dataY), 0, 0);
+}
+
 // decode EDRAM from custom 32-bit format
 float4 Decode_EDRAM_32( RWBuffer<uint> edram, uint edramOffset, uint edramFormat )
 {
@@ -190,7 +224,11 @@ float4 Decode_EDRAM_32( RWBuffer<uint> edram, uint edramOffset, uint edramFormat
 		return Decode_EDRAM_8_8_8_8( edram, edramOffset );
 	else if ( edramFormat == FORMAT_8_8_8_8_GAMMA )
 		return DecodeGamma( Decode_EDRAM_8_8_8_8( edram, edramOffset ) );
-	
+	else if (edramFormat == FORMAT_16_16)
+		return Decode_EDRAM_16_16(edram, edramOffset);
+	else if (edramFormat == FORMAT_16_16_FLOAT)
+		return Decode_EDRAM_16_16_FLOAT(edram, edramOffset);
+
 	return float4(1.0f, 0.0f, 0.5f, 1.0f);
 }
 
@@ -209,6 +247,28 @@ void Encode_EDRAM_8_8_8_8( RWBuffer<uint> edram, uint edramOffset, float4 values
 	edram[ edramOffset ] = edramValue;
 }
 
+// encode 0-1 values in EDRAM compatible 16_16 format
+void Encode_EDRAM_16_16(RWBuffer<uint> edram, uint edramOffset, float4 values)
+{
+	uint dataX = saturate(values.x) * 65535.0f;
+	uint dataY = saturate(values.y) * 65535.0f;
+
+	// write new values to EDRAM (each pixel writes)
+	uint edramValue = (((dataX >> 8) & 0xFF) << 0) | ((dataX & 0xFF) << 8) | (((dataY >> 8) & 0xFF) << 16) | ((dataY & 0xFF) << 24);
+	edram[edramOffset] = edramValue;
+}
+
+// encode values in EDRAM compatible 16_16_FLOAT format
+void Encode_EDRAM_16_16_FLOAT(RWBuffer<uint> edram, uint edramOffset, float4 values)
+{
+	uint dataX = EncodeHalfFloat(values.x);
+	uint dataY = EncodeHalfFloat(values.y);
+
+	// write new values to EDRAM (each pixel writes)
+	uint edramValue = (((dataX >> 8) & 0xFF) << 0) | ((dataX & 0xFF) << 8) | (((dataY >> 8) & 0xFF) << 16) | ((dataY & 0xFF) << 24);
+	edram[edramOffset] = edramValue;
+}
+
 // encode values into 32-bit EDRAM compatible format
 void Encode_EDRAM_32( RWBuffer<uint> edram, uint edramOffset, float4 values, uint edramFormat )
 {
@@ -216,14 +276,24 @@ void Encode_EDRAM_32( RWBuffer<uint> edram, uint edramOffset, float4 values, uin
 		Encode_EDRAM_8_8_8_8( edram, edramOffset, values );
 	else if ( edramFormat == FORMAT_8_8_8_8_GAMMA )
 		Encode_EDRAM_8_8_8_8( edram, edramOffset, EncodeGamma( values ) );
+	else if (edramFormat == FORMAT_16_16)
+		Encode_EDRAM_16_16(edram, edramOffset, EncodeGamma(values));
+	else if (edramFormat == FORMAT_16_16_FLOAT)
+		Encode_EDRAM_16_16(edram, edramOffset, EncodeGamma(values));
 }
 
 //-----------------------------------------------------------------------------
 
 // store value to 32-bit texture
-uint4 Pack_Texture_8_8_8_8( float4 values )
+uint4 Pack_Texture_8_8_8_8(float4 values)
 {
 	return uint4( saturate(values) * 255.0f );
+}
+
+// store value to 32-bit texture
+uint4 Pack_Texture_16_16(float4 values)
+{
+	return uint4(saturate(values) * 65535.0f);
 }
 
 // pack based on format
@@ -233,6 +303,10 @@ uint4 Pack_Texture( float4 values, uint textureFormat )
 		return Pack_Texture_8_8_8_8( values );
 	else if ( textureFormat == FORMAT_8_8_8_8_GAMMA )
 		return Pack_Texture_8_8_8_8( EncodeGamma( values ) );
+	else if (textureFormat == FORMAT_16_16)
+		return Pack_Texture_16_16(values);
+	/*else if (textureFormat == FORMAT_16_16_FLOAT)
+		return Pack_Texture_16_16(values);*/
 
 	return uint4(255,0,0,255);
 }
@@ -245,6 +319,12 @@ float4 Unpack_Texture_8_8_8_8( uint4 values )
 	return float4( values / 255.0f );
 }
 
+// unpack value from 32-bit 8_8_8_8 texture
+float4 Unpack_Texture_16_16(uint4 values)
+{
+	return float4(values.xy / 65535, 0, 1);
+}
+
 // unpack texture based on format
 float4 Unpack_Texture( float4 values, uint textureFormat )
 {
@@ -252,6 +332,10 @@ float4 Unpack_Texture( float4 values, uint textureFormat )
 		return Unpack_Texture_8_8_8_8( values );
 	else if ( textureFormat == FORMAT_8_8_8_8_GAMMA )
 		return DecodeGamma( Unpack_Texture_8_8_8_8( values ) );
+	else if (textureFormat == FORMAT_16_16)
+		return Unpack_Texture_16_16(values);
+	/*else if (textureFormat == FORMAT_16_16_FLOAT)
+		return Unpack_Texture_16_16(values);*/
 
 	return float4(0.5f, 0.0f, 1.0f, 1.0f);
 }

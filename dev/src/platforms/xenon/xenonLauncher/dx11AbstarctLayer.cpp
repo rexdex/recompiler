@@ -7,7 +7,7 @@
 #include "dx11StateCache.h"
 #include "xenonGPURegisters.h"
 
-//#pragma optimize("",off)
+#pragma optimize("",off)
 
 //-----------------------------------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ bool CDX11AbstractLayer::Initialize()
 
 	// create geometry drawer
 	m_drawer = new CDX11GeometryDrawer( m_device, m_mainContext );
-	m_drawer->SetShaderDumpDirector( L"H:\\shaderdump\\" );
+	m_drawer->SetShaderDumpDirector( L"Q:/shaderdump/" );
 
 	// create shader constants buffers
 	m_vertexShaderConsts.Create( m_device );
@@ -871,7 +871,12 @@ void CDX11AbstractLayer::SetCullMode( const XenonCullMode cullMode )
 	const auto value = Helper::ConvertCullMode( cullMode );
 	if ( value != m_rasterState.CullMode )
 	{
-		m_rasterState.CullMode = D3D11_CULL_NONE;//value;
+		switch (cullMode)
+		{
+			case XenonCullMode::None: m_rasterState.CullMode = D3D11_CULL_NONE; break;
+			case XenonCullMode::Front: m_rasterState.CullMode = D3D11_CULL_FRONT; break;
+			case XenonCullMode::Back: m_rasterState.CullMode = D3D11_CULL_BACK; break;
+		}
 		m_rasterStateDirty = true;
 	}
 }
@@ -1009,11 +1014,14 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 
 		// get the clear color - first vertex
 		float clearColor[4];
-		const uint32 srcMemoryAddress = GPlatform.GetMemory().TranslatePhysicalAddress( (fetchEntry.address<<2) + 12 );
-		clearColor[0] = mem::loadAddr<float>( srcMemoryAddress + 0 );
-		clearColor[1] = mem::loadAddr<float>( srcMemoryAddress + 4 );
-		clearColor[2] = mem::loadAddr<float>( srcMemoryAddress + 8 );
-		clearColor[3] = mem::loadAddr<float>( srcMemoryAddress + 12 );
+		const uint32 srcMemoryAddress = GPlatform.GetMemory().TranslatePhysicalAddress( (fetchEntry.address<<2) + 0 );
+		clearColor[0] = mem::loadAddr<float>( srcMemoryAddress + 12 + 0 );
+		clearColor[1] = mem::loadAddr<float>( srcMemoryAddress + 12 + 4 );
+		clearColor[2] = mem::loadAddr<float>( srcMemoryAddress + 12 + 8 );
+		clearColor[3] = mem::loadAddr<float>( srcMemoryAddress + 12 + 12 );
+
+		// get the Z to clear
+		const auto clearZ  = mem::loadAddr<float>(srcMemoryAddress + 8);
 
 		// compensate for packed color
 		const float packMin = -32896.503f;
@@ -1024,7 +1032,8 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 		clearColor[3] = (clearColor[3] - packMin) / packRange;
 
 		// pass to the edram - clear the EDRAM itself
-		m_surfaceManager->ClearEDRAM( clearColor );		
+		m_surfaceManager->ClearColor( 0, clearColor, true );
+		m_surfaceManager->ClearDepth(clearZ, 0, true);
 		return true;
 	}
 

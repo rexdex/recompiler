@@ -18,4 +18,4 @@ void main( uint3 groupId : SV_GroupID, uint2 groupThreadId : SV_GroupThreadID, u
 	// store in surface
 	//surface[ pixelXY ] = uint4( pixelXY.xy, 0, 0 );
 	surface[ pixelXY ] = Pack_Texture( values, copySurfaceFormat );
-}
+}  

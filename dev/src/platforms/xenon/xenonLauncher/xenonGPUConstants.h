@@ -200,32 +200,32 @@ enum class XenonStencilOp : uint32
 
 enum class XenonBlendArg : uint32
 {
-	Zero,
-	One,
-	Unknown1, //?? 
-	Unknown2, //?? 
-	SrcColor,
-	OneMinusSrcColor,
-	SrcAlpha,
-	OneMinusSrcAlpha,
-	DestColor,
-	OneMinusDestColor,
-	DestAlpha,
-	OneMinusDestAlpha,
-	ConstColor,
-	OneMinusConstColor,
-	ConstAlpha,
-	OneMinusConstAlpha,
-	SrcAlphaSaturate,
+	Zero = 0,
+	One = 1,
+	Unknown1 = 2, //?? 
+	Unknown2 = 3, //?? 
+	SrcColor = 4,
+	OneMinusSrcColor = 5,
+	SrcAlpha = 6,
+	OneMinusSrcAlpha = 7,
+	DestColor = 8,
+	OneMinusDestColor = 9,
+	DestAlpha = 10,
+	OneMinusDestAlpha = 11,
+	ConstColor = 12,
+	OneMinusConstColor = 13,
+	ConstAlpha = 14,
+	OneMinusConstAlpha = 15,
+	SrcAlphaSaturate = 16,
 };
 
 enum class XenonBlendOp : uint32
 {
-	Add,
-	Subtract,
-	Min,
-	Max,
-	ReverseSubtract,
+	Add = 0,
+	Subtract = 1,
+	Min = 2,
+	Max = 3,
+	ReverseSubtract = 4,
 };
 
 enum class XenonCullMode : uint32

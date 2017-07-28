@@ -25,27 +25,11 @@ CDX11AbstractSurface::CDX11AbstractSurface()
 	, m_sourcePackedTileOffsetY( 0 )
 	, m_sourceEndianess( XenonGPUEndianFormat::FormatUnspecified )
 	, m_runtimeFormat( DXGI_FORMAT_UNKNOWN )
-	, m_viewFormat( DXGI_FORMAT_UNKNOWN )
-	, m_viewUint( nullptr )
-	, m_viewFloat( nullptr )
 {
 }
 
 CDX11AbstractSurface::~CDX11AbstractSurface()
 {
-	// release output view
-	if ( m_viewUint )
-	{
-		m_viewUint->Release();
-		m_viewUint = nullptr;
-	}
-
-	// release output view
-	if ( m_viewFloat )
-	{
-		m_viewFloat->Release();
-		m_viewFloat = nullptr;
-	}
 }
 
 XenonTextureFormat CDX11AbstractSurface::GetFormat() const
@@ -129,20 +113,24 @@ void CDX11AbstractSurface::Upload( const void* srcTextureData, void* destData, u
 			// Log of BPP (1, 2, 3)
 			const uint32 bppLog = (m_sourceBlockSize >> 2) + ((m_sourceBlockSize >> 1) >> (m_sourceBlockSize >> 2));
 
+			// copy range
+			const uint32 copyWidth = m_sourceBlockWidth;
+			const uint32 copyHeight = std::min(m_sourceBlockHeight, m_height);
+
 			// Tiled textures can be packed; get the offset into the packed texture
 			// The packing place depends on the size of the tiled texture
 			uint32 destOffsetY = 0;
-			const uint32 copyHeight = std::min( m_sourceBlockHeight, m_height );
 			for ( uint32 y=0, outputOffset=0; y<copyHeight; ++y, destOffsetY += destRowPitch )
 			{
-				const uint32 srcOffsetY = XenonTextureInfo::TiledOffset2DOuter( m_sourcePackedTileOffsetY+y, m_sourceWidth / 4, bppLog );
+				const uint32 srcOffsetY = XenonTextureInfo::TiledOffset2DOuter(m_sourcePackedTileOffsetY + y, m_sourceWidth / m_sourceFormatBlockWidth, bppLog);
 
 				uint32 destOffsetX = destOffsetY;
-				const uint32 copyWidth = m_sourceBlockWidth;
 				for ( uint32 x=0; x<copyWidth; ++x, destOffsetX += blockSize )
 				{
-					const uint32 srcOffsetX = XenonTextureInfo::TiledOffset2DInner( m_sourcePackedTileOffsetX+x, m_sourcePackedTileOffsetY+y, bppLog, srcOffsetY ) >> bppLog;
-					Helper::ConvertGPUEndianess( targetData + destOffsetX, srcData + srcOffsetX*blockSize, blockSize, m_sourceEndianess );
+					const uint32 srcX = m_sourcePackedTileOffsetX + x;
+					const uint32 srcY = m_sourcePackedTileOffsetY + y;
+					const uint32 srcOffset = XenonTextureInfo::TiledOffset2DInner( srcX, srcY, bppLog, srcOffsetY ) >> bppLog;
+					Helper::ConvertGPUEndianess( targetData + destOffsetX, srcData + srcOffset*blockSize, blockSize, m_sourceEndianess );
 				}
 			}
 		}
@@ -297,17 +285,6 @@ IXenonGPUAbstractSurface* CDX11AbstractTexture::GetSurface( const uint32 slice, 
 	return m_surfaces[ (slice*m_sourceMips) + mip ];
 }
 
-bool CDX11AbstractTexture::IsUAVFormat( XenonTextureFormat sourceFormat )
-{
-	switch (  sourceFormat )
-	{
-		case XenonTextureFormat::Format_8_8_8_8:
-			return true;
-	}
-
-	return false;
-}
-
 bool CDX11AbstractTexture::IsBlockCompressedFormat( XenonTextureFormat sourceFormat )
 {
 	switch (  sourceFormat )
@@ -324,7 +301,7 @@ bool CDX11AbstractTexture::IsBlockCompressedFormat( XenonTextureFormat sourceFor
 	return false;
 }
 
-bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORMAT& runtimeFormat, DXGI_FORMAT& viewFormat  )
+bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORMAT& runtimeFormat, DXGI_FORMAT& viewFormat)
 {
 	switch ( sourceFormat )
 	{
@@ -335,6 +312,7 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 		case XenonTextureFormat::Format_5_6_5:
 		case XenonTextureFormat::Format_6_5_5:
 		case XenonTextureFormat::Format_8_8_8_8:
+		case XenonTextureFormat::Format_8_8_8_8_AS_16_16_16_16:
 		case XenonTextureFormat::Format_4_4_4_4:
 			runtimeFormat = DXGI_FORMAT_R8G8B8A8_TYPELESS;
 			viewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -384,13 +362,13 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 		case XenonTextureFormat::Format_16:
 		case XenonTextureFormat::Format_16_EXPAND:
 			runtimeFormat = DXGI_FORMAT_R16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16_UINT;
+			viewFormat = DXGI_FORMAT_R16G16_UNORM;
 			return true;
 
 		case XenonTextureFormat::Format_16_16:
 		case XenonTextureFormat::Format_16_16_EXPAND:
 			runtimeFormat = DXGI_FORMAT_R16G16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16G16_UINT;
+			viewFormat = DXGI_FORMAT_R16G16_UNORM;
 			return true;
 
 		case XenonTextureFormat::Format_16_FLOAT:
@@ -410,7 +388,7 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 
 		case XenonTextureFormat::Format_32:
 			runtimeFormat = DXGI_FORMAT_R32_TYPELESS;
-			viewFormat = DXGI_FORMAT_R32G32_UINT;
+			viewFormat = DXGI_FORMAT_R32_UINT;
 			return true;
 
 		case XenonTextureFormat::Format_32_32:
@@ -460,7 +438,7 @@ bool CDX11AbstractTexture::CreateResources( ID3D11Device* device )
 		texDesc.Width = m_sourceInfo.m_size2D.m_logicalWidth;
 		texDesc.Height = m_sourceInfo.m_size2D.m_logicalHeight;
 		texDesc.CPUAccessFlags = 0; // never accessed by CPU
-		texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | (m_runtimeUAVSupported ? D3D11_BIND_UNORDERED_ACCESS : 0 ); // never a render target but can be accessed via UAV
+		texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; // never a render target but can be accessed via UAV
 		texDesc.MiscFlags = 0;
 		texDesc.Usage = D3D11_USAGE_DEFAULT;
 		texDesc.SampleDesc.Count = 1;
@@ -521,6 +499,7 @@ bool CDX11AbstractTexture::CreateSurfaces( ID3D11Device* device )
 				// create surface info
 				CDX11AbstractSurface* surf = new CDX11AbstractSurface();
 				surf->m_sourceFormat = m_sourceInfo.m_format->m_format;
+				surf->m_sourceFormatBlockWidth = m_sourceInfo.m_format->m_blockWidth;
 				surf->m_width = std::max<uint32>( 1, m_sourceInfo.m_size2D.m_logicalWidth >> mip );
 				surf->m_height = std::max<uint32>( 1, m_sourceInfo.m_size2D.m_logicalHeight >> mip );
 				surf->m_depth = 1;
@@ -545,34 +524,6 @@ bool CDX11AbstractTexture::CreateSurfaces( ID3D11Device* device )
 
 				// runtime format of the surface is the same
 				surf->m_runtimeFormat = m_runtimeFormat;
-				surf->m_viewFormat = m_viewFormat;
-
-				// create UAV view
-				if ( m_runtimeUAVSupported )
-				{
-					D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
-					uavDesc.Format = m_viewFormat;
-					uavDesc.Texture2D.MipSlice = mip;
-
-					ID3D11UnorderedAccessView* view = nullptr;
-					HRESULT hRet = device->CreateUnorderedAccessView( m_runtimeTexture, &uavDesc, &view );
-					DEBUG_CHECK( !FAILED(hRet) && view != nullptr )
-
-					if ( m_viewFormat == DXGI_FORMAT_R8G8B8A8_UINT )
-					{
-						surf->m_viewUint = view;
-					}
-					else if ( m_viewFormat == DXGI_FORMAT_R32_FLOAT )
-					{
-						surf->m_viewFloat = view;
-					}
-					else
-					{
-						// no UAV required
-						view->Release();
-					}
-				}
 
 				// add to surface list
 				m_surfaces.push_back( surf );
@@ -629,7 +580,7 @@ CDX11AbstractTexture* CDX11AbstractTexture::Create( ID3D11Device* device, CDX11S
 	// convert format
 	DXGI_FORMAT runtimeFormat, viewFormat;
 	const auto* format = textureInfo->m_format;
-	if ( !MapFormat( format->m_format, runtimeFormat, viewFormat ) )
+	if ( !MapFormat( format->m_format, runtimeFormat, viewFormat) )
 	{
 		GLog.Err( "D3D: Unable to create wrapper for 2D texture of format %hs, width=%d, height=%d", 
 			XenonGPUTextureFormatName( format->m_format ), textureInfo->m_width, textureInfo->m_height );
@@ -644,9 +595,6 @@ CDX11AbstractTexture* CDX11AbstractTexture::Create( ID3D11Device* device, CDX11S
 		ret->m_sourceType = XenonTextureType::Texture_2D;
 		ret->m_sourceArraySlices = 1;
 		ret->m_sourceMips = 1;
-
-		ret->m_runtimeUAVSupported = IsUAVFormat( textureInfo->m_format->m_format );
-
 		ret->m_runtimeFormat = runtimeFormat;
 		ret->m_viewFormat = viewFormat;
 		ret->m_initialDirty = true;
@@ -657,9 +605,6 @@ CDX11AbstractTexture* CDX11AbstractTexture::Create( ID3D11Device* device, CDX11S
 		ret->m_sourceType = XenonTextureType::Texture_3D;
 		ret->m_sourceArraySlices = 1;
 		ret->m_sourceMips = 1;
-
-		ret->m_runtimeUAVSupported = IsUAVFormat( textureInfo->m_format->m_format );
-
 		ret->m_runtimeFormat = runtimeFormat;
 		ret->m_viewFormat = viewFormat;
 		ret->m_initialDirty = true;

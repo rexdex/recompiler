@@ -50,6 +50,8 @@ private:
 	static const uint32 GENERIC_FORMAT_8_8_8_8_GAMMA = 2;
 	static const uint32 GENERIC_FORMAT_10_10_10_2 = 3;
 	static const uint32 GENERIC_FORMAT_10_10_10_2_GAMMA = 4;
+	static const uint32 GENERIC_FORMAT_16_16 = 5;
+	static const uint32 GENERIC_FORMAT_16_16_FLOAT = 6;
 	
 	// DX11 device, always valid
 	ID3D11Device*				m_device;

@@ -29,10 +29,6 @@ public:
 	/// Get assigned memory address
 	virtual uint32 GetSourceMemoryAddress() const override final;
 
-	// Get the raw view for compute shaders
-	inline ID3D11UnorderedAccessView* GetRawViewUint() const { return m_viewUint; }
-	inline ID3D11UnorderedAccessView* GetRawViewFloat() const { return m_viewFloat; }
-
 	// Upload texture from CPU data (may recompress)
 	void Upload( const void* srcTextureData, void* destData, uint32 destRowPitch, uint32 destSlicePitch ) const;
 
@@ -45,6 +41,7 @@ protected:
 	uint32					m_depth;
 
 	XenonTextureFormat		m_sourceFormat;
+	uint32					m_sourceFormatBlockWidth;
 	XenonGPUEndianFormat	m_sourceEndianess;
 	uint32					m_sourceWidth;
 	uint32					m_sourceHeight;
@@ -59,11 +56,7 @@ protected:
 	bool					m_sourceIsTiled;
 	bool					m_isBlockCompressed;
 
-	DXGI_FORMAT				m_runtimeFormat;
-	DXGI_FORMAT				m_viewFormat; // UAV for direct copy, NOTE: may not exist
-
-	ID3D11UnorderedAccessView*	m_viewUint; // for writing into the surface - used for some formats during Resolve
-	ID3D11UnorderedAccessView*	m_viewFloat; // for writing into the surface - used for some formats during Resolve
+	DXGI_FORMAT					m_runtimeFormat;
 
 	friend class CDX11AbstractTexture;
 };
@@ -112,7 +105,6 @@ protected:
 
 	DXGI_FORMAT					m_runtimeFormat;
 	ID3D11Resource*				m_runtimeTexture;
-	bool						m_runtimeUAVSupported;
 
 	DXGI_FORMAT					m_viewFormat;
 	ID3D11ShaderResourceView*	m_view; // for shaders only
@@ -138,8 +130,7 @@ protected:
 	void Update();
 
 	// mapping
-	static bool MapFormat( XenonTextureFormat sourceFormat, DXGI_FORMAT& runtimeFormat, DXGI_FORMAT& viewFormat );
-	static bool IsUAVFormat( XenonTextureFormat sourceFormat );
+	static bool MapFormat( XenonTextureFormat sourceFormat, DXGI_FORMAT& runtimeFormat, DXGI_FORMAT& viewFormat);
 	static bool IsBlockCompressedFormat( XenonTextureFormat sourceFormat );
 };
 

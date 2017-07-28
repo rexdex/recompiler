@@ -194,7 +194,9 @@ uint64 __fastcall XboxThreads_NtYieldExecution( uint64 ip, cpu::CpuRegs& regs )
 
 uint64 __fastcall XboxThreads_KeQuerySystemTime( uint64 ip, cpu::CpuRegs& regs )
 {
-	DebugBreak();
+	const uint32 dataPtr = (const uint32)regs.R3;
+	GLog.Log("KeQuerySystemTime(0x%08X)", dataPtr);
+	mem::storeAddr<uint64>(dataPtr, 0);
 	RETURN_DEFAULT();
 }
 
