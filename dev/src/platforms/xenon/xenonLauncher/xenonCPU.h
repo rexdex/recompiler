@@ -309,9 +309,9 @@ namespace cpu
 		}
 	};
 
-	static const uint8 ByteIndex[32] = { 3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12, 19,18,17,16, 23,22,21,20, 27,26,25,24, 31,30,29,28 };
-	static const uint8 WorldIndex[16] = { 1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14 };
-
+	#define VREG_WORD_INDEX(x) ((x) ^ (1))
+	#define VREG_BYTE_INDEX(x) ((x) ^ (3))
+	
 	struct VReg
 	{
 		union
@@ -370,25 +370,25 @@ namespace cpu
 		template< uint8 Index >
 		uint16& AsUint16()
 		{
-			return ((uint16*)this)[WorldIndex[Index]];
+			return ((uint16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		int16& AsInt16()
 		{
-			return ((int16*)this)[WorldIndex[Index]];
+			return ((int16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		uint8& AsUint8()
 		{
-			return ((uint8*)this)[WorldIndex[Index]];
+			return ((uint8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		int8& AsInt8()
 		{
-			return ((int8*)this)[WorldIndex[Index]];
+			return ((int8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		//---
@@ -410,22 +410,22 @@ namespace cpu
 
 		uint16& AsUint16(const uint8 Index)
 		{
-			return ((uint16*)this)[WorldIndex[Index]];
+			return ((uint16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		int16& AsInt16(const uint8 Index)
 		{
-			return ((int16*)this)[WorldIndex[Index]];
+			return ((int16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		uint8& AsUint8(const uint8 Index)
 		{
-			return ((uint8*)this)[WorldIndex[Index]];
+			return ((uint8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		int8& AsInt8(const uint8 Index)
 		{
-			return ((int8*)this)[WorldIndex[Index]];
+			return ((int8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		//---
@@ -447,22 +447,22 @@ namespace cpu
 
 		uint16 AsUint16(const uint8 Index) const
 		{
-			return ((uint16*)this)[WorldIndex[Index]];
+			return ((uint16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		int16 AsInt16(const uint8 Index) const
 		{
-			return ((int16*)this)[WorldIndex[Index]];
+			return ((int16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		uint8& AsUint8(const uint8 Index) const
 		{
-			return ((uint8*)this)[WorldIndex[Index]];
+			return ((uint8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		int8 AsInt8(const uint8 Index) const
 		{
-			return ((int8*)this)[WorldIndex[Index]];
+			return ((int8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		//---
@@ -488,25 +488,25 @@ namespace cpu
 		template< uint8 Index >
 		const uint16 AsUint16() const
 		{
-			return ((const uint16*)this)[WorldIndex[Index]];
+			return ((const uint16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		const int16 AsInt16() const
 		{
-			return ((const int16*)this)[WorldIndex[Index]];
+			return ((const int16*)this)[VREG_WORD_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		const uint8 AsUint8() const
 		{
-			return ((const uint8*)this)[ByteIndex[Index]];
+			return ((const uint8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		template< uint8 Index >
 		const int8 AsInt8() const
 		{
-			return ((const int8*)this)[ByteIndex[Index]];
+			return ((const int8*)this)[VREG_BYTE_INDEX(Index)];
 		}
 
 		//---
