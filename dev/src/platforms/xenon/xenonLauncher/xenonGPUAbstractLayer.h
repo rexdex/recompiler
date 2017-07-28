@@ -8,6 +8,7 @@ class IXenonGPUAbstractRenderTarget;
 class IXenonGPUAbstractDepthStencil;
 class IXenonGPUDumpWriter;
 struct XenonTextureInfo;
+class XenonSamplerInfo;
 
 /// Helper layer to translate native GPU command into more abstract stuff than can be mapped into DX11/DX12
 class IXenonGPUAbstractLayer
@@ -191,6 +192,9 @@ public:
 
 	// Bind texture to given fetch slot
 	virtual void SetTexture( const uint32 fetchSlot, const XenonTextureInfo* texture ) = 0;
+
+	// Bind sampler to given fetch slot
+	virtual void SetSampler(const uint32 fetchSlot, const XenonSamplerInfo* sampler) = 0;
 };
 
 /// Helper render target information

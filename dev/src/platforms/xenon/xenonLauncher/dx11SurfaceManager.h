@@ -6,6 +6,7 @@
 
 #include "xenonGPUConstants.h"
 #include "xenonGPUUtils.h"
+#include "dx11Utils.h"
 
 class CDX11SurfaceCache;
 class CDX11SurfaceMemory;
@@ -39,6 +40,9 @@ public:
 
 	/// Copy out data from EDRAM
 	bool ResolveColor( const uint32 srcIndex, const XenonColorRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect );
+
+	/// Copy out the depth data from EDRAM
+	bool ResolveDepth(const XenonDepthRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect);
 
 	/// Swap
 	void ResolveSwap( ID3D11Texture2D* frontBuffer );
@@ -102,6 +106,33 @@ private:
 		EDRAMRuntimeSetup();
 	};
 
+	/// Surface copy params
+#pragma pack(push,4)
+	struct Settings
+	{
+		int32 m_copySrcOffsetX;
+		int32 m_copySrcOffsetY;
+		int32 m_copyDestOffsetX;
+		int32 m_copyDestOffsetY;
+		int32 m_copyDestSizeX;
+		int32 m_copyDestSizeY;
+
+		Settings()
+			: m_copySrcOffsetX(0)
+			, m_copySrcOffsetY(0)
+			, m_copyDestOffsetX(0)
+			, m_copyDestOffsetY(0)
+			, m_copyDestSizeX(0)
+			, m_copyDestSizeY(0)
+		{};
+	};
+#pragma pack(pop)
+
+	static_assert(sizeof(Settings) == 6 * 4, "Mismatched CPU <-> GPU size");
+
+	// constant buffer
+	TDX11ConstantBuffer< Settings >	m_settings;
+
 	/// Surface cache
 	CDX11SurfaceCache*		m_cache;
 
@@ -110,4 +141,7 @@ private:
 
 	/// Last realized EDRAM setup
 	EDRAMRuntimeSetup		m_runtimeSetup;
+
+	/// Copy shaders
+	CDX11ComputeShader		m_copyTextureCS;
 };

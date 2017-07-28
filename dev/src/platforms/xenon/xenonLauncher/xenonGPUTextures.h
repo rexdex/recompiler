@@ -150,3 +150,24 @@ private:
 	void CalculateTextureSizes2D( const XenonGPUTextureFetch& fetch );
 	void CalculateTextureSizesCube( const XenonGPUTextureFetch& fetch );
 };
+
+// sampler definition
+class XenonSamplerInfo
+{
+public:
+	XenonSamplerInfo();
+
+	XenonTextureFilter m_minFilter;
+	XenonTextureFilter m_magFilter;
+	XenonTextureFilter m_mipFilter;
+	XenonClampMode m_clampU;
+	XenonClampMode m_clampV;
+	XenonClampMode m_clampW;
+	XenonAnisoFilter m_anisoFilter;
+	XenonBorderColor m_borderColor;
+	float m_lodBias;
+
+	uint32 GetHash() const;
+
+	static XenonSamplerInfo Parse(const XenonGPUTextureFetch& info);
+};

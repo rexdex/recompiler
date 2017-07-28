@@ -475,7 +475,14 @@ bool CDX11AbstractLayer::ResolveColorRenderTarget( const uint32 srcIndex, const 
 
 bool CDX11AbstractLayer::ResolveDepthRenderTarget( const XenonDepthRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, const uint32 destBase, const uint32 destLogicalWidth, const uint32 destLogicalHeight, const uint32 destBlockWidth, const uint32 destBlockHeight, const XenonTextureFormat destFormat, const XenonRect2D& destRect )
 {
-	return true;	
+	// create/get the target texture proxy for a memory at given physical address
+	// NOTE: this may reuse existing texture, also this may cause conflicts in memory management (waiting for DX12 I suppose)
+	CDX11AbstractTexture* destTexture = m_textureManager->GetTexture(destBase, destLogicalWidth, destLogicalHeight, destFormat);
+	if (!destTexture)
+		return false;
+
+	// copy the EDRAM content into a runtime texture
+	return m_surfaceManager->ResolveDepth(srcFormat, srcBase, srcRect, destTexture, destRect);
 }
 
 //---------------------------------------------------------------------------
@@ -1005,8 +1012,10 @@ bool CDX11AbstractLayer::RealizeShaderConstants()
 bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds )
 {
 	// clear shader - HACK
-	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && ds.m_indexCount == 3 )
+	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList )
 	{
+		DEBUG_CHECK(ds.m_indexCount == 3);
+
 		// get the vertex stream with clear color
 		const uint32 fetchSlot = 0;
 		const uint32 fetchRegBase = (uint32) XenonGPURegister::REG_SHADER_CONSTANT_FETCH_00_0 + (fetchSlot*2);
@@ -1021,7 +1030,7 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 		clearColor[3] = mem::loadAddr<float>( srcMemoryAddress + 12 + 12 );
 
 		// get the Z to clear
-		const auto clearZ  = mem::loadAddr<float>(srcMemoryAddress + 8);
+		const auto clearZ = 1.0f;// mem::loadAddr<float>(srcMemoryAddress + 8);
 
 		// compensate for packed color
 		const float packMin = -32896.503f;
@@ -1064,6 +1073,12 @@ void CDX11AbstractLayer::SetTexture( const uint32 fetchSlot, const XenonTextureI
 
 	// set the runtime texture on the drawer
 	m_drawer->SetTexture( fetchSlot, runtimeTexture );
+}
+
+void CDX11AbstractLayer::SetSampler(const uint32 fetchSlot, const XenonSamplerInfo* sampler)
+{
+	static XenonSamplerInfo defaultSampler;
+	m_drawer->SetSampler(fetchSlot, sampler ? *sampler : defaultSampler);
 }
 
 //---------------------------------------------------------------------------

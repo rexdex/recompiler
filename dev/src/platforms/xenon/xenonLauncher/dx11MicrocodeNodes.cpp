@@ -581,7 +581,7 @@ CodeChunk ExprVectorFunc1::EmitHLSL( IHLSLWriter& writer ) const
 	CodeChunk ret;
 
 	ret.Append( m_funcName );
-	ret.Append( "(" );
+	ret.Append( "(regs, " );
 	ret.Append( m_children[0]->EmitHLSL( writer ) );
 	ret.Append( ")" );
 
@@ -603,7 +603,7 @@ std::string ExprVectorFunc2::ToString() const
 	std::string ret;
 
 	ret += m_funcName;
-	ret += "(";
+	ret += "(regs, ";
 	ret += m_children[0]->ToString();
 	ret += ",";
 	ret += m_children[1]->ToString();
@@ -617,7 +617,7 @@ CodeChunk ExprVectorFunc2::EmitHLSL( IHLSLWriter& writer ) const
 	CodeChunk ret;
 
 	ret.Append( m_funcName );
-	ret.Append( "((" );
+	ret.Append( "(regs, (" );
 	ret.Append( m_children[0]->EmitHLSL( writer ) );
 	ret.Append( "),(" );
 	ret.Append( m_children[1]->EmitHLSL( writer ) );
@@ -658,7 +658,7 @@ CodeChunk ExprVectorFunc3::EmitHLSL( IHLSLWriter& writer ) const
 	CodeChunk ret;
 
 	ret.Append( m_funcName );
-	ret.Append( "((" );
+	ret.Append( "(regs, (" );
 	ret.Append( m_children[0]->EmitHLSL( writer ) );
 	ret.Append( "),(" );
 	ret.Append( m_children[1]->EmitHLSL( writer ) );
@@ -696,7 +696,7 @@ CodeChunk ExprScalarFunc1::EmitHLSL( IHLSLWriter& writer ) const
 	CodeChunk ret;
 
 	ret.Append( m_funcName );
-	ret.Append( "(" );
+	ret.Append( "(regs," );
 	ret.Append( m_children[0]->EmitHLSL( writer ) );
 	ret.Append( ")" );
 
@@ -732,7 +732,7 @@ CodeChunk ExprScalarFunc2::EmitHLSL( IHLSLWriter& writer ) const
 	CodeChunk ret;
 
 	ret.Append( m_funcName );
-	ret.Append( "((" );
+	ret.Append( "(regs, (" );
 	ret.Append( m_children[0]->EmitHLSL( writer ) );
 	ret.Append( "),(" );
 	ret.Append( m_children[1]->EmitHLSL( writer ) );
@@ -996,8 +996,13 @@ void WriteWithMaskStatement::EmitHLSL( IHLSLWriter& writer ) const
 	}
 
 	// nothing to output
-	if ( numSpecialChannels==0 && numSourceSwizzles==0 )
+	if (numSpecialChannels == 0 && numSourceSwizzles == 0)
+	{
+		// we still need to evaluate the source
+		CodeChunk src = m_source->EmitHLSL(writer);
+		writer.Emit(src);
 		return;
+	}
 
 	// evaluate source and copy the (masked) channels
 	if ( numSourceSwizzles > 0 )

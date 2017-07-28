@@ -70,10 +70,24 @@ namespace Helper
 			case XenonColorFormat::Format_2_10_10_10: return XenonTextureFormat::Format_2_10_10_10;
 			case XenonColorFormat::Format_32_FLOAT: return XenonTextureFormat::Format_32_FLOAT;
 			case XenonColorFormat::Format_16_16: return XenonTextureFormat::Format_16_16;
+			case XenonColorFormat::Format_16: return XenonTextureFormat::Format_16;
 		}
 
 		GLog.Err("Unsupported texture format: %u", format);
 		DEBUG_CHECK( !"Unsupported color format" );
+		return XenonTextureFormat::Format_Unknown;
+	}
+
+	static inline XenonTextureFormat DepthFormatToTextureFormat(XenonDepthRenderTargetFormat format)
+	{
+		switch (format)
+		{
+			case XenonDepthRenderTargetFormat::Format_D24S8: return XenonTextureFormat::Format_24_8;
+			case XenonDepthRenderTargetFormat::Format_D24FS8: return XenonTextureFormat::Format_24_8_FLOAT;
+		}
+
+		GLog.Err("Unsupported texture format: %u", format);
+		DEBUG_CHECK(!"Unsupported color format");
 		return XenonTextureFormat::Format_Unknown;
 	}
 
@@ -97,8 +111,11 @@ bool CXenonGPUState::IssueDraw( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 	else if ( enableMode == XenonModeControl::Copy )
 	{
 		return IssueCopy( abstractLayer, traceDump, regs );
-		return true;
 	}
+
+	// clear BEFORE resetting states
+	if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList)
+		return abstractLayer->DrawGeometry(regs, traceDump, ds);
 
 	// prepare drawing conditions
 	if ( !UpdateRenderTargets( abstractLayer, regs ) )
@@ -278,8 +295,10 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 				const uint32 depthBase = (depthInfo & 0xFFF); // EDRAM base
 
 				auto depthFormat = (XenonDepthRenderTargetFormat)( (depthInfo >> 16) & 0x1 );
-				//depth_target = GetDepthRenderTarget(surface_pitch, surface_msaa, depth_base, depth_format);    
-				//src_format = DepthRenderTargetToTextureFormat(depth_format);
+
+				abstractLayer->ResolveDepthRenderTarget(depthFormat, depthBase, srcRect,
+					copyDestBase, destLogicalWidth, destLogicalHeight, destBlockWidth, destBlockHeight,
+					Helper::DepthFormatToTextureFormat(depthFormat), destRect);
 			}
 		}
 	}
@@ -888,6 +907,10 @@ bool CXenonGPUState::UpdateTexturesAndSamplers( IXenonGPUAbstractLayer* abstract
 				abstractLayer->SetTexture( fetchSlot, nullptr );
 				continue;
 			}
+
+			// set sampler
+			auto samplerInfo = XenonSamplerInfo::Parse(fetchInfo);
+			abstractLayer->SetSampler(fetchSlot, &samplerInfo);
 
 			// dump texture
 			if (traceDump != nullptr)

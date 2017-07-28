@@ -298,6 +298,45 @@ popd
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath).h</Outputs>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\copyTexture.vs.fx">
+      <FileType>Document</FileType>
+      <Command>pushd $(FrameworkSdkDir)\x64\
+fxc.exe -T vs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+$(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+del %(FullPath).fxc
+popd
+    </Command>
+      <Outputs>%(FullPath).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\copyTexture.cs.fx">
+      <FileType>Document</FileType>
+      <Command>
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T ps_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+      <Outputs>%(FullPath).h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+    </CustomBuild>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

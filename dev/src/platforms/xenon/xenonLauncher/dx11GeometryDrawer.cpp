@@ -59,6 +59,8 @@ CDX11GeometryDrawer::CDX11GeometryDrawer( ID3D11Device* dev, ID3D11DeviceContext
 	, m_defaultTexture2DView( nullptr )
 	, m_defaultTexture3D( nullptr )
 	, m_defaultTexture3DView( nullptr )
+	, m_defaultTextureCube(nullptr)
+	, m_defaultTextureCubeView(nullptr)
 	, m_shaderTextureFetchSlots( 0 )
 {
 	// texture list
@@ -87,6 +89,7 @@ CDX11GeometryDrawer::CDX11GeometryDrawer( ID3D11Device* dev, ID3D11DeviceContext
 
 	// create textures
 	CreateDefaultTextures();
+	CreateDefaultSamplers();
 }
 
 CDX11GeometryDrawer::~CDX11GeometryDrawer()
@@ -182,8 +185,74 @@ void CDX11GeometryDrawer::SetTexture( const uint32 fetchSlot, CDX11AbstractTextu
 	m_textures[ fetchSlot ] = runtimeTexture;
 }
 
+void CDX11GeometryDrawer::SetSampler(const uint32 fetchSlot, const XenonSamplerInfo& samplerInfo)
+{
+	auto sampler = m_samplerCache->GetSamplerState(samplerInfo);
+	m_samplers[fetchSlot] = sampler;
+}
+
+void CDX11GeometryDrawer::CreateDefaultSamplers()
+{
+	XenonSamplerInfo defaultSamplerInfo;
+	auto defaultSampler = m_samplerCache->GetSamplerState(defaultSamplerInfo);
+	
+	for (auto i = 0; i < ARRAYSIZE(m_samplers); ++i)
+		m_samplers[i] = defaultSampler;
+}
+
 void CDX11GeometryDrawer::CreateDefaultTextures()
 {
+	// 1D texture
+	{
+		const uint32 size = 256;
+
+		// texture memory
+		uint8* data = new uint8[size*4];
+		uint8* writePtr = data;
+		for (uint32 x = 0; x < size; ++x, writePtr += 4)
+		{
+			writePtr[0] = x;
+			writePtr[1] = 255-x;
+			writePtr[2] = (x&7) << 4;
+			writePtr[3] = 255;
+		}
+
+		// setup texture
+		D3D11_TEXTURE1D_DESC desc;
+		memset(&desc, 0, sizeof(desc));
+		desc.ArraySize = 1;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.MipLevels = 1;
+		desc.Width = size;
+		desc.MiscFlags = 0;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+
+		// setup source data
+		D3D11_SUBRESOURCE_DATA texData;
+		texData.pSysMem = data;
+		texData.SysMemPitch = 4 * size;
+
+		// create texture
+		HRESULT hRet = m_device->CreateTexture1D(&desc, &texData, &m_defaultTexture1D);
+		DEBUG_CHECK(SUCCEEDED(hRet) && m_defaultTexture1D);
+
+		// release temp texture memory
+		delete[] data;
+
+		// setup texture view
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+		viewDesc.Format = desc.Format;
+		viewDesc.Texture1D.MipLevels = 1;
+		viewDesc.Texture1D.MostDetailedMip = 0;
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
+
+		// create texture view
+		hRet = m_device->CreateShaderResourceView(m_defaultTexture1D, &viewDesc, &m_defaultTexture1DView);
+		DEBUG_CHECK(SUCCEEDED(hRet) && m_defaultTexture1DView);
+	}
+
 	// 2D texture
 	{
 		const uint32 size = 256;
@@ -240,6 +309,73 @@ void CDX11GeometryDrawer::CreateDefaultTextures()
 		// create texture view
 		hRet = m_device->CreateShaderResourceView( m_defaultTexture2D, &viewDesc, &m_defaultTexture2DView );
 		DEBUG_CHECK( SUCCEEDED(hRet) && m_defaultTexture2DView );		
+	}
+
+	// 2D cube texture
+	{
+		const uint32 size = 64;
+
+		// texture memory
+		uint8* data = new uint8[6 * size*size * 4];
+		uint8* writePtr = data;
+		for (uint32 i = 0; i < 6; ++i)		
+		{
+			const uint8 rMask = (i == 0) ? 0 : (i == 1) ? 255 : 127;
+			const uint8 gMask = (i == 2) ? 0 : (i == 3) ? 255 : 127;
+			const uint8 bMask = (i == 4) ? 0 : (i == 5) ? 255 : 127;
+			for (uint32 y = 0; y < size; ++y)
+			{
+				for (uint32 x = 0; x < size; ++x, writePtr += 4)
+				{
+					writePtr[0] = (x^y) & rMask;
+					writePtr[1] = (x^y) & gMask;
+					writePtr[2] = (x^y) & bMask;
+					writePtr[3] = 255;
+				}
+			}
+		}
+
+		// setup texture
+		D3D11_TEXTURE2D_DESC desc;
+		memset(&desc, 0, sizeof(desc));
+		desc.ArraySize = 6;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.MipLevels = 1;
+		desc.Width = size;
+		desc.Height = size;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+
+		// setup source data
+		D3D11_SUBRESOURCE_DATA texData[6];
+		for (int i = 0; i < 6; ++i)
+		{
+			texData[i].pSysMem = data + (i * (4 * size*size));
+			texData[i].SysMemPitch = 4 * size;
+			texData[i].SysMemSlicePitch = 4 * size*size;
+		}
+
+		// create texture
+		HRESULT hRet = m_device->CreateTexture2D(&desc, texData, &m_defaultTextureCube);
+		DEBUG_CHECK(SUCCEEDED(hRet) && m_defaultTextureCube);
+
+		// release temp texture memory
+		delete[] data;
+
+		// setup texture view
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+		viewDesc.Format = desc.Format;
+		viewDesc.TextureCube.MipLevels = 1;
+		viewDesc.TextureCube.MostDetailedMip = 0;
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+
+		// create texture view
+		hRet = m_device->CreateShaderResourceView(m_defaultTextureCube, &viewDesc, &m_defaultTextureCubeView);
+		DEBUG_CHECK(SUCCEEDED(hRet) && m_defaultTextureCubeView);
 	}
 
 	// 3D texture
@@ -701,7 +837,7 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 			ID3D11ShaderResourceView* textureView = nullptr;
 			if ( it.m_type == CDX11MicrocodeShader::ETextureType::TYPE_1D )
 			{
-				textureView = tex ? tex->GetView() : m_defaultTexture1DView;
+				textureView = (tex && tex->GetType() == XenonTextureType::Texture_1D) ? tex->GetView() : m_defaultTexture1DView;
 			}
 			else if ( it.m_type == CDX11MicrocodeShader::ETextureType::TYPE_2D )
 			{
@@ -710,6 +846,10 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 			else if ( it.m_type == CDX11MicrocodeShader::ETextureType::TYPE_Array2D )
 			{
 				textureView = tex ? tex->GetView() : m_defaultTexture2DArrayView;
+			}
+			else if (it.m_type == CDX11MicrocodeShader::ETextureType::TYPE_CUBE)
+			{
+				textureView = (tex && tex->GetType() == XenonTextureType::Texture_Cube) ? tex->GetView() : m_defaultTextureCubeView;
 			}
 			else if ( it.m_type == CDX11MicrocodeShader::ETextureType::TYPE_3D )
 			{
@@ -721,8 +861,7 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 			}
 
 			// get sampler
-			CDX11SamplerCache::SamplerInfo samplerInfo;
-			auto* samplerState = m_samplerCache->GetSamplerState( samplerInfo );
+			auto* samplerState = m_samplers[it.m_fetchSlot];
 
 			// bind sampler and texture
 			m_mainContext->PSSetShaderResources( it.m_runtimeSlot, 1, &textureView );
@@ -769,6 +908,8 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 		const uint32 vertexCount = dsCopy.m_indexCount;
 		m_mainContext->Draw( vertexCount, 0 );
 	}
+
+	GLog.Log("[GPU]: Draw %u vertices", dsCopy.m_indexCount);
 
 	// reset texture list
 	memset( m_textures, 0, sizeof(m_textures) );

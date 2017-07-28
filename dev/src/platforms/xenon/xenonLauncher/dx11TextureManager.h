@@ -29,6 +29,9 @@ public:
 	/// Get assigned memory address
 	virtual uint32 GetSourceMemoryAddress() const override final;
 
+	// get writable view
+	inline ID3D11UnorderedAccessView* GetWritableView() const { return m_writeView; }
+
 	// Upload texture from CPU data (may recompress)
 	void Upload( const void* srcTextureData, void* destData, uint32 destRowPitch, uint32 destSlicePitch ) const;
 
@@ -55,6 +58,8 @@ protected:
 	uint32					m_sourcePackedTileOffsetY;
 	bool					m_sourceIsTiled;
 	bool					m_isBlockCompressed;
+
+	ID3D11UnorderedAccessView*	m_writeView; // for resolve
 
 	DXGI_FORMAT					m_runtimeFormat;
 
@@ -86,6 +91,9 @@ public:
 
 	// get general resource view
 	inline ID3D11ShaderResourceView* GetView() const { return m_view; }
+
+	// get view format
+	inline DXGI_FORMAT GetViewFormat() const { return m_viewFormat; }
 
 	// Create new texture based on the XenonTextureInfo
 	// NOTE: the XenonTextureInfo is usually created from fetch structure

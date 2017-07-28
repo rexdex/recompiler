@@ -10,7 +10,7 @@
 #include "shaders/vsCommon.fx.h"
 #include "shaders/instrCommon.fx.h"
 
-//#pragma optimize( "", off )
+#pragma optimize( "", off )
 
 CDX11ShaderHLSLGenerator::CDX11ShaderHLSLGenerator()
 {
@@ -288,6 +288,11 @@ namespace Helper
 			m_writer->Appendf( "%hs = %hs;\n", dest.c_str(), src.c_str() );
 		}
 
+		virtual void Emit(CodeChunk src) override final
+		{
+			m_writer->Appendf("%hs;\n", src.c_str());
+		}
+
 		virtual void BeginControlFlow( const uint32 address, const bool bHasJumps, const bool bHasCalls, const bool bIsCalled ) override final
 		{
 			m_writer->Appendf( "uint microcode_%d( INPUT input, inout OUTPUT ret, inout REGS regs )\n", address );
@@ -386,11 +391,13 @@ namespace Helper
 
 void CDX11ShaderHLSLGenerator::GenerateRegsStructure( class CDX11ShaderHLSLWriter& writer, const class CDX11MicrocodeShader& microcode )
 {
-	writer.Append( "// Registers\n" );
-	writer.Append( "struct REGS\n" );
-	writer.Append( "{\n" );
-	writer.Append( "  int A0;\n ");
-	writer.Append( "  bool PRED;\n ");
+	writer.Append("// Registers\n");
+	writer.Append("struct REGS\n");
+	writer.Append("{\n");
+	writer.Append("  int A0;\n ");
+	writer.Append("  bool PRED;\n ");
+	writer.Append("  float PS;\n ");
+	writer.Append("  float4 PV;\n ");
 
 	// initialize used regs
 	std::vector< uint32 > usedRegs;
@@ -400,6 +407,11 @@ void CDX11ShaderHLSLGenerator::GenerateRegsStructure( class CDX11ShaderHLSLWrite
 		const uint32 regIndex = usedRegs[i];
 		writer.Appendf( "  float4 R%d;\n", regIndex );
 	}
+
+	// HACK: make sure the R1 is always emitted in vertex shaders
+	if (find(usedRegs.begin(), usedRegs.end(), 1) == usedRegs.end() && !microcode.IsPixelShader())
+		writer.Appendf("  float4 R1;\n");
+
 	writer.Append( "};\n\n" );
 }
 
@@ -563,13 +575,13 @@ bool CDX11ShaderHLSLGenerator::GenerateHLSL( const class CDX11MicrocodeShader& m
 	else
 		GenerateVertexShaderStructures( writer, context, microcode );
 
+	// generate the registers
+	GenerateRegsStructure(writer, microcode);
+
 	// emit common stuff
 	writer.Append( microcode.IsPixelShader() ? PixelShaderCommonTxt : VertexShaderCommonTxt );
 	writer.Append( InstructionsCommonTxt );
 
-	// generate the registers
-	GenerateRegsStructure( writer, microcode );
-	
 	// emit the microcode structure
 	{
 		Helper::CDX11ShaderHLSLGeneratorGlue glueWriter( writer, microcode.IsPixelShader() );

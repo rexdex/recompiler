@@ -49,6 +49,9 @@ public:
 	/// Get texture data
 	inline ID3D11Texture2D* GetTexture() const { return m_texture; }
 
+	/// Get format of the texture
+	inline DXGI_FORMAT GetActualFormat() const { return m_actualFormat; }
+
 private:
 	CDX11AbstractRenderTarget();
 
@@ -108,10 +111,20 @@ public:
 	/// Get raw view
 	inline ID3D11ShaderResourceView* GetReadOnlyView() const { return m_srv; }
 
+	/// Get texture
+	inline ID3D11Texture2D* GetTexture() const { return m_texture; }
+
+	/// Get a temp non-depth texture
+	inline ID3D11Texture2D* GetNonDepthTexture() const { return m_textureNonDepth; }
+
+	/// Get format of the texture
+	inline DXGI_FORMAT GetActualFormat() const { return m_actualFormat; }
+
 private:
 	CDX11AbstractDepthStencil();
 	
 	ID3D11Texture2D*				m_texture;
+	ID3D11Texture2D*				m_textureNonDepth;
 	ID3D11ShaderResourceView*		m_srv;
 	ID3D11DepthStencilView*			m_dsv;
 

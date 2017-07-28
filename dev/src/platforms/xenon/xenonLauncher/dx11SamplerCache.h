@@ -4,6 +4,7 @@
 #include <d3d11.h>
 
 #include "xenonGPUConstants.h"
+#include "xenonGPUTextures.h"
 
 //---------------------------------------------------------------------------
 
@@ -12,19 +13,10 @@ class CDX11SamplerCache
 {
 public:
 	CDX11SamplerCache( ID3D11Device* device );
-	~CDX11SamplerCache();
-
-	// sampler definition
-	class SamplerInfo
-	{
-	public:
-		SamplerInfo();
-
-		uint32 GetHash() const;
-	};
+	~CDX11SamplerCache();	
 
 	// find sampler for given definition
-	ID3D11SamplerState* GetSamplerState( const SamplerInfo& info );
+	ID3D11SamplerState* GetSamplerState( const XenonSamplerInfo& info );
 
 private:
 	typedef std::map< uint32, ID3D11SamplerState* >		TSamplers;
@@ -39,5 +31,5 @@ private:
 	void Clear();
 
 	// create sampler definition from description
-	static ID3D11SamplerState* CreateSamplerState( ID3D11Device* dev, const SamplerInfo& info );
+	static ID3D11SamplerState* CreateSamplerState( ID3D11Device* dev, const XenonSamplerInfo& info );
 };

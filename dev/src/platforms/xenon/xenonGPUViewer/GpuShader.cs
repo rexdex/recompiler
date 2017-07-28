@@ -1574,7 +1574,14 @@ namespace xenonGPUViewer
 		        {
 			        var arg1 = EmitSrcReg( alu, 0 );
 			        var arg2 = EmitSrcReg( alu, 1 );
-			        var func = EmitVectorInstruction2( vectorInstr, arg1, arg2 );
+
+                    if (vectorInstr == GPUVectorALU.PRED_SETE_PUSHv || vectorInstr == GPUVectorALU.PRED_SETGTE_PUSHv || vectorInstr == GPUVectorALU.PRED_SETGT_PUSHv || vectorInstr == GPUVectorALU.PRED_SETNE_PUSHv)
+                    {
+                        var func = EmitVectorInstruction2(vectorInstr, arg1, arg2);
+                        predPart = "SetPredicate(" + func + ")";
+                    }
+
+                    var func = EmitVectorInstruction2( vectorInstr, arg1, arg2 );
 			        vectorPart = EmitVectorResult( alu, func );
 		        }
 		        else if ( argCount == 3 )
@@ -1599,13 +1606,12 @@ namespace xenonGPUViewer
 			        var arg1 = EmitSrcReg( alu, 2 );
 			        var func = EmitScalarInstruction1( scalarInstr, arg1 );
 
-			        if ( scalarInstr == GPUScalarALU.PRED_SETNEs || scalarInstr == GPUScalarALU.PRED_SETEs || scalarInstr == GPUScalarALU.PRED_SETGTEs || scalarInstr == GPUScalarALU.PRED_SETGTs )
-			        {                        
-				        predPart = "SetPredicate(" + func + ")";
-			        }
+                    if (scalarInstr == GPUScalarALU.PRED_SETNEs || scalarInstr == GPUScalarALU.PRED_SETEs || scalarInstr == GPUScalarALU.PRED_SETGTEs || scalarInstr == GPUScalarALU.PRED_SETGTs)
+                    {
+                        predPart = "SetPredicate(" + func + ")";
+                    }
 
-
-			        scalarPart = EmitScalarResult( alu, func );
+                    scalarPart = EmitScalarResult( alu, func );
 		        }
 		        else if ( argCount == 2 )
 		        {

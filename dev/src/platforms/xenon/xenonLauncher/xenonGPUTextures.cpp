@@ -121,18 +121,18 @@ bool XenonTextureInfo::Parse( const XenonGPUTextureFetch& fetchInfo, XenonTextur
 		case XenonTextureDimension::Dimmension_3D:
 		{
 			outInfo.m_dimension = XenonTextureDimension::Dimmension_3D;
-			outInfo.m_width = fetchInfo.size_3d.width;
-			outInfo.m_height = fetchInfo.size_3d.height;
-			outInfo.m_depth = fetchInfo.size_3d.depth;
+			outInfo.m_width = fetchInfo.size_3d.width + 1;
+			outInfo.m_height = fetchInfo.size_3d.height + 1;
+			outInfo.m_depth = fetchInfo.size_3d.depth + 1;
 			break;
 		}
 
 		case XenonTextureDimension::Dimmension_Cube:
 		{
 			outInfo.m_dimension = XenonTextureDimension::Dimmension_Cube;
-			outInfo.m_width = fetchInfo.size_3d.width;
-			outInfo.m_height = fetchInfo.size_3d.height;
-			outInfo.m_depth = fetchInfo.size_3d.depth;
+			outInfo.m_width = fetchInfo.size_stack.width + 1;
+			outInfo.m_height = fetchInfo.size_stack.height + 1;
+			outInfo.m_depth = fetchInfo.size_stack.depth + 1;
 			break;
 		}
 	}
@@ -320,3 +320,49 @@ void XenonTextureInfo::CalculateTextureSizesCube( const XenonGPUTextureFetch& fe
 }
 
 //------------------------------------
+
+
+XenonSamplerInfo::XenonSamplerInfo()
+	: m_minFilter(XenonTextureFilter::Linear)
+	, m_magFilter(XenonTextureFilter::Linear)
+	, m_mipFilter(XenonTextureFilter::Linear)
+	, m_clampU(XenonClampMode::Repeat)
+	, m_clampV(XenonClampMode::Repeat)
+	, m_clampW(XenonClampMode::Repeat)
+	, m_anisoFilter(XenonAnisoFilter::Max_1_1)
+	, m_borderColor(XenonBorderColor::AGBR_Black)
+	, m_lodBias(0.0f)
+{
+}
+
+uint32 XenonSamplerInfo::GetHash() const
+{
+	uint32 hash = 0;
+	hash = (hash * 4) + (uint32)m_minFilter;
+	hash = (hash * 4) + (uint32)m_magFilter;
+	hash = (hash * 4) + (uint32)m_mipFilter;
+	hash = (hash * 8) + (uint32)m_clampU;
+	hash = (hash * 8) + (uint32)m_clampV;
+	hash = (hash * 8) + (uint32)m_clampW;
+	hash = (hash * 4) + (uint32)m_borderColor;
+	hash = (hash * 4) + (uint32)m_anisoFilter;
+	hash ^= (uint32&)m_lodBias;
+	return hash;
+}
+
+XenonSamplerInfo XenonSamplerInfo::Parse(const XenonGPUTextureFetch& info)
+{
+	XenonSamplerInfo ret;
+
+	ret.m_minFilter = (XenonTextureFilter)info.min_filter;
+	ret.m_magFilter = (XenonTextureFilter)info.mag_filter;
+	ret.m_mipFilter = (XenonTextureFilter)info.mip_filter;
+	ret.m_clampU = (XenonClampMode)info.clamp_x;
+	ret.m_clampV = (XenonClampMode)info.clamp_y;
+	ret.m_clampW = (XenonClampMode)info.clamp_z;
+	//ret.m_anisoFilter = (XenonAnisoFilter)info.;
+	ret.m_borderColor = (XenonBorderColor)info.border;
+	//ret.m_lodBias = (XenonAnisoFilter)info.mip_min_level;
+
+	return ret;
+}

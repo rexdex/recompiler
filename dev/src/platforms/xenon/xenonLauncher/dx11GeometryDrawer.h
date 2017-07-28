@@ -51,6 +51,9 @@ public:
 	// Set the runtime texture (actual D3D resource) to a given fetch slot
 	void SetTexture( const uint32 fetchSlot, class CDX11AbstractTexture* runtimeTexture );
 
+	// Set the sampler to given fetch slot
+	void SetSampler(const uint32 fetchSlot, const XenonSamplerInfo& samplerInfo);
+
 public:
 	// Draw prepared geometry
 	bool Draw( const class CXenonGPURegisters& regs, class IXenonGPUDumpWriter* traceDump, const struct CXenonGPUState::DrawIndexState& ds );
@@ -114,7 +117,9 @@ private:
 	ID3D11ShaderResourceView*	m_defaultTexture2DArrayView;
 	ID3D11Texture3D*			m_defaultTexture3D;
 	ID3D11ShaderResourceView*	m_defaultTexture3DView;
-	
+	ID3D11Texture2D*			m_defaultTextureCube;
+	ID3D11ShaderResourceView*	m_defaultTextureCubeView;
+
 	// microcode copy
 	ShaderData			m_pixelShader;
 	ShaderData			m_vertexShader;
@@ -139,6 +144,9 @@ private:
 	static const uint32 MAX_TEXTURE_FETCH_SLOTS = 32;
 	CDX11AbstractTexture*	m_textures[ MAX_TEXTURE_FETCH_SLOTS ];
 
+	// samplers
+	ID3D11SamplerState*		m_samplers[MAX_TEXTURE_FETCH_SLOTS];
+
 	// shader dump directory
 	std::wstring	m_shaderDumpDirectory;
 
@@ -150,6 +158,7 @@ private:
 	// manage default texture resources
 	void CreateDefaultTextures();
 	void ReleaseDefaultTextres();
+	void CreateDefaultSamplers();
 
 	// texture fetch slot mask update (from both shaders)
 	void RefreshTextureFetchSlotMask();

@@ -363,6 +363,7 @@ const char* BlockTranslator::GetVectorFuncName1( const CXenonGPUMicrocodeTransfo
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::MOVAv: return "MOVAv";
 	}
 
+	DEBUG_CHECK(!"Invalid function name");
 	return nullptr;
 }
 
@@ -372,8 +373,8 @@ const char* BlockTranslator::GetVectorFuncName2( const CXenonGPUMicrocodeTransfo
 	{
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::ADDv: return "ADDv";
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::MULv: return "MULv";
-		case CXenonGPUMicrocodeTransformer::EVectorInstr::MAXv: return "max";//MAXv";
-		case CXenonGPUMicrocodeTransformer::EVectorInstr::MINv: return "min";//MINv";
+		case CXenonGPUMicrocodeTransformer::EVectorInstr::MAXv: return "MAXv";
+		case CXenonGPUMicrocodeTransformer::EVectorInstr::MINv: return "MINv";
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::SETEv: return "SETEv";
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::SETGTv: return "SETGTv";
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::SETGTEv: return "SETGTEv";
@@ -392,6 +393,7 @@ const char* BlockTranslator::GetVectorFuncName2( const CXenonGPUMicrocodeTransfo
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::DSTv: return "DSTv";
 	}
 
+	DEBUG_CHECK(!"Invalid function name");
 	return nullptr;
 }
 
@@ -406,6 +408,7 @@ const char* BlockTranslator::GetVectorFuncName3( const CXenonGPUMicrocodeTransfo
 		case CXenonGPUMicrocodeTransformer::EVectorInstr::DOT2ADDv: return "DOT2ADDv";
 	}
 
+	DEBUG_CHECK(!"Invalid function name");
 	return nullptr;
 }
 
@@ -459,6 +462,7 @@ const char* BlockTranslator::GetScalarFuncName1( const CXenonGPUMicrocodeTransfo
 		case CXenonGPUMicrocodeTransformer::EScalarInstr::RETAIN_PREV: return "RETAIN_PREV";
 	}
 
+	DEBUG_CHECK(!"Invalid function name");
 	return nullptr;
 }
 
@@ -474,5 +478,6 @@ const char* BlockTranslator::GetScalarFuncName2( const CXenonGPUMicrocodeTransfo
 		case CXenonGPUMicrocodeTransformer::EScalarInstr::SUB_CONST_1: return "SUB_CONST_1";
 	}
 
+	DEBUG_CHECK(!"Invalid function name");
 	return nullptr;
 }

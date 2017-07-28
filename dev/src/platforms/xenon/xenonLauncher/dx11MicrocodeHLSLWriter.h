@@ -42,6 +42,7 @@ namespace DX11Microcode
 		virtual void PopPredicate() = 0;
 
 		virtual void Assign( CodeChunk dest, CodeChunk src ) = 0;
+		virtual void Emit(CodeChunk src) = 0;
 	};
 }
 

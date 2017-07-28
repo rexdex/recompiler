@@ -255,7 +255,7 @@ CDX11AbstractRenderTarget* CDX11AbstractRenderTarget::Create( ID3D11Device* devi
 	ret->m_texture = tex;
 	ret->m_srv = srv;
 	ret->m_rtv = rtv;
-	ret->m_actualFormat = desc.Format;
+	ret->m_actualFormat = viewFormat;
 	ret->m_sourceFormat = format;
 	ret->m_sourceMSAA = msaa;
 	ret->m_sourcePitch = pitch;
@@ -426,6 +426,17 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 		return nullptr;
 	}
 
+	// create non-depth texture
+	desc.BindFlags &= ~D3D11_BIND_DEPTH_STENCIL;
+	ID3D11Texture2D* texNonDepth = nullptr;
+	hRet = device->CreateTexture2D(&desc, NULL, &texNonDepth);
+	if (!tex || FAILED(hRet))
+	{
+		tex->Release();
+		GLog.Err("D3D: Failed to create RT texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height);
+		return nullptr;
+	}
+
 	// create depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	memset( &dsvDesc, 0, sizeof(dsvDesc) );
@@ -446,6 +457,7 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 	if ( !dsv || FAILED(hRet) )
 	{
 		tex->Release();
+		texNonDepth->Release();
 		GLog.Err( "D3D: Failed to create DSV for DS texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
 		return nullptr;
 	}
@@ -462,6 +474,7 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 	{
 		dsv->Release();
 		tex->Release();
+		texNonDepth->Release();
 		GLog.Err( "D3D: Failed to create SRV for DS texture: 0x%X, width:%d, height:%d", hRet, desc.Width, desc.Height );
 		return nullptr;
 	}
@@ -469,6 +482,7 @@ CDX11AbstractDepthStencil* CDX11AbstractDepthStencil::Create( ID3D11Device* devi
 	// build final RT wrapper
 	CDX11AbstractDepthStencil* ret = new CDX11AbstractDepthStencil();
 	ret->m_texture = tex;
+	ret->m_textureNonDepth = texNonDepth;
 	ret->m_srv = srv;
 	ret->m_dsv = dsv;
 	ret->m_actualFormat = desc.Format;

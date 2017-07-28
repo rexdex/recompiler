@@ -102,9 +102,21 @@ CDX11SurfaceManager::EDRAMRuntimeSetup::EDRAMRuntimeSetup()
 CDX11SurfaceManager::CDX11SurfaceManager( ID3D11Device* dev, ID3D11DeviceContext* context )
 	: m_context( context )
 	, m_device( dev )
-{
+	, m_copyTextureCS("CopyTextureCS")
+{	
 	// create surface cache
 	m_cache = new CDX11SurfaceCache( dev );
+
+	// create settings buffer
+	m_settings.Create(dev);
+
+	// load shader
+	{	
+#define char uint8
+#include "shaders/copyTexture.cs.fx.h"
+	m_copyTextureCS.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
+#undef char
+	}
 }
 
 CDX11SurfaceManager::~CDX11SurfaceManager()
@@ -309,6 +321,16 @@ bool CDX11SurfaceManager::RealizeSetup( uint32& outMainWidth,  uint32& outMainHe
 	}
 }
 
+static const bool IsTypeCompatible(const DXGI_FORMAT src, const DXGI_FORMAT dest)
+{
+	if (src == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB && dest == DXGI_FORMAT_R8G8B8A8_UNORM)
+		return true;
+	else if (src == DXGI_FORMAT_R8G8B8A8_UNORM && dest == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+		return true;
+
+	return false;
+}
+
 bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect )
 {
 	// destiation texture MUST be given
@@ -364,12 +386,127 @@ bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorR
 	srcBox.front = 0;
 	srcBox.back = 1;
 
-	// copy data
-	m_context->CopySubresourceRegion(destTexture->GetRuntimeTexture(), 0, destRect.x, destRect.y, 0, rt->GetTexture(), 0, &srcBox);
+	// get formats
+	const auto srcRawFormat = rt->GetActualFormat();
+	const auto destRawFormat = destTexture->GetViewFormat();
 
-	// resolve using the memory manager (it has all the means to do so)
-	//m_memory->Resolve( srcFormat, srcBase, rt->GetMemoryPitch(), srcRect.x, srcRect.y, destRect.x, destRect.y, destRect.w, destRect.h, destSurf );
-	return true;
+	// copy data directly
+	if (srcRawFormat == destRawFormat || IsTypeCompatible(srcRawFormat, destRawFormat))
+	{
+		m_context->CopySubresourceRegion(destTexture->GetRuntimeTexture(), 0, destRect.x, destRect.y, 0, rt->GetTexture(), 0, &srcBox);
+		return true;
+	}
+
+	// surface is not writable
+	if (!destSurf->GetWritableView())
+		return false;
+
+	// UAVs
+	ID3D11UnorderedAccessView* views[1] =
+	{
+		destSurf->GetWritableView(),
+	};
+
+	// SRVs
+	ID3D11ShaderResourceView* roViews[1] =
+	{
+		rt->GetReadOnlyView(),
+	};
+
+	// resolve via copy
+	m_settings.Get().m_copySrcOffsetX = srcRect.x;
+	m_settings.Get().m_copySrcOffsetY = srcRect.y;
+	m_settings.Get().m_copyDestOffsetX = destRect.x;
+	m_settings.Get().m_copyDestOffsetX = destRect.y;
+	m_settings.Get().m_copyDestSizeX = destRect.w;
+	m_settings.Get().m_copyDestSizeY = destRect.h;
+
+	// unset render targets
+	ID3D11RenderTargetView* rtv[] = { nullptr, nullptr, nullptr, nullptr };
+	m_context->OMSetRenderTargets(4, rtv, nullptr);
+
+	// setup
+	m_context->CSSetShader(m_copyTextureCS.GetShader(), NULL, 0);
+	m_context->CSSetConstantBuffers(0, 1, m_settings.GetBufferForBinding(m_context));
+	m_context->CSSetUnorderedAccessViews(0, ARRAYSIZE(views), views, NULL);
+	m_context->CSSetShaderResources(0, ARRAYSIZE(roViews), roViews);
+	m_context->Dispatch(destRect.w, destRect.h, 1);
+
+	// reset binding
+	ID3D11UnorderedAccessView* nullView = NULL;
+	m_context->CSSetUnorderedAccessViews(0, 1, &nullView, NULL);
+
+	// resolve
+	return false;
+}
+
+bool CDX11SurfaceManager::ResolveDepth(const XenonDepthRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect)
+{
+	// destiation texture MUST be given
+	DEBUG_CHECK(destTexture != nullptr);
+	if (!destTexture)
+		return false;
+
+	// clear the surface if bounded
+	auto* ds = m_runtimeSetup.m_surfaceDepth;
+	if (ds == nullptr)
+	{
+		GLog.Err("EDRAM: No depth surface to copy from EDRAM");
+		return false;
+	}
+
+	// rt surface is NOT bound to EDRAM
+	if (ds->GetEDRAMPlacement() == -1)
+	{
+		GLog.Err("EDRAM: Depth surface not bound to EDRAM");
+		return false;
+	}
+
+	// lie - different BASE for the edram surface
+	DEBUG_CHECK(ds->GetEDRAMPlacement() == srcBase);
+
+	// validate destSize <= surfaceSize
+	DEBUG_CHECK(srcRect.x >= 0);
+	DEBUG_CHECK(srcRect.y >= 0);
+	DEBUG_CHECK(srcRect.w <= destRect.w);
+	DEBUG_CHECK(srcRect.h <= destRect.h);
+
+	// setup looks right, resolve into the FIRST surface of the texture
+	auto* destSurf = static_cast<CDX11AbstractSurface*>(destTexture->GetSurface(0, 0));
+	DEBUG_CHECK(destSurf != nullptr);
+	if (!destSurf)
+		return false;
+
+	// last size check
+	DEBUG_CHECK(destRect.x + destRect.w <= (int)destSurf->GetWidth());
+	DEBUG_CHECK(destRect.y + destRect.h <= (int)destSurf->GetHeight());
+
+	// setup source area
+	D3D11_BOX srcBox;
+	srcBox.left = srcRect.x;
+	srcBox.top = srcRect.y;
+	srcBox.right = srcRect.x + destRect.w;
+	srcBox.bottom = srcRect.y + destRect.h;
+	srcBox.front = 0;
+	srcBox.back = 1;
+
+	GLog.Log("[GPU]: ResolveDepth");
+
+	// get formats
+	const auto srcRawFormat = ds->GetActualFormat();
+	const auto destRawFormat = destTexture->GetViewFormat();
+	if (srcRawFormat == DXGI_FORMAT_R24G8_TYPELESS && destRawFormat == DXGI_FORMAT_R24_UNORM_X8_TYPELESS)
+	{
+		// copy into temp texture
+		m_context->CopySubresourceRegion(ds->GetNonDepthTexture(), 0, 0, 0, 0, ds->GetTexture(), 0, nullptr);
+
+		// copy into target
+		m_context->CopySubresourceRegion(destTexture->GetRuntimeTexture(), 0, destRect.x, destRect.y, 0, ds->GetNonDepthTexture(), 0, &srcBox);
+		return true;
+	}
+
+	GLog.Err("Resolve: Depth resolve not supported");
+	return false;
 }
 
 void CDX11SurfaceManager::ClearColor( const uint32 index, const float* clearColor, const bool flushToEDRAM )
@@ -392,7 +529,8 @@ void CDX11SurfaceManager::ClearDepth( const float depthClear, const uint32 stenc
 	if ( nullptr != rt )
 	{
 		// clear the surface
-		rt->Clear( true, true, depthClear, stencilClear );
+		const auto clampedDepth = std::max<float>(0.0f, std::min<float>(depthClear, 1.0f));
+		rt->Clear( true, true, clampedDepth, stencilClear );
 	}
 }
 

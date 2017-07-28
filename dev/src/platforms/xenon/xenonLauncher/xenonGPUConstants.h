@@ -338,3 +338,42 @@ enum class XenonTextureFormatType : uint32
 	Uncompressed,
 	Compressed,
 };
+
+enum class XenonClampMode : uint32
+{
+	Repeat = 0,
+	MirroredRepeat = 1,
+	ClampToEdge = 2,
+	MirrorClampToEdge = 3,
+	ClampToHalfway = 4,
+	MirrorClampToHalfway = 5,
+	ClampToBorder = 6,
+	MirrorClampToBorder = 7,
+};
+
+enum class XenonTextureFilter : uint32
+{
+	Point = 0,
+	Linear = 1,
+	BaseMap = 2,
+	UseFetchConst = 3,
+};
+
+enum class XenonAnisoFilter : uint32
+{
+	Disabled = 0,
+	Max_1_1 = 1,
+	Max_2_1 = 2,
+	Max_4_1 = 3,
+	Max_8_1 = 4,
+	Max_16_1 = 5,
+	UseFetchConst = 7,
+};
+
+enum class XenonBorderColor : uint32
+{
+	AGBR_Black = 0,
+	AGBR_White = 1,
+	ACBYCR_BLACK = 2,
+	ACBCRY_BLACK = 3,
+};

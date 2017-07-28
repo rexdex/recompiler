@@ -25,11 +25,19 @@ CDX11AbstractSurface::CDX11AbstractSurface()
 	, m_sourcePackedTileOffsetY( 0 )
 	, m_sourceEndianess( XenonGPUEndianFormat::FormatUnspecified )
 	, m_runtimeFormat( DXGI_FORMAT_UNKNOWN )
+	, m_writeView(nullptr)
 {
 }
 
 CDX11AbstractSurface::~CDX11AbstractSurface()
 {
+	// release the write view
+	if (m_writeView)
+	{
+		m_writeView->Release();
+		m_writeView = nullptr;
+	}
+
 }
 
 XenonTextureFormat CDX11AbstractSurface::GetFormat() const
@@ -301,6 +309,19 @@ bool CDX11AbstractTexture::IsBlockCompressedFormat( XenonTextureFormat sourceFor
 	return false;
 }
 
+static const bool IsUAVFormat(DXGI_FORMAT format)
+{
+	switch (format)
+	{
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+		case DXGI_FORMAT_R32G32_FLOAT:
+		case DXGI_FORMAT_R32_FLOAT:
+			return true;
+	}
+
+	return false;
+}
+
 bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORMAT& runtimeFormat, DXGI_FORMAT& viewFormat)
 {
 	switch ( sourceFormat )
@@ -316,6 +337,12 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 		case XenonTextureFormat::Format_4_4_4_4:
 			runtimeFormat = DXGI_FORMAT_R8G8B8A8_TYPELESS;
 			viewFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			return true;
+
+		// formats that will fit in standard 8888 texture
+		case XenonTextureFormat::Format_8_8:
+			runtimeFormat = DXGI_FORMAT_R8G8_TYPELESS;
+			viewFormat = DXGI_FORMAT_R8G8_UNORM;
 			return true;
 
 		// poors man HDR - formats that will fit in standard 4x16 texture
@@ -361,24 +388,32 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 
 		case XenonTextureFormat::Format_16:
 		case XenonTextureFormat::Format_16_EXPAND:
-			runtimeFormat = DXGI_FORMAT_R16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16G16_UNORM;
+			//runtimeFormat = DXGI_FORMAT_R16_TYPELESS;
+			//viewFormat = DXGI_FORMAT_R16_UNORM;
+			runtimeFormat = DXGI_FORMAT_R32_TYPELESS;
+			viewFormat = DXGI_FORMAT_R32_FLOAT;
 			return true;
 
 		case XenonTextureFormat::Format_16_16:
 		case XenonTextureFormat::Format_16_16_EXPAND:
-			runtimeFormat = DXGI_FORMAT_R16G16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16G16_UNORM;
+			//runtimeFormat = DXGI_FORMAT_R16G16_TYPELESS;
+			//viewFormat = DXGI_FORMAT_R16G16_UNORM;
+			runtimeFormat = DXGI_FORMAT_R32G32_TYPELESS;
+			viewFormat = DXGI_FORMAT_R32G32_FLOAT;
 			return true;
 
 		case XenonTextureFormat::Format_16_FLOAT:
-			runtimeFormat = DXGI_FORMAT_R16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16_FLOAT;
+			//runtimeFormat = DXGI_FORMAT_R16_TYPELESS;
+			//viewFormat = DXGI_FORMAT_R16_FLOAT;
+			runtimeFormat = DXGI_FORMAT_R32_TYPELESS;
+			viewFormat = DXGI_FORMAT_R32_FLOAT;
 			return true;
 
 		case XenonTextureFormat::Format_16_16_FLOAT:
-			runtimeFormat = DXGI_FORMAT_R16G16_TYPELESS;
-			viewFormat = DXGI_FORMAT_R16G16_FLOAT;
+			//runtimeFormat = DXGI_FORMAT_R16G16_TYPELESS;
+			//viewFormat = DXGI_FORMAT_R16G16_FLOAT;
+			runtimeFormat = DXGI_FORMAT_R32G32_TYPELESS;
+			viewFormat = DXGI_FORMAT_R32G32_FLOAT;
 			return true;
 
 		case XenonTextureFormat::Format_16_16_16_16_FLOAT:
@@ -423,6 +458,11 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 
 bool CDX11AbstractTexture::CreateResources( ID3D11Device* device )
 {
+	// Flags
+	uint32 bindFlags = D3D11_BIND_SHADER_RESOURCE;
+	if (IsUAVFormat(m_viewFormat))
+		bindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+
 	// 2D
 	if ( m_sourceType == XenonTextureType::Texture_2D )
 	{
@@ -438,7 +478,7 @@ bool CDX11AbstractTexture::CreateResources( ID3D11Device* device )
 		texDesc.Width = m_sourceInfo.m_size2D.m_logicalWidth;
 		texDesc.Height = m_sourceInfo.m_size2D.m_logicalHeight;
 		texDesc.CPUAccessFlags = 0; // never accessed by CPU
-		texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; // never a render target but can be accessed via UAV
+		texDesc.BindFlags = bindFlags; // never a render target but can be accessed via UAV
 		texDesc.MiscFlags = 0;
 		texDesc.Usage = D3D11_USAGE_DEFAULT;
 		texDesc.SampleDesc.Count = 1;
@@ -476,8 +516,110 @@ bool CDX11AbstractTexture::CreateResources( ID3D11Device* device )
 		m_runtimeTexture = tex;
 		return true;
 	}
+	else if (m_sourceType == XenonTextureType::Texture_Cube)
+	{
+		DEBUG_CHECK(m_runtimeTexture == nullptr);
+		DEBUG_CHECK(m_sourceInfo.m_depth == 6);
+
+		// setup texture descriptor
+		D3D11_TEXTURE2D_DESC texDesc;
+		memset(&texDesc, 0, sizeof(texDesc));
+		texDesc.ArraySize = m_sourceInfo.m_depth;
+		texDesc.MipLevels = m_sourceMips;
+		texDesc.Format = m_runtimeFormat;
+		texDesc.Width = m_sourceInfo.m_sizeCube.m_logicalWidth;
+		texDesc.Height = m_sourceInfo.m_sizeCube.m_logicalHeight;
+		texDesc.CPUAccessFlags = 0; // never accessed by CPU
+		texDesc.BindFlags = bindFlags; // never a render target but can be accessed via UAV
+		texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+
+		// create texture object
+		ID3D11Texture2D* tex = nullptr;
+		HRESULT hRet = device->CreateTexture2D(&texDesc, NULL, &tex);
+		if (FAILED(hRet) || !tex)
+		{
+			GLog.Err("D3D: Error creating 2D texture: 0x%08X", hRet);
+			return false;
+		}
+
+		// setup view description (using the view format)
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+		memset(&viewDesc, 0, sizeof(viewDesc));
+		viewDesc.Format = m_viewFormat;
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+		viewDesc.TextureCube.MipLevels = m_sourceMips;
+		viewDesc.TextureCube.MostDetailedMip = 0;
+
+		// create basic shader resource view
+		ID3D11ShaderResourceView* view = nullptr;
+		hRet = device->CreateShaderResourceView(tex, &viewDesc, &view);
+		if (FAILED(hRet) || !view)
+		{
+			tex->Release();
+			GLog.Err("D3D: Error creating view for 2D texture: 0x%08X", hRet);
+			return false;
+		}
+
+		// setup
+		m_view = view;
+		m_runtimeTexture = tex;
+		return true;
+	}
+	else if (m_sourceType == XenonTextureType::Texture_3D)
+	{
+		DEBUG_CHECK(m_runtimeTexture == nullptr);
+		
+		// setup texture descriptor
+		D3D11_TEXTURE3D_DESC texDesc;
+		memset(&texDesc, 0, sizeof(texDesc));
+		texDesc.Depth = m_sourceInfo.m_depth;
+		texDesc.MipLevels = m_sourceMips;
+		texDesc.Format = m_runtimeFormat;
+		texDesc.Width = m_sourceInfo.m_width;
+		texDesc.Height = m_sourceInfo.m_height;
+		texDesc.CPUAccessFlags = 0; // never accessed by CPU
+		texDesc.BindFlags = bindFlags; // never a render target but can be accessed via UAV
+		texDesc.MiscFlags = 0;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		// create texture object
+		ID3D11Texture3D* tex = nullptr;
+		HRESULT hRet = device->CreateTexture3D(&texDesc, NULL, &tex);
+		if (FAILED(hRet) || !tex)
+		{
+			GLog.Err("D3D: Error creating 2D texture: 0x%08X", hRet);
+			return false;
+		}
+
+		// setup view description (using the view format)
+		D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+		memset(&viewDesc, 0, sizeof(viewDesc));
+		viewDesc.Format = m_viewFormat;
+		viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
+		viewDesc.Texture3D.MipLevels = m_sourceMips;
+		viewDesc.Texture3D.MostDetailedMip = 0;
+
+		// create basic shader resource view
+		ID3D11ShaderResourceView* view = nullptr;
+		hRet = device->CreateShaderResourceView(tex, &viewDesc, &view);
+		if (FAILED(hRet) || !view)
+		{
+			tex->Release();
+			GLog.Err("D3D: Error creating view for 2D texture: 0x%08X", hRet);
+			return false;
+		}
+
+		// setup
+		m_view = view;
+		m_runtimeTexture = tex;
+		return true;
+	}
 
 	// not done
+	DEBUG_CHECK(!"Resource type not implemented");
 	return false;
 }
 
@@ -525,6 +667,21 @@ bool CDX11AbstractTexture::CreateSurfaces( ID3D11Device* device )
 				// runtime format of the surface is the same
 				surf->m_runtimeFormat = m_runtimeFormat;
 
+				// create view
+				if (IsUAVFormat(m_viewFormat))
+				{
+					D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+					memset(&uavDesc, 0, sizeof(uavDesc));
+					uavDesc.Format = m_viewFormat;
+					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+					uavDesc.Texture2D.MipSlice = mip;
+
+					ID3D11UnorderedAccessView* writeView = NULL;
+					HRESULT hRet = device->CreateUnorderedAccessView(m_runtimeTexture, &uavDesc, &writeView);
+					DEBUG_CHECK(hRet == 0 && writeView);
+					surf->m_writeView = writeView;
+				}
+
 				// add to surface list
 				m_surfaces.push_back( surf );
 			}
@@ -533,8 +690,101 @@ bool CDX11AbstractTexture::CreateSurfaces( ID3D11Device* device )
 		// done
 		return true;
 	}
+	else if (m_sourceType == XenonTextureType::Texture_Cube)
+	{
+		DEBUG_CHECK(m_sourceInfo.m_depth == 6);
+		DEBUG_CHECK(m_runtimeTexture != nullptr);
+
+		for (uint32 slice = 0; slice < m_sourceInfo.m_depth; ++slice)
+		{
+			for (uint32 mip = 0; mip < m_sourceMips; ++mip)
+			{
+				const uint32 memoryOffset = 0; // TODO
+
+				// create surface info
+				CDX11AbstractSurface* surf = new CDX11AbstractSurface();
+				surf->m_sourceFormat = m_sourceInfo.m_format->m_format;
+				surf->m_sourceFormatBlockWidth = m_sourceInfo.m_format->m_blockWidth;
+				surf->m_width = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_logicalWidth >> mip);
+				surf->m_height = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_logicalHeight >> mip);
+				surf->m_depth = 1;
+
+				surf->m_sourceWidth = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_actualWidth >> mip);
+				surf->m_sourceHeight = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_actualHeight >> mip);
+				surf->m_sourceBlockWidth = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_actualBlockWidth >> mip);
+				surf->m_sourceBlockHeight = std::max<uint32>(1, m_sourceInfo.m_sizeCube.m_actualBlockHeight >> mip);
+				surf->m_sourceRowPitch = m_sourceInfo.m_sizeCube.m_actualPitch;
+				surf->m_sourceSlicePitch = 0;
+				surf->m_sourceMemoryOffset = memoryOffset;
+				surf->m_sourceIsTiled = m_sourceInfo.m_isTiled;
+				surf->m_sourceEndianess = m_sourceInfo.m_endianness;
+				surf->m_isBlockCompressed = IsBlockCompressedFormat(m_sourceInfo.m_format->m_format);
+
+				// size of the single data block
+				const uint32 blockSize = m_sourceInfo.m_format->GetBlockSizeInBytes();
+				surf->m_sourceBlockSize = blockSize;
+
+				// tiling offset
+				m_sourceInfo.GetPackedTileOffset(surf->m_sourcePackedTileOffsetX, surf->m_sourcePackedTileOffsetY);
+
+				// runtime format of the surface is the same
+				surf->m_runtimeFormat = m_runtimeFormat;
+
+				// add to surface list
+				m_surfaces.push_back(surf);
+			}
+		}
+
+		// done
+		return true;
+	}
+	else if (m_sourceType == XenonTextureType::Texture_3D)
+	{
+		DEBUG_CHECK(m_runtimeTexture != nullptr);
+
+		for (uint32 mip = 0; mip < m_sourceMips; ++mip)
+		{
+			const uint32 memoryOffset = 0; // TODO
+
+			// create surface info
+			CDX11AbstractSurface* surf = new CDX11AbstractSurface();
+			surf->m_sourceFormat = m_sourceInfo.m_format->m_format;
+			surf->m_sourceFormatBlockWidth = m_sourceInfo.m_format->m_blockWidth;
+			surf->m_width = std::max<uint32>(1, m_sourceInfo.m_size2D.m_logicalWidth >> mip);
+			surf->m_height = std::max<uint32>(1, m_sourceInfo.m_size2D.m_logicalHeight >> mip);
+			surf->m_depth = 1;
+
+			surf->m_sourceWidth = std::max<uint32>(1, m_sourceInfo.m_size2D.m_actualWidth >> mip);
+			surf->m_sourceHeight = std::max<uint32>(1, m_sourceInfo.m_size2D.m_actualHeight >> mip);
+			surf->m_sourceBlockWidth = std::max<uint32>(1, m_sourceInfo.m_size2D.m_actualBlockWidth >> mip);
+			surf->m_sourceBlockHeight = std::max<uint32>(1, m_sourceInfo.m_size2D.m_actualBlockHeight >> mip);
+			surf->m_sourceRowPitch = m_sourceInfo.m_sizeCube.m_actualPitch;
+			surf->m_sourceSlicePitch = 0;
+			surf->m_sourceMemoryOffset = memoryOffset;
+			surf->m_sourceIsTiled = m_sourceInfo.m_isTiled;
+			surf->m_sourceEndianess = m_sourceInfo.m_endianness;
+			surf->m_isBlockCompressed = IsBlockCompressedFormat(m_sourceInfo.m_format->m_format);
+
+			// size of the single data block
+			const uint32 blockSize = m_sourceInfo.m_format->GetBlockSizeInBytes();
+			surf->m_sourceBlockSize = blockSize;
+
+			// tiling offset
+			m_sourceInfo.GetPackedTileOffset(surf->m_sourcePackedTileOffsetX, surf->m_sourcePackedTileOffsetY);
+
+			// runtime format of the surface is the same
+			surf->m_runtimeFormat = m_runtimeFormat;
+
+			// add to surface list
+			m_surfaces.push_back(surf);
+		}
+
+		// done
+		return true;
+	}
 	
 	// not done
+	DEBUG_CHECK(!"Resource type not implemented");
 	return false;
 }
 
@@ -603,6 +853,16 @@ CDX11AbstractTexture* CDX11AbstractTexture::Create( ID3D11Device* device, CDX11S
 	{
 		ret->m_sourceInfo = *textureInfo;
 		ret->m_sourceType = XenonTextureType::Texture_3D;
+		ret->m_sourceArraySlices = 1;
+		ret->m_sourceMips = 1;
+		ret->m_runtimeFormat = runtimeFormat;
+		ret->m_viewFormat = viewFormat;
+		ret->m_initialDirty = true;
+	}
+	else if (textureInfo->m_dimension == XenonTextureDimension::Dimmension_Cube)
+	{
+		ret->m_sourceInfo = *textureInfo;
+		ret->m_sourceType = XenonTextureType::Texture_Cube;
 		ret->m_sourceArraySlices = 1;
 		ret->m_sourceMips = 1;
 		ret->m_runtimeFormat = runtimeFormat;

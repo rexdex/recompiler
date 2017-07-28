@@ -458,7 +458,7 @@ CodeStatement CXenonGPUMicrocodeTransformer::EmitALU( ICodeWriter& writer, const
 		{
 			CodeExpr arg1 = EmitSrcReg( writer, alu, 0 );
 			CodeExpr arg2 = EmitSrcReg( writer, alu, 1 );
-			CodeExpr func = writer.EmitVectorInstruction2( vectorInstr, arg1, arg2 );
+			CodeExpr func = writer.EmitVectorInstruction2( vectorInstr, arg1, arg2 );			
 			vectorPart = EmitVectorResult( writer, alu, func );
 		}
 		else if ( argCount == 3 )
@@ -485,21 +485,7 @@ CodeStatement CXenonGPUMicrocodeTransformer::EmitALU( ICodeWriter& writer, const
 		if ( argCount == 1 )
 		{
 			CodeExpr arg1 = EmitSrcReg( writer, alu, 2 );
-			CodeExpr func = writer.EmitScalarInstruction1( scalarInstr, arg1 );
-
-			if ( scalarInstr == EScalarInstr::MAXs )
-			{
-				//arg1 = EmitSrcScalarReg1( writer, alu );
-				//arg2 = EmitSrcScalarReg1( writer, alu );
-				//fprintf( stdout, "Here!\n" );
-			}
-
-			if ( scalarInstr == EScalarInstr::PRED_SETNEs || scalarInstr == EScalarInstr::PRED_SETEs || scalarInstr == EScalarInstr::PRED_SETGTEs || scalarInstr == EScalarInstr::PRED_SETGTs )
-			{
-				predPart = writer.EmitSetPredicateStatement( func );
-			}
-
-
+			CodeExpr func = writer.EmitScalarInstruction1(scalarInstr, arg1);
 			scalarPart = EmitScalarResult( writer, alu, func );
 		}
 		else if ( argCount == 2 )
@@ -524,11 +510,7 @@ CodeStatement CXenonGPUMicrocodeTransformer::EmitALU( ICodeWriter& writer, const
 				arg1 = EmitSrcReg( writer, alu, 0 );
 				arg2 = EmitSrcReg( writer, alu, 1 );
 			}
-
-			if ( scalarInstr == EScalarInstr::MAXs )
-			{
-				fprintf( stdout, "Here!\n");
-			}
+			
 			CodeExpr func = writer.EmitScalarInstruction2( scalarInstr, arg1, arg2 );
 			scalarPart = EmitScalarResult( writer, alu, func );
 		}

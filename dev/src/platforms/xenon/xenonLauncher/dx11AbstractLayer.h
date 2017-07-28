@@ -89,6 +89,7 @@ public:
 	// Textures
 	virtual uint32 GetActiveTextureFetchSlotMask() const override final;
 	virtual void SetTexture( const uint32 fetchSlot, const XenonTextureInfo* texture ) override final;
+	virtual void SetSampler(const uint32 fetchSlot, const XenonSamplerInfo* sampler) override final;
 
 private:
 	// DX11 device, always valid
