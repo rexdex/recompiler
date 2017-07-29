@@ -94,6 +94,7 @@ enum class XenonCopyCommand : uint32
 // Subset of a2xx_sq_surfaceformat.
 enum class XenonColorFormat : uint32
 {
+	Unknown = 0,
 	Format_8 = 2,
 	Format_1_5_5_5 = 3,
 	Format_5_6_5 = 4,

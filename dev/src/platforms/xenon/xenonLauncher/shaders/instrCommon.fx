@@ -49,9 +49,21 @@ float4 DOT3v(inout REGS regs, float4 a, float4 b)
 	return regs.PV;
 }
 
+float4 DOT2ADDv(inout REGS regs, float4 a, float4 b, float4 c)
+{
+	regs.PV = (a.x*b.x + a.y*b.y + c.x).xxxx;
+	return regs.PV;
+}
+
 float4 FRACv(inout REGS regs, float4 a)
 {
 	regs.PV = frac(a);
+	return regs.PV;
+}
+
+float4 TRUNCv(inout REGS regs, float4 a)
+{
+	regs.PV = trunc(a);
 	return regs.PV;
 }
 
@@ -337,6 +349,13 @@ float4 MUL_PREVs(inout REGS regs, float4 a)
 float4 MUL_PREV2s(inout REGS regs, float4 a)
 {
 	regs.PS = ((regs.PS == -FLT_MAX) || isinf(regs.PS) || isnan(regs.PS) || isnan(a.y) || a.y <= 0.0) ? -FLT_MAX : a.x * regs.PS;
+	return regs.PS;
+}
+
+float4 MOVAs(inout REGS regs, float4 a)
+{
+	regs.A0 = clamp(int(floor(a.x + 0.5f)), -256.0f, 255.0f);
+	regs.PS = max(a.x, a.y);
 	return regs.PS;
 }
 

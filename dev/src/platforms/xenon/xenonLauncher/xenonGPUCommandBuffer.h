@@ -10,37 +10,27 @@ public:
 	CXenonGPUCommandBufferReader( const uint32* bufferBase, const uint32 bufferSize, const uint32 readStartIndex, const uint32 readEndIndex );
 
 	/// Get we read data ?
-	inline const bool CanRead() const { return m_readIndex < m_readEndIndex; }
+	inline const bool CanRead() const { return m_readCount < m_readMaxCount; }
 
-	/// Get current read offset (0-N)
-	inline const uint32 GetReadOffset() const { return m_readOffset; }
-
-	/// Get raw pointer, will assert if there's not enough space for read
-	const void* GetRawPointer( const uint32 numWords ) const;
-
-	/// Peek value at the command buffer
-	const uint32 Peek() const;
+	/// Extract raw pointer, will assert if there's not enough space for read
+	void GetBatch( const uint32 numWords, uint32* writePtr );
 
 	/// Move command buffer
 	void Advance( const uint32 numWords );
 
 	/// Read single value from command buffer (Peek + Advance(1))
-	inline const uint32 Read()
-	{
-		const uint32 ret = Peek();
-		Advance(1);
-		return ret;
-	}
+	const uint32 Read();
 
 private:
-	const uint32*	m_bufferBase; // const, absolute
-	const uint32	m_bufferSize; // const, in words
+	const uint32* m_bufferBase; // const, absolute
+	const uint32 m_bufferSize; // const, in words
 
-	const uint32	m_readStartIndex;
-	const uint32	m_readEndIndex;
+	const uint32 m_readStartIndex;
+	const uint32 m_readEndIndex;
 
-	uint32			m_readIndex;
-	uint32			m_readOffset; // always incremental
+	uint32 m_readIndex;
+	uint32 m_readCount;
+	uint32 m_readMaxCount;
 };
 
 /// Command buffer management for the GPU
@@ -68,17 +58,15 @@ public:
 
 private:
 	// command buffer initialization data
-	const uint32*		m_commandBufferPtr;
-	uint32				m_numPages;
-	uint32				m_numWords; // in the whole command buffer
+	const uint32* m_commandBufferPtr;
+	uint32 m_numWords; // in the whole command buffer
 
-	// write/read index
-	std::atomic< uint32 >		m_writeIndex;
-	std::atomic< uint32 >		m_readIndex;
+	// write index
+	std::atomic< uint32 > m_writeIndex;
 
-	// batch
-	uint32						m_writeIndexAtReadStart;
+	// read position, used by one thread only
+	uint32 m_readIndex;
 
 	// event used to synchronize reading from command buffer
-	uint32						m_writeBackPtr;	
+	uint32 m_writeBackPtr;	
 };

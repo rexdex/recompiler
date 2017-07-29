@@ -97,6 +97,8 @@ const CDX11FetchLayout::EFormat CDX11FetchLayout::ConvertFetchFormat( const CDX1
 		case CDX11MicrocodeShader::EFetchFormat::FMT_16: return EFormat::FMT_16;
 		case CDX11MicrocodeShader::EFetchFormat::FMT_16_16: return EFormat::FMT_16_16;
 		case CDX11MicrocodeShader::EFetchFormat::FMT_16_16_16_16: return EFormat::FMT_16_16_16_16;
+		case CDX11MicrocodeShader::EFetchFormat::FMT_16_16_FLOAT: return EFormat::FMT_16_16_FLOAT;
+		case CDX11MicrocodeShader::EFetchFormat::FMT_16_16_16_16_FLOAT: return EFormat::FMT_16_16_16_16_FLOAT;
 		case CDX11MicrocodeShader::EFetchFormat::FMT_32: return EFormat::FMT_32;
 		case CDX11MicrocodeShader::EFetchFormat::FMT_32_32: return EFormat::FMT_32_32;
 		case CDX11MicrocodeShader::EFetchFormat::FMT_32_32_32_32: return EFormat::FMT_32_32_32_32;

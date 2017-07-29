@@ -24,7 +24,7 @@ uint64 __fastcall XboxThreads_NtClose( uint64 ip, cpu::CpuRegs& regs )
 	}
 
 	// close the object
-	GLog.Err( "Kernel: Releasing '%s', handle=%08Xh", obj->GetName(), obj->GetHandle() );
+	GLog.Log( "Kernel: Releasing '%s', handle=%08Xh", obj->GetName(), obj->GetHandle() );
 
 	auto* refCountedObj = static_cast<xenon::IKernelObjectRefCounted*>(obj);
 	refCountedObj->Release();

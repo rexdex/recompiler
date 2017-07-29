@@ -139,12 +139,51 @@ uint64 __fastcall XboxUtils_sprintf( uint64 ip, cpu::CpuRegs& regs )
 
 uint64 __fastcall XboxUtils_RtlUnicodeToMultiByteN( uint64 ip, cpu::CpuRegs& regs )
 {
-	RETURN_DEFAULT();
+	char* targetBuf = GetPointer<char>(regs.R3);
+	uint32 targetLength = (uint32)regs.R4;
+	uint32* writtenPtr = GetPointer<uint32>(regs.R5);
+	uint16* sourcePtr = GetPointer<uint16>(regs.R6);
+	uint32 sourceLengthBytes = (uint32)regs.R7;
+
+	auto copyLength = sourceLengthBytes >> 1;
+	copyLength = (copyLength < targetLength) ? copyLength : targetLength;
+
+	for (uint32 i = 0; i < copyLength; i++)
+	{
+		auto c = mem::load<uint16>(sourcePtr + i);
+		targetBuf[i] = c < 255 ? (uint8)c : '?';
+	}
+
+	if (writtenPtr != 0)
+		mem::store<uint32>(writtenPtr, copyLength);
+
+	// done
+	RETURN_ARG(0);
 }
 
 uint64 __fastcall XboxUtils_RtlMultiByteToUnicodeN( uint64 ip, cpu::CpuRegs& regs )
 {
-	RETURN_DEFAULT();
+	uint16* targetBuf = GetPointer<uint16>(regs.R3);
+	uint32 targetLength = (uint32)regs.R4;
+	uint32* writtenPtr = GetPointer<uint32>(regs.R5);
+	char* sourcePtr = GetPointer<char>(regs.R6);
+	uint32 sourceLengthBytes = (uint32)regs.R7;
+
+
+	auto copyLength = sourceLengthBytes >> 1;
+	copyLength = (copyLength < targetLength) ? copyLength : targetLength;
+
+	for (uint32 i = 0; i < copyLength; i++)
+	{
+		auto c = sourcePtr[i];
+		mem::store<uint16>(targetBuf + i, c);
+	}
+
+	if (writtenPtr != 0)
+		mem::store<uint32>(writtenPtr, copyLength);
+
+	// done
+	RETURN_ARG(0);
 }
 
 //---------------------------------------------------------------------------

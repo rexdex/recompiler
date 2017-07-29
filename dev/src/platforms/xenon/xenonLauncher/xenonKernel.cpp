@@ -514,6 +514,10 @@ namespace xenon
 
 	IKernelObject* Kernel::ResolveAny(const uint32 handle)
 	{
+		// no object
+		if (!handle)
+			return nullptr;
+
 		// special cases
 		if (handle == 0xFFFFFFFF)
 		{
@@ -538,6 +542,10 @@ namespace xenon
 
 	IKernelObject* Kernel::ResolveHandle(const uint32 handle, KernelObjectType requestedType)
 	{
+		// no object
+		if (!handle)
+			return nullptr;
+
 		// special cases
 		if (handle == 0xFFFFFFFF)
 		{
@@ -556,7 +564,7 @@ namespace xenon
 		const uint32 index = handle & (MAX_OBJECT - 1);
 		if (!index)
 		{
-			GLog.Err("Kernel: unresolved object, ID=%08X", handle);
+			GLog.Err("Kernel: unresolved handle, ID=%08X", handle);
 			return nullptr;
 		}
 

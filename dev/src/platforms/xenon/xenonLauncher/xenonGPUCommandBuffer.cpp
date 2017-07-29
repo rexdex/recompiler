@@ -11,37 +11,63 @@ CXenonGPUCommandBufferReader::CXenonGPUCommandBufferReader()
 	, m_readStartIndex( 0 )
 	, m_readEndIndex( 0 )
 	, m_readIndex( 0 )
+	, m_readCount(0)
+	, m_readMaxCount(0)
 {
 }
 
-CXenonGPUCommandBufferReader::CXenonGPUCommandBufferReader( const uint32* bufferBase, const uint32 bufferSize, const uint32 readStartIndex, const uint32 readEndIndex )
+CXenonGPUCommandBufferReader::CXenonGPUCommandBufferReader( const uint32* bufferBase, const uint32 bufferSize, const uint32 readStartIndex, const uint32 readEndIndex)
 	: m_bufferBase( bufferBase )
 	, m_bufferSize( bufferSize )
 	, m_readStartIndex( readStartIndex )
-	, m_readEndIndex( readEndIndex )
+	, m_readEndIndex(readEndIndex)
 	, m_readIndex( readStartIndex )
-	, m_readOffset( 0 )
+	, m_readCount(0)
 {
+	auto end = m_readEndIndex;
+	if (end < m_readStartIndex)
+		end += m_bufferSize;
+
+	m_readMaxCount = end - m_readStartIndex;
+
+	DEBUG_CHECK(m_readMaxCount > 0);
+	DEBUG_CHECK(bufferSize > 0);
 }
 
-const uint32 CXenonGPUCommandBufferReader::Peek() const
+const uint32 CXenonGPUCommandBufferReader::Read()
 {
-	DEBUG_CHECK( m_readIndex < m_readEndIndex );
-	return mem::load< uint32 >( m_bufferBase + m_readIndex );
+	DEBUG_CHECK( m_readIndex != m_readEndIndex );
+
+	auto ret = mem::load< uint32 >( m_bufferBase + m_readIndex );
+	Advance(1);
+
+	return ret;
 }
 
-const void* CXenonGPUCommandBufferReader::GetRawPointer( const uint32 numWords ) const
+void CXenonGPUCommandBufferReader::GetBatch(const uint32 numWords, uint32* writePtr)
 {
-	DEBUG_CHECK( m_readEndIndex > m_readStartIndex ); // buffer needs to be one single block
-	DEBUG_CHECK( m_readIndex + numWords <= m_readEndIndex ); // we must have enough memory
-	return m_bufferBase + m_readIndex;
+	DEBUG_CHECK(m_readCount + numWords <= m_readMaxCount);
+
+	auto pos = m_readIndex;
+	for (uint32 index = 0; index<numWords; ++index)
+	{
+		// copy data
+		writePtr[index] = m_bufferBase[pos]; // NOTE: no endianess swap
+
+		// advance
+		pos += 1;
+		if (pos >= m_bufferSize)
+			pos = pos - m_bufferSize;
+	}
 }
 
 void CXenonGPUCommandBufferReader::Advance( const uint32 numWords )
 {
+	DEBUG_CHECK(m_readCount + numWords <= m_readMaxCount);
+
 	// advance
 	m_readIndex += numWords;
-	m_readOffset += numWords;
+	m_readCount += numWords;
 
 	// wrap around
 	if ( m_bufferSize && (m_readIndex >= m_bufferSize) )
@@ -53,7 +79,6 @@ void CXenonGPUCommandBufferReader::Advance( const uint32 numWords )
 CXenonGPUCommandBuffer::CXenonGPUCommandBuffer()
 	: m_commandBufferPtr( nullptr )
 	, m_writeBackPtr( 0 )
-	, m_numPages( 0 )
 {
 }
 
@@ -65,31 +90,26 @@ void CXenonGPUCommandBuffer::Initialize( const void* ptr, const uint32 numPages 
 {
 	// setup basics
 	m_commandBufferPtr = (const uint32*) ptr;
-	m_numPages = numPages;
-
-	// estimate number of words
-	m_numWords = 1 << (0x1C - m_numPages - 1);
+	m_numWords = 1 << (1+numPages); // size of the command buffer
 
 	// reset writing/reading ptr
 	m_writeIndex = 0;
 	m_readIndex = 0;
 
-	GLog.Log( "GPU: Command buffer initialized, ptr=0x%08X, numPages=%d, numWords=%d", 
-		ptr, numPages, m_numWords );
+	GLog.Log( "GPU: Command buffer initialized, ptr=0x%08X, numWords=%d", ptr, m_numWords );
 }
 
 void CXenonGPUCommandBuffer::AdvanceWriteIndex( const uint32 newIndex )
 {
-	uint32 oldIndex = m_writeIndex;
-	m_writeIndex = newIndex;
+	uint32 oldIndex = m_writeIndex.exchange(newIndex);
 
-	//GLog.Log( "GPU: Command buffer writeIndex=%d (delta: %d)", newIndex, newIndex - oldIndex );
+	/*GLog.Log( "GPU: Command buffer writeIndex=%d (delta: %d)", newIndex, newIndex - oldIndex );
 
 	for ( uint32 i=oldIndex; i<newIndex; ++i )
 	{
-		const uint32 memAddr = (const uint32) m_commandBufferPtr + i*4;
-		//GLog.Log( "GPU: Mem[%d]: 0x%08X", (i-oldIndex)/4, mem::loadAddr<uint32>( memAddr) );
-	}
+		const auto memAddr = m_commandBufferPtr + i;
+		GLog.Log( "GPU: Mem[+%d, @%d]: 0x%08X", i-oldIndex, i, mem::load<uint32>( memAddr) );
+	}*/
 }
 
 void CXenonGPUCommandBuffer::SetWriteBackPointer( const uint32 addr )
@@ -100,18 +120,27 @@ void CXenonGPUCommandBuffer::SetWriteBackPointer( const uint32 addr )
 
 bool CXenonGPUCommandBuffer::BeginRead( CXenonGPUCommandBufferReader& outReader )
 {
-	// no new data
-	if ( m_readIndex == m_writeIndex )
-		return false;
-
 	// capture read offset
-	m_writeIndexAtReadStart = m_writeIndex;
-	//GLog.Log( "GPU: Read started: %d", m_writeIndexAtReadStart );
+	auto curWriteIndex = m_writeIndex.load();
+	if (m_readIndex == curWriteIndex)
+	{
+		//GLog.Log("GPU: No new data @%d", curWriteIndex);
+		return false;
+	}
 
 	// setup actual write index
-	const uint32 readStartIndex = m_readIndex % m_numWords; // prev position
-	const uint32 readEndIndex = m_writeIndexAtReadStart % m_numWords; // current position
+	const uint32 readStartIndex = m_readIndex; // prev position
+	const uint32 readEndIndex = curWriteIndex; // current position
+	/*GLog.Log("GPU: Read started at %d, end %d", readStartIndex, readEndIndex);
+	for (uint32 i = readStartIndex; i < readEndIndex; ++i)
+	{
+		auto data = mem::load<uint32>(m_commandBufferPtr + i);
+		GLog.Log("GPU: RMem[+%d, @%d]: 0x%08X", i - readStartIndex, i, data);
+	}*/
+
+	// copy data out
 	memcpy( &outReader, &CXenonGPUCommandBufferReader( m_commandBufferPtr, m_numWords, readStartIndex, readEndIndex ), sizeof(CXenonGPUCommandBufferReader) );
+	m_readIndex = curWriteIndex;
 
 	// advance
 	return true;
@@ -121,11 +150,9 @@ void CXenonGPUCommandBuffer::EndRead()
 {
 	if ( m_writeBackPtr )
 	{
-		m_readIndex = m_writeIndexAtReadStart;
-
 		const uint32 cpuAddr = GPlatform.GetMemory().TranslatePhysicalAddress( m_writeBackPtr );
 		mem::storeAddr< uint32 >( cpuAddr, m_readIndex );
-		GLog.Log("GPU STORE at %08Xh, val %d (%08Xh)", cpuAddr, m_readIndex, m_readIndex);
+		//GLog.Log("GPU STORE at %08Xh, val %d (%08Xh)", cpuAddr, m_readIndex, m_readIndex);
 	}
 }
 

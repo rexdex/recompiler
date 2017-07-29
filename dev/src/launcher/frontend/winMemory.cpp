@@ -403,10 +403,14 @@ namespace win
 	{
 		std::lock_guard<std::mutex> lock(m_lock);
 
-		GLog.Log("PMEM: Allocating physical memory (size=%d, alignment=%d,flags=%d)", size, alignment, protectFlags);
+		auto trueAlignment = alignment;
+		if (trueAlignment < 4096)
+			trueAlignment = 4096;
+
+		GLog.Log("PMEM: Allocating physical memory (size=%d, alignment=%d,flags=%d)", size, trueAlignment, protectFlags);
 
 		// tempshit allocation
-		const uint32 addr = (m_tempShitPhysical + (alignment - 1)) & (~(alignment - 1));
+		const uint32 addr = (m_tempShitPhysical + (trueAlignment - 1)) & (~(trueAlignment - 1));
 		m_tempShitPhysical += size;
 		void* ptr = (char*)m_physicalMemoryBase + addr;//m_physicalMemorySize - addr - size;
 		return ptr;

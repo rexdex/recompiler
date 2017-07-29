@@ -128,6 +128,21 @@ uint4 FetchVertex_16_16( Buffer<uint> b, uint offset, uint stride, uint index )
 	return ret;
 }
 
+uint4 FetchVertex_16_16_FLOAT(Buffer<uint> b, uint offset, uint stride, uint index)
+{
+	uint data = b.Load(CalcFetchPosition(offset, stride, index));
+
+	uint4 ret;
+	ret.x = (data >> 0) & 0xFFFF;
+	ret.y = (data >> 16) & 0xFFFF;
+	ret.z = 0;
+	ret.w = 0;
+
+	ret.x = asuint(f16tof32(ret.x));
+	ret.y = asuint(f16tof32(ret.y));
+
+	return ret;
+}
 
 // out format: unsigned 32 bit 
 uint4 FetchVertex_32( Buffer<uint> b, uint offset, uint stride, uint index )

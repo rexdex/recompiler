@@ -46,6 +46,8 @@ namespace Helper
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_16: fetchDataSize = 16; fetchFuncName = "FetchVertex_16"; break;
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_16_16: fetchDataSize = 16; fetchFuncName = "FetchVertex_16_16"; break;
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_16_16_16_16: fetchDataSize = 16; fetchFuncName = "FetchVertex_16_16_16_16"; break;
+				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_16_16_FLOAT: fetchDataSize = 16; fetchFuncName = "FetchVertex_16_16_FLOAT"; break;
+				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_16_16_16_16_FLOAT: fetchDataSize = 16; fetchFuncName = "FetchVertex_16_16_16_16_FLOAT"; break;
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_32: fetchDataSize = 32; fetchFuncName = "FetchVertex_32"; break;
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_32_32: fetchDataSize = 32; fetchFuncName = "FetchVertex_32_32"; break;
 				case DX11Microcode::ExprVertexFetch::EFetchFormat::FMT_32_32_32_32: fetchDataSize = 32; fetchFuncName = "FetchVertex_32_32_32_32"; break;
@@ -58,7 +60,7 @@ namespace Helper
 
 			// get expand function name (how to convert data just fetched to usuable format)
 			const char* fetchConvFuncName = "";
-			if ( fetchInstr.IsFloat() )
+			if ( fetchInstr.IsFloat())
 			{
 				fetchConvFuncName = "asfloat";
 			}

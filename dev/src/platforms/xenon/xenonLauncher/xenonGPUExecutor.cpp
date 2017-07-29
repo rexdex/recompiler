@@ -39,6 +39,8 @@
 
 #include "..\..\..\launcher\backend\launcherCommandline.h"
 
+//#pragma optimize ("", off)
+
 //-----------
 
 CXenonGPUExecutor::CXenonGPUExecutor( IXenonGPUAbstractLayer* abstractionLayer, const launcher::Commandline& cmdLine )
@@ -235,7 +237,9 @@ bool CXenonGPUExecutor::ExecutePacketType0( CXenonGPUCommandBufferReader& reader
 	// trace
 	if ( m_traceDumpFile )
 	{
-		const uint32* wordsData = (const uint32*) reader.GetRawPointer( regCount );
+		auto* wordsData = (uint32*)alloca(sizeof(uint32) * regCount);
+		reader.GetBatch(regCount, wordsData);
+
 		m_traceDumpFile->Packet( packetData, wordsData, regCount );
 	}
 	
@@ -274,7 +278,9 @@ bool CXenonGPUExecutor::ExecutePacketType1( CXenonGPUCommandBufferReader& reader
 	// trace
 	if ( m_traceDumpFile )
 	{
-		const uint32* wordsData = (const uint32*) reader.GetRawPointer( 2 );
+		uint32 wordsData[2];
+		reader.GetBatch(2, wordsData);
+
 		m_traceDumpFile->Packet( packetData, wordsData, 2 );
 	}
 
@@ -297,18 +303,18 @@ class CFullReadCheck
 public:
 	CFullReadCheck( const CXenonGPUCommandBufferReader& reader, const uint32 count )
 		: m_reader( &reader )
-		, m_expectedOffset( reader.GetReadOffset() + count )
+		//, m_expectedOffset( reader.GetReadOffset() + count )
 	{
 	}
 
 	~CFullReadCheck()
 	{
-		DEBUG_CHECK( m_expectedOffset == m_reader->GetReadOffset() );
+		//DEBUG_CHECK( m_expectedOffset == m_reader->GetReadOffset() );
 	}
 
 private:
 	const CXenonGPUCommandBufferReader*		m_reader;
-	const uint32							m_expectedOffset;
+	//const uint32							m_expectedOffset;
 };
 
 bool CXenonGPUExecutor::ExecutePacketType3( CXenonGPUCommandBufferReader& reader, const uint32 packetData )
@@ -329,7 +335,9 @@ bool CXenonGPUExecutor::ExecutePacketType3( CXenonGPUCommandBufferReader& reader
 	// trace
 	if ( m_traceDumpFile && opcode != PM4_INDIRECT_BUFFER )
 	{
-		const uint32* wordsData = (const uint32*) reader.GetRawPointer( count );
+		auto* wordsData = (uint32*)alloca(sizeof(uint32) * count);
+		reader.GetBatch(count, wordsData);
+
 		m_traceDumpFile->Packet( packetData, wordsData, count );
 	}
 
@@ -554,7 +562,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_INDIRECT_BUFFER( CXenonGPUCommandBuff
 
 	// create indirect reader
 	const uint32* memBase = (const uint32*) GPlatform.GetMemory().TranslatePhysicalAddress( listAddr );
-	CXenonGPUCommandBufferReader indirectReader( memBase, 0, 0, listLength );
+	CXenonGPUCommandBufferReader indirectReader( memBase, listLength, 0, listLength );
 
 	// execute indirect commands
 	while ( indirectReader.CanRead() )
@@ -954,7 +962,35 @@ bool CXenonGPUExecutor::ExecutePacketType3_EVENT_WRITE_SHD( CXenonGPUCommandBuff
 
 bool CXenonGPUExecutor::ExecutePacketType3_EVENT_WRITE_EXT( CXenonGPUCommandBufferReader& reader, const uint32 packetData, const uint32 count )
 {
-	DEBUG_CHECK( !"NOT IMPLEMENTED" );
+	// generate a screen extent event
+	auto initiator = reader.Read();
+	auto address = reader.Read();
+
+	// writeback initiator
+	WriteRegister(XenonGPURegister::REG_VGT_EVENT_INITIATOR, initiator & 0x3F);
+	auto endianness = static_cast<XenonGPUEndianFormat>(address & 0x3);
+	address &= ~0x3;
+
+	// Let us hope we can fake this.
+	uint16 extents[] = {
+		0 >> 3,     // min x
+		2560 >> 3,  // max x
+		0 >> 3,     // min y
+		2560 >> 3,  // max y
+		0,          // min z
+		1,          // max z
+	};
+
+	DEBUG_CHECK(endianness == XenonGPUEndianFormat::Format8in16);
+
+	// compute write address
+	const uint32 writeAddr = GPlatform.GetMemory().TranslatePhysicalAddress(address & ~0x3);
+	mem::storeAddr(writeAddr + 0, extents[0]);
+	mem::storeAddr(writeAddr + 2, extents[1]);
+	mem::storeAddr(writeAddr + 4, extents[2]);
+	mem::storeAddr(writeAddr + 6, extents[3]);
+	mem::storeAddr(writeAddr + 8, extents[4]);
+	mem::storeAddr(writeAddr + 10, extents[5]);
 	return true;
 }
 
@@ -1250,19 +1286,25 @@ bool CXenonGPUExecutor::ExecutePacketType3_IM_LOAD_IMMEDIATE( CXenonGPUCommandBu
 	// Log in trace
 	if ( m_traceDumpFile )
 	{
-		const void* actualMem = reader.GetRawPointer( sizeDwords );
+		auto* actualMem = (uint32*)alloca(sizeof(uint32) * sizeDwords);
+		reader.GetBatch(sizeDwords, actualMem);
+
 		m_traceDumpFile->MemoryAccessRead( (uint32) actualMem, sizeDwords*4, shaderType == XenonShaderType::ShaderPixel ? "PixelShader" : "VertexShader" );
 	}
 
 	if ( shaderType == XenonShaderType::ShaderPixel )
 	{
-		const void* actualMem = reader.GetRawPointer( sizeDwords );
+		auto* actualMem = (uint32*)alloca(sizeof(uint32) * sizeDwords);
+		reader.GetBatch(sizeDwords, actualMem);
+
 		m_abstractLayer->SetPixelShader( actualMem, sizeDwords );
 	}
 	else if ( shaderType == XenonShaderType::ShaderVertex )
 	{
-		const void* actualMem = reader.GetRawPointer( sizeDwords );
-		m_abstractLayer->SetVertexShader( actualMem, sizeDwords );
+		auto* actualMem = (uint32*)alloca(sizeof(uint32) * sizeDwords);
+		reader.GetBatch(sizeDwords, actualMem);
+
+		m_abstractLayer->SetVertexShader(actualMem, sizeDwords);
 	}
 
 	reader.Advance( sizeDwords );

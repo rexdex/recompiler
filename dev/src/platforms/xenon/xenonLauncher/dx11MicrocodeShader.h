@@ -35,6 +35,8 @@ public:
 		FMT_16,// uint stored, signed/unsigned, can be renormalized
 		FMT_16_16,// uint stored, signed/unsigned, can be renormalized
 		FMT_16_16_16_16,// uint stored, signed/unsigned, can be renormalized
+		FMT_16_16_FLOAT,// uint stored, signed/unsigned, can be renormalized
+		FMT_16_16_16_16_FLOAT,// uint stored, signed/unsigned, can be renormalized
 		FMT_32,// uint stored, signed/unsigned, can be renormalized
 		FMT_32_32,// uint stored, signed/unsigned, can be renormalized
 		FMT_32_32_32_32, // uint stored, signed/unsigned, can be renormalized

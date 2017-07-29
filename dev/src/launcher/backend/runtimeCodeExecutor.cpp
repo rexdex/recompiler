@@ -2,6 +2,10 @@
 #include "runtimeCodeTable.h"
 #include "runtimeCodeExecutor.h"
 #include "runtimeRegisterBank.h"
+#include "..\..\platforms\xenon\xenonLauncher\xenonCPU.h"
+
+static uint32 GTrackedAddress = 0;
+static uint32 GTrackedValue = 0xC0114800;
 
 namespace runtime
 {
@@ -19,6 +23,15 @@ namespace runtime
 
 	bool CodeExecutor::Step()
 	{
+		if (GTrackedAddress != 0)
+		{
+			if (mem::loadAddr<uint32>(GTrackedAddress) != GTrackedValue)
+			{
+				GLog.Err("Value changed!");
+				::DebugBreak();
+			}
+		}
+
 		const auto relAddress = m_ip - m_code->GetCodeStartAddress();
 		const auto func = m_code->GetCodeTable()[relAddress];
 		m_ip = func(m_ip, *m_regs);

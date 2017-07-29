@@ -72,6 +72,11 @@ uint64 __fastcall XboxFiles_NtCreateFile( uint64 ip, cpu::CpuRegs& regs )
 		GLog.Err( "IO: Failed to open file '%s', mode %d", object_name, mode );
 	    result = xnative::X_STATUS_NO_SUCH_FILE;
 	    info = xnative::X_FILE_DOES_NOT_EXIST;
+
+		if (handle_ptr)
+		{
+			mem::storeAddr<uint32>(handle_ptr, 0 );
+		}
 	}
 
 	// io data
@@ -103,62 +108,65 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile( uint64 ip, cpu::CpuRegs& reg
 	uint32 info = 0;
 	uint32 result = xnative::X_STATUS_UNSUCCESSFUL;
 
-	auto* file = static_cast< xenon::IFile* >( GPlatform.GetKernel().ResolveHandle( file_handle, xenon::KernelObjectType::FileHandle) );
-	if ( file )
+	if (file_handle != 0)
 	{
-		if ( fileInfoType == xnative::XFileInternalInformation )
+		auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(file_handle, xenon::KernelObjectType::FileHandle));
+		if (file)
 		{
-			// Internal unique file pointer. Not sure why anyone would want this.
-			DEBUG_CHECK(length == 8);
-			info = 8;
-			mem::storeAddr<uint64>( file_info_ptr, 0 );
-			result = xnative::X_STATUS_SUCCESS;
-		}
-		else if ( fileInfoType == xnative::XFilePositionInformation )
-		{
-			DEBUG_CHECK(length == 8);
-			info = 8;
-
-			uint64 fileOffset = 0;
-			if ( file->GetOffset( fileOffset ) )
+			if (fileInfoType == xnative::XFileInternalInformation)
 			{
-				mem::storeAddr<uint64>( file_info_ptr, fileOffset );
+				// Internal unique file pointer. Not sure why anyone would want this.
+				DEBUG_CHECK(length == 8);
+				info = 8;
+				mem::storeAddr<uint64>(file_info_ptr, 0);
 				result = xnative::X_STATUS_SUCCESS;
 			}
-		}
-		else if ( fileInfoType == xnative::XFileNetworkOpenInformation )
-		{
-			DEBUG_CHECK(length == 56);
+			else if (fileInfoType == xnative::XFilePositionInformation)
+			{
+				DEBUG_CHECK(length == 8);
+				info = 8;
 
-			xnative::X_FILE_INFO fileInfo;
-			memset( &fileInfo, 0, sizeof(fileInfo) );
-			if ( file->GetInfo( fileInfo ) )
-			{
-				info = 56;
-				fileInfo.Write( nullptr, file_info_ptr );
-				result = xnative::X_STATUS_SUCCESS;
-			}			
-		}
-		else if ( fileInfoType == xnative::XFileXctdCompressionInformation )
-		{
-			// Read timeout.
-			if (length == 4)
-			{
-				uint32 magic;
-				uint32 read;
-				file->Read( &magic, sizeof(magic), 0, read );
-				if ( read == sizeof(magic) )
+				uint64 fileOffset = 0;
+				if (file->GetOffset(fileOffset))
 				{
-					info = 4;
-					mem::storeAddr<uint32>( file_info_ptr, magic == _byteswap_ulong(0x0FF512ED) );
+					mem::storeAddr<uint64>(file_info_ptr, fileOffset);
 					result = xnative::X_STATUS_SUCCESS;
 				}
 			}
-        }
-		else
-		{
-			GLog.Err( "Unknown file type information %d", fileInfoType );
-			result = xnative::X_STATUS_INFO_LENGTH_MISMATCH;
+			else if (fileInfoType == xnative::XFileNetworkOpenInformation)
+			{
+				DEBUG_CHECK(length == 56);
+
+				xnative::X_FILE_INFO fileInfo;
+				memset(&fileInfo, 0, sizeof(fileInfo));
+				if (file->GetInfo(fileInfo))
+				{
+					info = 56;
+					fileInfo.Write(nullptr, file_info_ptr);
+					result = xnative::X_STATUS_SUCCESS;
+				}
+			}
+			else if (fileInfoType == xnative::XFileXctdCompressionInformation)
+			{
+				// Read timeout.
+				if (length == 4)
+				{
+					uint32 magic;
+					uint32 read;
+					file->Read(&magic, sizeof(magic), 0, read);
+					if (read == sizeof(magic))
+					{
+						info = 4;
+						mem::storeAddr<uint32>(file_info_ptr, magic == _byteswap_ulong(0x0FF512ED));
+						result = xnative::X_STATUS_SUCCESS;
+					}
+				}
+			}
+			else
+			{
+				GLog.Err("Unknown file type information %d", fileInfoType);
+				result = xnative::X_STATUS_INFO_LENGTH_MISMATCH;
+			}
 		}
 	}
 

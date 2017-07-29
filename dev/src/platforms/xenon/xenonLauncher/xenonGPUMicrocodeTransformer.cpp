@@ -535,6 +535,8 @@ namespace Helper
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32_32_FLOAT: return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32_32_32_32_FLOAT: return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32_32_32_FLOAT: return true;
+			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16_FLOAT: return true;
+			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16_16_16_FLOAT: return true;
 		}
 
 		return false;

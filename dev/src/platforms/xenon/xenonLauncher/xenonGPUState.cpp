@@ -171,6 +171,8 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 	const uint32 copyDestSlice = (copyDestInfoReg >> 4) & 1;
 	DEBUG_CHECK( copyDestSlice == 0 ); // other values not yet supported
 	const auto copyDestFormat = (XenonColorFormat)( (copyDestInfoReg >> 7) & 0x3F );
+	if (copyDestFormat == XenonColorFormat::Unknown)
+		return true;
 
 	const uint32 copyDestNumber = (copyDestInfoReg >> 13) & 7;
 	const uint32 copyDestBias = (copyDestInfoReg >> 16) & 0x3F;

@@ -64,6 +64,8 @@ uint32 CDX11MicrocodeShader::GetFetchFormatChannels( const EFetchFormat format )
 		case EFetchFormat::FMT_16: return 1;
 		case EFetchFormat::FMT_16_16: return 2;
 		case EFetchFormat::FMT_16_16_16_16: return 4;
+		case EFetchFormat::FMT_16_16_FLOAT: return 2;
+		case EFetchFormat::FMT_16_16_16_16_FLOAT: return 4;
 		case EFetchFormat::FMT_32: return 1;
 		case EFetchFormat::FMT_32_32: return 2;
 		case EFetchFormat::FMT_32_32_32_32: return 4;
@@ -88,6 +90,8 @@ const char* CDX11MicrocodeShader::GetFetchFormatName( const EFetchFormat format 
 		case EFetchFormat::FMT_16: return "FMT_16";
 		case EFetchFormat::FMT_16_16: return "FMT_16_16";
 		case EFetchFormat::FMT_16_16_16_16: return "FMT_16_16_16_16";
+		case EFetchFormat::FMT_16_16_FLOAT: return "FMT_16_16_FLOAT";
+		case EFetchFormat::FMT_16_16_16_16_FLOAT: return "FMT_16_16_16_16_FLOAT";
 		case EFetchFormat::FMT_32: return "FMT_32";
 		case EFetchFormat::FMT_32_32: return "FMT_32_32";
 		case EFetchFormat::FMT_32_32_32_32: return "FMT_32_32_32_32";
@@ -128,6 +132,8 @@ namespace Helper
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_16; return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_16_16; return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16_16_16: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_16_16_16_16; return true;
+			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16_FLOAT: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_16_16_FLOAT; return true;
+			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_16_16_16_16_FLOAT: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_16_16_16_16_FLOAT; return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_32; return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32_32: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_32_32; return true;
 			case CXenonGPUMicrocodeTransformer::EFetchFormat::FMT_32_32_32_32: outFormat = CDX11MicrocodeShader::EFetchFormat::FMT_32_32_32_32; return true;
