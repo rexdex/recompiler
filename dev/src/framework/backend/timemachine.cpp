@@ -68,6 +68,7 @@ namespace timemachine
 
 		// create data holder
 		std::auto_ptr<Trace> timeMachineTrace( new Trace() );
+		timeMachineTrace->m_context = context;
 		timeMachineTrace->m_traceReader = traceReader;
 		timeMachineTrace->m_rootEntry = Entry::CreateEntry( ILogOutput::DevNull(), context, timeMachineTrace.get(), traceReader, traceFrameIndex );
 		if ( !timeMachineTrace->m_rootEntry )

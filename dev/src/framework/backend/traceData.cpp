@@ -576,7 +576,7 @@ namespace trace
 
 			// copy previous values from
 			page->m_frames[i].CopyValues(page->m_frames[i-1]);
-			LoadFrameData(*m_fileReader, frameIndex, page->m_frames[i], m_registers);
+			LoadFrameData(*m_fileReader, frameIndex + i, page->m_frames[i], m_registers);
 		}
 
 		// return created frame
