@@ -45,7 +45,10 @@ static const D3D11_TEXTURE_ADDRESS_MODE TranslateAddressMode(const XenonClampMod
 		case XenonClampMode::Repeat: return D3D11_TEXTURE_ADDRESS_WRAP;
 		case XenonClampMode::MirroredRepeat: return D3D11_TEXTURE_ADDRESS_MIRROR;
 		case XenonClampMode::ClampToEdge: return D3D11_TEXTURE_ADDRESS_CLAMP;
+		case XenonClampMode::ClampToHalfway: return D3D11_TEXTURE_ADDRESS_CLAMP;
+		case XenonClampMode::MirrorClampToHalfway: return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 		case XenonClampMode::MirrorClampToEdge: return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
+		case XenonClampMode::MirrorClampToBorder: return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 		case XenonClampMode::ClampToBorder: return D3D11_TEXTURE_ADDRESS_BORDER;
 	}
 

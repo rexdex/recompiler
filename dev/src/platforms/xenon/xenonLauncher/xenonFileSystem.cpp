@@ -56,6 +56,22 @@ namespace xenon
 	FileSystem::FileSystem(Kernel* kernel, native::IFileSystem* nativeFileSystem, const launcher::Commandline& commandline)
 		: m_kernel(kernel)
 	{
+		// all paths
+		if (commandline.HasOption("root"))
+		{
+			const auto nativePath = commandline.GetOptionValueW("root");
+
+			// setup standard mappings
+			Link("game:", "\\Device\\Cdrom0");
+			Link("d:", "\\Device\\Cdrom0");
+			Link("e:", "\\Device\\Harddisk1\\Partition1");
+			Link("devkit:", "\\Device\\Harddisk1\\Partition1");
+
+			// bind paths
+			Mount(new FileSystemDevice_PathRedirection(kernel, nativeFileSystem, "\\Device\\Cdrom0", "DVD", nativePath));
+			Mount(new FileSystemDevice_PathRedirection(kernel, nativeFileSystem, "\\Device\\Harddisk1\\Partition1", "DevKit", nativePath));
+		}
+
 		// base path
 		if (commandline.HasOption("dvd"))
 		{

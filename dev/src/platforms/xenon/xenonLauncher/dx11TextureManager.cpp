@@ -111,6 +111,9 @@ void CDX11AbstractSurface::Upload( const void* srcTextureData, void* destData, u
 		const uint8* srcData = (const uint8*)((uint32)srcTextureData + m_sourceMemoryOffset + m_sourceSlicePitch*z);
 		uint8* targetData = (uint8*)destData + (z*destSlicePitch);
 
+		// max write address
+		const auto maxWriteOffset = destSlicePitch;
+
 		// copy data
 		// texture is tiled - hard case
 		if ( m_sourceIsTiled )
@@ -138,7 +141,9 @@ void CDX11AbstractSurface::Upload( const void* srcTextureData, void* destData, u
 					const uint32 srcX = m_sourcePackedTileOffsetX + x;
 					const uint32 srcY = m_sourcePackedTileOffsetY + y;
 					const uint32 srcOffset = XenonTextureInfo::TiledOffset2DInner( srcX, srcY, bppLog, srcOffsetY ) >> bppLog;
-					Helper::ConvertGPUEndianess( targetData + destOffsetX, srcData + srcOffset*blockSize, blockSize, m_sourceEndianess );
+
+					if (destOffsetX < maxWriteOffset)
+						Helper::ConvertGPUEndianess( targetData + destOffsetX, srcData + srcOffset*blockSize, blockSize, m_sourceEndianess );
 				}
 			}
 		}
@@ -373,6 +378,11 @@ bool CDX11AbstractTexture::MapFormat( XenonTextureFormat sourceFormat, DXGI_FORM
 		case XenonTextureFormat::Format_DXT4_5_AS_16_16_16_16:
 			runtimeFormat = DXGI_FORMAT_BC3_UNORM;
 			viewFormat = DXGI_FORMAT_BC3_UNORM;
+			return true;
+
+		case XenonTextureFormat::Format_DXN:
+			runtimeFormat = DXGI_FORMAT_BC5_UNORM;
+			viewFormat = DXGI_FORMAT_BC5_UNORM;
 			return true;
 
 		// Special formats

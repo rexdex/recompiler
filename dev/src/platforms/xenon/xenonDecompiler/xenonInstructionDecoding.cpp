@@ -955,7 +955,7 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 54: EMIT(dcbst, REG(b11), REG(b16));
 				case 278: EMIT(dcbt, REG(b11), REG(b16));
 				case 246: EMIT(dcbtst, REG(b11), REG(b16));
-				case 1014: EMIT(dcbz, REG(b11), REG(b16));
+				case 1014: EMIT(dcbz, MEMREG0(b11,b16));
 
 				// lfsx, lfsux, lfdx, lfdux
 				case 535: EMIT(lfsx, FREG(b6), MEMREG0(b11, b16));

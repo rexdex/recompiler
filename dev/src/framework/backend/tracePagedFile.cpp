@@ -35,7 +35,7 @@ namespace trace
 	const bool PagedFile::ReadPage(const uint32 pageIndex, uint8* outBuffer, uint32& outBufferSize) const
 	{
 		// move to page position
-		const fpos_t pos = (uint64)pageIndex * PAGE_SIZE;
+		const fpos_t pos = (uint64)pageIndex * (uint64)PAGE_SIZE;
 		fsetpos(m_file, &pos);
 
 		// read data

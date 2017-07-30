@@ -5,7 +5,9 @@
 #include "dx11TextureManager.h"
 #include "xenonGPUUtils.h"
 
-#pragma optimize("",off)
+//-------------------------------------------------------
+
+#pragma optimize ("",off)
 
 //-------------------------------------------------------
 
@@ -102,8 +104,10 @@ CDX11SurfaceManager::EDRAMRuntimeSetup::EDRAMRuntimeSetup()
 CDX11SurfaceManager::CDX11SurfaceManager( ID3D11Device* dev, ID3D11DeviceContext* context )
 	: m_context( context )
 	, m_device( dev )
-	, m_copyTextureCS("CopyTextureCS")
-{	
+	, m_copyTextureCSFloat("CopyTextureCSFloat")
+	, m_copyTextureCSUint("CopyTextureCSUint")
+	, m_copyTextureCSUnorm("CopyTextureCSUnorm")
+{
 	// create surface cache
 	m_cache = new CDX11SurfaceCache( dev );
 
@@ -113,8 +117,24 @@ CDX11SurfaceManager::CDX11SurfaceManager( ID3D11Device* dev, ID3D11DeviceContext
 	// load shader
 	{	
 #define char uint8
-#include "shaders/copyTexture.cs.fx.h"
-	m_copyTextureCS.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
+#include "shaders/copyTextureFloat.cs.fx.h"
+	m_copyTextureCSFloat.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
+#undef char
+	}
+
+	// load shader
+	{
+#define char uint8
+#include "shaders/copyTextureUnorm.cs.fx.h"
+		m_copyTextureCSUnorm.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
+#undef char
+	}
+
+	// load shader
+	{
+#define char uint8
+#include "shaders/copyTextureUint.cs.fx.h"
+		m_copyTextureCSUint.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
 #undef char
 	}
 }
@@ -331,6 +351,33 @@ static const bool IsTypeCompatible(const DXGI_FORMAT src, const DXGI_FORMAT dest
 	return false;
 }
 
+static const bool IsFloatFormat(const DXGI_FORMAT format)
+{
+	switch (format)
+	{
+		case DXGI_FORMAT_R16_FLOAT: return true;
+		case DXGI_FORMAT_R32_FLOAT: return true;
+		case DXGI_FORMAT_R16G16_FLOAT: return true;
+		case DXGI_FORMAT_R32G32_FLOAT: return true;
+		case DXGI_FORMAT_R16G16B16A16_FLOAT: return true;
+		case DXGI_FORMAT_R32G32B32_FLOAT: return true;
+		case DXGI_FORMAT_R32G32B32A32_FLOAT: return true;
+	}
+	return false;
+}
+
+static const bool IsUnormFormat(const DXGI_FORMAT format)
+{
+	switch (format)
+	{
+		case DXGI_FORMAT_R8_UNORM: return true;
+		case DXGI_FORMAT_R16_UNORM: return true;
+		case DXGI_FORMAT_R8G8B8A8_UNORM: return true;
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: return true;
+	}
+	return false;
+}
+
 bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect )
 {
 	// destiation texture MUST be given
@@ -391,6 +438,7 @@ bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorR
 	const auto destRawFormat = destTexture->GetViewFormat();
 
 	// copy data directly
+	const bool sameSize = (srcRect == destRect);
 	if (srcRawFormat == destRawFormat || IsTypeCompatible(srcRawFormat, destRawFormat))
 	{
 		m_context->CopySubresourceRegion(destTexture->GetRuntimeTexture(), 0, destRect.x, destRect.y, 0, rt->GetTexture(), 0, &srcBox);
@@ -425,8 +473,22 @@ bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorR
 	ID3D11RenderTargetView* rtv[] = { nullptr, nullptr, nullptr, nullptr };
 	m_context->OMSetRenderTargets(4, rtv, nullptr);
 
+	// select shader
+	if (IsFloatFormat(destRawFormat))
+	{
+		m_context->CSSetShader(m_copyTextureCSFloat.GetShader(), NULL, 0);
+	}
+	else if (IsUnormFormat(destRawFormat))
+	{
+		m_context->CSSetShader(m_copyTextureCSUnorm.GetShader(), NULL, 0);
+	}
+	else
+	{
+		DEBUG_CHECK(!"Unsupported resolve format");
+		return false;
+	}
+
 	// setup
-	m_context->CSSetShader(m_copyTextureCS.GetShader(), NULL, 0);
 	m_context->CSSetConstantBuffers(0, 1, m_settings.GetBufferForBinding(m_context));
 	m_context->CSSetUnorderedAccessViews(0, ARRAYSIZE(views), views, NULL);
 	m_context->CSSetShaderResources(0, ARRAYSIZE(roViews), roViews);
@@ -437,7 +499,7 @@ bool CDX11SurfaceManager::ResolveColor( const uint32 srcIndex, const XenonColorR
 	m_context->CSSetUnorderedAccessViews(0, 1, &nullView, NULL);
 
 	// resolve
-	return false;
+	return true;
 }
 
 bool CDX11SurfaceManager::ResolveDepth(const XenonDepthRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, CDX11AbstractTexture* destTexture, const XenonRect2D& destRect)

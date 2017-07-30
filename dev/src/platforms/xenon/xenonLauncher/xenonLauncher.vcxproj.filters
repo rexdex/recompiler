@@ -157,6 +157,8 @@
     <ClCompile Include="xenonCPUDevice.cpp">
       <Filter>devices\cpu</Filter>
     </ClCompile>
+    <ClCompile Include="xenonInput.cpp" />
+    <ClCompile Include="xenonLibInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibUtils.h">
@@ -327,6 +329,7 @@
     <ClInclude Include="xenonCPUDevice.h">
       <Filter>devices\cpu</Filter>
     </ClInclude>
+    <ClInclude Include="xenonInput.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">
@@ -406,14 +409,20 @@
     <CustomBuild Include="shaders\edramClear32.fx">
       <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
     </CustomBuild>
-    <CustomBuild Include="shaders\quadList.gs.fx">
+    <CustomBuild Include="shaders\copyTextureFloat.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\copyTextureUint.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\copyTextureUnorm.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\geometryQuadList.gs.fx">
       <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
     </CustomBuild>
-    <CustomBuild Include="shaders\copyTexture.vs.fx">
-      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
-    </CustomBuild>
-    <CustomBuild Include="shaders\copyTexture.cs.fx">
-      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    <CustomBuild Include="shaders\geometryRectList.gs.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

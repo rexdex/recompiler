@@ -29,6 +29,29 @@ private:
 
 //-----------------
 
+// helper class for geometry shaders
+class CDX11GeometryShader
+{
+public:
+	CDX11GeometryShader(const char* name);
+	~CDX11GeometryShader();
+
+	// get shader object
+	inline ID3D11GeometryShader* GetShader() const { return m_shader; }
+
+	// get name of the shader
+	inline const char* GetName() const { return m_name; }
+
+	// load shader from provided data buffer
+	bool Load(ID3D11Device* dev, const void* data, const uint32 dataSize);
+
+private:
+	ID3D11GeometryShader*	m_shader;
+	const char*				m_name;
+};
+
+//-----------------
+
 // helper class with parameters
 class CDX11ConstantBuffer
 {

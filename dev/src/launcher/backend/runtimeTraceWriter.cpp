@@ -197,12 +197,18 @@ namespace runtime
 
 	void TraceWriter::SetOffset(const uint64 offset)
 	{
-		SetFilePointer(m_outputFile, (LONG)offset, NULL, FILE_BEGIN);
+		LARGE_INTEGER pos;
+		pos.QuadPart = offset;
+		SetFilePointerEx(m_outputFile, pos, NULL, FILE_BEGIN);
 	}
 
 	uint64 TraceWriter::GetOffset() const
 	{
-		return SetFilePointer(m_outputFile, 0, NULL, FILE_CURRENT);
+		LARGE_INTEGER pos;
+		pos.QuadPart = 0;
+		if (SetFilePointerEx(m_outputFile, pos, &pos, FILE_CURRENT))
+			return pos.QuadPart;
+		return 0;
 	}
 
 	void TraceWriter::Write(const void* data, const uint32 size)

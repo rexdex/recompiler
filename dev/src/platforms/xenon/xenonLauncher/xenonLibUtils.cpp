@@ -1,6 +1,8 @@
 #include "build.h"
 #include "xenonLibUtils.h" 
 
+#pragma optimize ("", off)
+
 //---------------------------------------------------------------------------
 
 uint64 __fastcall XboxUtils__vsnprintf( uint64 ip, cpu::CpuRegs& regs )
@@ -154,6 +156,8 @@ uint64 __fastcall XboxUtils_RtlUnicodeToMultiByteN( uint64 ip, cpu::CpuRegs& reg
 		targetBuf[i] = c < 255 ? (uint8)c : '?';
 	}
 
+	mem::store<uint8>(targetBuf +  copyLength, 0);
+
 	if (writtenPtr != 0)
 		mem::store<uint32>(writtenPtr, copyLength);
 
@@ -170,7 +174,7 @@ uint64 __fastcall XboxUtils_RtlMultiByteToUnicodeN( uint64 ip, cpu::CpuRegs& reg
 	uint32 sourceLengthBytes = (uint32)regs.R7;
 
 
-	auto copyLength = sourceLengthBytes >> 1;
+	auto copyLength = sourceLengthBytes;
 	copyLength = (copyLength < targetLength) ? copyLength : targetLength;
 
 	for (uint32 i = 0; i < copyLength; i++)
@@ -178,6 +182,8 @@ uint64 __fastcall XboxUtils_RtlMultiByteToUnicodeN( uint64 ip, cpu::CpuRegs& reg
 		auto c = sourcePtr[i];
 		mem::store<uint16>(targetBuf + i, c);
 	}
+
+	mem::store<uint16>(targetBuf + copyLength, 0);
 
 	if (writtenPtr != 0)
 		mem::store<uint32>(writtenPtr, copyLength);

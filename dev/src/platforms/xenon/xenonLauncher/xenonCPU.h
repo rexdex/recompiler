@@ -1841,14 +1841,16 @@ namespace cpu
 		static inline void mulli( CpuRegs& regs, TReg* out, const TReg a, const uint32 imm )
 		{
 			ASM_CHECK(CTRL==0);
-			*out = a * EXTS(imm);
+			const auto temp = (int64)a * EXTS(imm);
+			*out = (uint64&)temp;
 		}
 
 		// mulld - Multiply Low Doubleword XO-form
 		template <uint8 CTRL>
-		static inline void mulld( CpuRegs& regs, TReg* out, const TReg a, const TReg b )
+		static inline void mulld( CpuRegs& regs, TReg* out, const TReg a, const TReg b )		
 		{
-			*out = a * b;
+			auto temp = (int64&)a * (int64&)b;
+			*out = temp;
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
 
@@ -1856,7 +1858,8 @@ namespace cpu
 		template <uint8 CTRL>
 		static inline void mullw( CpuRegs& regs, TReg* out, const TReg a, const TReg b )
 		{
-			*out = (uint32)a * (uint32)b;
+			auto temp = (int64)(int32)a * (int64)(int32)b;
+			*out = (uint64&)temp;
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
 
@@ -1872,7 +1875,7 @@ namespace cpu
 		template <uint8 CTRL>
 		static inline void divwu( CpuRegs& regs, TReg* out, const TReg a, const TReg b )
 		{
-			*out = (uint32)a / (uint32)b;
+			*out = (uint64)(uint32)a / (uint64)(uint32)b;
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
 
@@ -2485,10 +2488,11 @@ namespace cpu
 
 		// cache control instruction
 		template <uint8 CTRL>
-		static inline void dcbz( CpuRegs& regs, const TReg* val, const TReg val2 )
+		static inline void dcbz( CpuRegs& regs, const TAddr addr)
 		{
-			ASM_CHECK(CTRL==0);
-			// nothing yet
+			ASM_CHECK(CTRL == 0);
+			const uint32 cacheLineBase = addr & ~31; // 32-byte cache lines
+			memset((void*)cacheLineBase, 0, 32);
 		}
 
 		// cache control instruction
@@ -3798,9 +3802,48 @@ namespace cpu
 		template <uint8 VAL>
 		static inline uint32 vspltisw_helper()
 		{
-			const uint8 temp = VAL | 0xE;
-			const int tempI = *(const char*) &temp;
-			return (const uint32&)tempI;
+			uint32 temp = (VAL & 0x1F); // 5 bits allowed
+			if (temp & 0x10) // sign bit set ?
+				temp |= 0xFFFFFF00; // sign extend
+			return temp;
+		}
+
+		template <uint8 CTRL, uint8 SEL>
+		static inline void vspltisb(CpuRegs& regs, TVReg* out)
+		{
+			ASM_CHECK(CTRL == 0);
+
+			out->AsUint8<0>() = vspltisw_helper<VAL>();
+			out->AsUint8<1>() = vspltisw_helper<VAL>();
+			out->AsUint8<2>() = vspltisw_helper<VAL>();
+			out->AsUint8<3>() = vspltisw_helper<VAL>();
+			out->AsUint8<4>() = vspltisw_helper<VAL>();
+			out->AsUint8<5>() = vspltisw_helper<VAL>();
+			out->AsUint8<6>() = vspltisw_helper<VAL>();
+			out->AsUint8<7>() = vspltisw_helper<VAL>();
+			out->AsUint8<8>() = vspltisw_helper<VAL>();
+			out->AsUint8<9>() = vspltisw_helper<VAL>();
+			out->AsUint8<10>() = vspltisw_helper<VAL>();
+			out->AsUint8<11>() = vspltisw_helper<VAL>();
+			out->AsUint8<12>() = vspltisw_helper<VAL>();
+			out->AsUint8<13>() = vspltisw_helper<VAL>();
+			out->AsUint8<14>() = vspltisw_helper<VAL>();
+			out->AsUint8<15>() = vspltisw_helper<VAL>();
+		}
+
+		template <uint8 CTRL, uint16 SEL>
+		static inline void vspltish(CpuRegs& regs, TVReg* out)
+		{
+			ASM_CHECK(CTRL == 0);
+
+			out->AsUint16<0>() = vspltisw_helper<VAL>();
+			out->AsUint16<1>() = vspltisw_helper<VAL>();
+			out->AsUint16<2>() = vspltisw_helper<VAL>();
+			out->AsUint16<3>() = vspltisw_helper<VAL>();
+			out->AsUint16<4>() = vspltisw_helper<VAL>();
+			out->AsUint16<5>() = vspltisw_helper<VAL>();
+			out->AsUint16<6>() = vspltisw_helper<VAL>();
+			out->AsUint16<7>() = vspltisw_helper<VAL>();
 		}
 
 		template <uint8 CTRL, uint8 VAL>
@@ -4025,24 +4068,6 @@ namespace cpu
 			out->AsFloat<1>() = tmp;
 			out->AsFloat<2>() = tmp;
 			out->AsFloat<3>() = tmp;
-		}
-
-		template <uint8 CTRL, uint8 SEL>
-		static inline void vspltisb( CpuRegs& regs, TVReg* out)
-		{
-			ASM_CHECK(CTRL==0);
-
-			for ( int i=0; i<16; ++i )
-				out->u8[i] = SEL;
-		}	
-
-		template <uint8 CTRL, uint16 SEL>
-		static inline void vspltish(CpuRegs& regs, TVReg* out)
-		{
-			ASM_CHECK(CTRL == 0);
-
-			for (int i = 0; i < 8; ++i)
-				out->u16[i] = SEL;
 		}
 
 		template <uint8 CTRL>

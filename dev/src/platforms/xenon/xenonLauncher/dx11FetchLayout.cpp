@@ -76,7 +76,7 @@ CDX11FetchLayout* CDX11FetchLayout::ExtractFromMicrocode( CDX11MicrocodeShader* 
 		}
 
 		// add the decoding element - there cannot be more than 8 per stream (hardware limit - we have only 8 dwords in the biggest vfetch_full)
-		DEBUG_CHECK( stream->m_numElems < MAX_ELEMS );
+		DEBUG_CHECK( stream->m_numElems <= MAX_ELEMS );
 		ElementDesc* elem = &stream->m_elems[ stream->m_numElems++ ];
 		elem->m_format = ConvertFetchFormat( vfetch.m_format );
 		elem->m_offset = vfetch.m_rawOffset;

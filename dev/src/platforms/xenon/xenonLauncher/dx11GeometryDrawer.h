@@ -150,6 +150,9 @@ private:
 	// shader dump directory
 	std::wstring	m_shaderDumpDirectory;
 
+	// specialized geometry shaders for geometry generation
+	CDX11GeometryShader m_geometryShaderRectList;
+
 	// prepare pipeline stages
 	bool RealizeShaders();	
 	bool RealizeVertexBuffers( const class CXenonGPURegisters& regs, class IXenonGPUDumpWriter* traceDump, const class CDX11FetchLayout* layout );
@@ -159,6 +162,9 @@ private:
 	void CreateDefaultTextures();
 	void ReleaseDefaultTextres();
 	void CreateDefaultSamplers();
+	
+	// create the specialized geometry shaders
+	void CreateGeometryShaders();
 
 	// texture fetch slot mask update (from both shaders)
 	void RefreshTextureFetchSlotMask();

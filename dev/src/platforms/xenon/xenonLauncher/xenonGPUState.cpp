@@ -113,9 +113,9 @@ bool CXenonGPUState::IssueDraw( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 		return IssueCopy( abstractLayer, traceDump, regs );
 	}
 
-	// clear BEFORE resetting states
+	/*// clear BEFORE resetting states
 	if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList)
-		return abstractLayer->DrawGeometry(regs, traceDump, ds);
+		return abstractLayer->DrawGeometry(regs, traceDump, ds);*/
 
 	// prepare drawing conditions
 	if ( !UpdateRenderTargets( abstractLayer, regs ) )
@@ -146,6 +146,8 @@ bool CXenonGPUState::IssueSwap( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 
 bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPUDumpWriter* traceDump, const CXenonGPURegisters& regs )
 {
+	XenonGPUScope scope(abstractLayer, "IssueCopy");
+
 	// Resolve + optional (quite often) clear
 	// Resolve is done through the abstractInterface (which forwards it to the EDRAM emulator)
 	// The clear is done directly
@@ -199,6 +201,7 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 	const auto surfaceMSAA = static_cast< XenonMsaaSamples >((surfaceInfoReg >> 16) & 0x3);
 
 	// do the actual copy
+	int32 copyDestOffset = 0;
 	if ( copyCommand != XenonCopyCommand::Null && copyCommand != XenonCopyCommand::ConstantOne )
 	{
 		const uint32 destLogicalWidth = copyDestPitch;
@@ -251,8 +254,8 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 				const float destMaxY = std::max<float>( std::max<float>( vertexY[0], vertexY[1] ), vertexY[2] );
 
 				// setup dest area
-				destRect.x = (int) destMinX;
-				destRect.y = (int) destMinY;
+				destRect.x = (int)(destMinX + 0.5f);
+				destRect.y = (int)(destMinY + 0.5f);
 				destRect.w = (int)( destMaxX - destMinX );
 				destRect.h = (int)( destMaxY - destMinY );
 
@@ -265,12 +268,8 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 
 			// The dest base address passed in has already been offset by the window
 			// offset, so to ensure texture lookup works we need to offset it.
-			const int32 destOffset = (windowOffsetY * copyDestPitch * 4) + (windowOffsetX * 32 * 4);
-
-			// For some reason does not work as expeted, why ?
-			//copyDestBase += destOffset;
+			copyDestOffset = (windowOffsetY * copyDestPitch * 4) + (windowOffsetX * 32 * 4);
 		}
-
 
 		// Resolve the source render target to target texture
 		// NOTE: we may be requested to do format conversion
@@ -287,7 +286,7 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 				const auto colorFormat = ( XenonColorRenderTargetFormat )( (colorInfo >> 16) & 0xF );
 
 				abstractLayer->ResolveColorRenderTarget( copyRT, colorFormat, colorBase, srcRect, 
-					copyDestBase, destLogicalWidth, destLogicalHeight, destBlockWidth, destBlockHeight, 
+					copyDestBase + copyDestOffset, destLogicalWidth, destLogicalHeight, destBlockWidth, destBlockHeight, 
 					Helper::ColorFormatToTextureFormat(copyDestFormat), destRect );
 			}
 			else
@@ -299,7 +298,7 @@ bool CXenonGPUState::IssueCopy( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 				auto depthFormat = (XenonDepthRenderTargetFormat)( (depthInfo >> 16) & 0x1 );
 
 				abstractLayer->ResolveDepthRenderTarget(depthFormat, depthBase, srcRect,
-					copyDestBase, destLogicalWidth, destLogicalHeight, destBlockWidth, destBlockHeight,
+					copyDestBase + copyDestOffset, destLogicalWidth, destLogicalHeight, destBlockWidth, destBlockHeight,
 					Helper::DepthFormatToTextureFormat(depthFormat), destRect);
 			}
 		}

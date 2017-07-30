@@ -69,7 +69,6 @@ float4 PostTransformVertex( uint vertexId, float4 pos )
 	if ( Coordinates.x == 0 )
 	{
 		pos.xy *= ViewportSize.zw;
-		pos.z = 0.5;
 		pos.w = 1;
 	}
 
@@ -130,16 +129,39 @@ uint4 FetchVertex_16_16( Buffer<uint> b, uint offset, uint stride, uint index )
 
 uint4 FetchVertex_16_16_FLOAT(Buffer<uint> b, uint offset, uint stride, uint index)
 {
-	uint data = b.Load(CalcFetchPosition(offset, stride, index));
-
-	uint4 ret;
-	ret.x = (data >> 0) & 0xFFFF;
-	ret.y = (data >> 16) & 0xFFFF;
-	ret.z = 0;
-	ret.w = 0;
+	uint4 ret = FetchVertex_16_16(b, offset, stride, index);
 
 	ret.x = asuint(f16tof32(ret.x));
 	ret.y = asuint(f16tof32(ret.y));
+	ret.z = 0;
+	ret.w = 0;
+
+	return ret;
+}
+
+// out format: unsigned 16bits
+uint4 FetchVertex_16_16_16_16(Buffer<uint> b, uint offset, uint stride, uint index)
+{
+	uint dataA = b.Load(CalcFetchPosition(offset, stride, index));
+	uint dataB = b.Load(CalcFetchPosition(offset, stride, index) + 4);
+
+	uint4 ret;
+	ret.x = (dataA >> 0) & 0xFFFF;
+	ret.y = (dataA >> 16) & 0xFFFF;
+	ret.z = (dataB >> 0) & 0xFFFF;
+	ret.w = (dataB >> 16) & 0xFFFF;
+
+	return ret;
+}
+
+uint4 FetchVertex_16_16_16_16_FLOAT(Buffer<uint> b, uint offset, uint stride, uint index)
+{
+	uint4 ret = FetchVertex_16_16_16_16(b, offset, stride, index);
+
+	ret.x = asuint(f16tof32(ret.x));
+	ret.y = asuint(f16tof32(ret.y));
+	ret.z = asuint(f16tof32(ret.z));
+	ret.w = asuint(f16tof32(ret.w));
 
 	return ret;
 }

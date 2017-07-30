@@ -283,29 +283,10 @@ popd
     <None Include="export.def" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="shaders\quadList.gs.fx">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pushd $(FrameworkSdkDir)\x64\
-fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
-$(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
-del %(FullPath).fxc
-popd
-    </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pushd $(FrameworkSdkDir)\x64\
-fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
-$(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
-del %(FullPath).fxc
-popd
-    </Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath).h</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="shaders\copyTexture.vs.fx">
+    <CustomBuild Include="shaders\geometryQuadList.gs.fx">
       <FileType>Document</FileType>
       <Command>pushd $(FrameworkSdkDir)\x64\
-fxc.exe -T vs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
 $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
 del %(FullPath).fxc
 popd
@@ -314,32 +295,58 @@ popd
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="shaders\copyTexture.cs.fx">
+    <CustomBuild Include="shaders\geometryRectList.gs.fx">
       <FileType>Document</FileType>
       <Command>
         pushd $(FrameworkSdkDir)\x64\
-        fxc.exe -T ps_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        fxc.exe -T gs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
         $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
         del %(FullPath).fxc
         popd
       </Command>
       <Outputs>%(FullPath).h</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-        pushd $(FrameworkSdkDir)\x64\
-        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
-        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
-        del %(FullPath).fxc
-        popd
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-        pushd $(FrameworkSdkDir)\x64\
-        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
-        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
-        del %(FullPath).fxc
-        popd
-      </Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\copyTextureFloat.cs.fx">
+      <FileType>Document</FileType>
+      <Command>
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+      <Outputs>%(FullPath).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\copyTextureUnorm.cs.fx">
+      <FileType>Document</FileType>
+      <Command>
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+      <Outputs>%(FullPath).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\copyTextureUint.cs.fx">
+      <FileType>Document</FileType>
+      <Command>
+        pushd $(FrameworkSdkDir)\x64\
+        fxc.exe -T cs_5_0 -E main -Fo %(FullPath).fxc %(FullPath)
+        $(SolutionDir)..\tools\bin2h\bin2h.exe ShaderData &lt; %(FullPath).fxc &gt; %(FullPath).h
+        del %(FullPath).fxc
+        popd
+      </Command>
+      <Outputs>%(FullPath).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

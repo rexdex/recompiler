@@ -764,6 +764,76 @@ public:
 
 //---------------------------------------------------------------------------
 
+class CInstructiondDecoderXenon_DCBZ : public IInstructiondDecompilerXenon
+{
+public:
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	{
+		// first operand is always a register
+		if (!CheckArgs(op, MREG))
+			return ErrInvalidArgs(op);
+
+		// address deps
+		if (op.GetArg0().m_reg && !outInfo.AddRegisterDependency(op.GetArg0().m_reg))
+			return ErrToManyRegisters(op);
+		if (op.GetArg0().m_index && !outInfo.AddRegisterDependency(op.GetArg0().m_index))
+			return ErrToManyRegisters(op);
+				
+		// memory access
+		outInfo.m_memoryFlags |= decoding::InstructionExtendedInfo::eMemoryFlags_Write;
+		outInfo.m_memoryAddressOffset = op.GetArg1().m_imm;
+		outInfo.m_memoryAddressBase = op.GetArg1().m_reg;
+		outInfo.m_memoryAddressIndex = op.GetArg1().m_index;
+		outInfo.m_memoryAddressScale = op.GetArg1().m_scale;
+		outInfo.m_memoryAddressMask = ~31;
+		outInfo.m_memorySize = 32;
+		return true;
+	}
+
+	virtual const bool Decompile(class ILogOutput& output, const uint32 address, const decoding::Instruction& op, const decoding::InstructionExtendedInfo& exInfo, class code::Generator& codeGen, std::string& outCode) const
+	{
+		// format address calculation code
+		char addressCode[128];
+		const auto& arg1 = op.GetArg0();
+		if (!arg1.m_reg)
+		{
+			// immediate address
+			sprintf_s(addressCode, "0x%08X", arg1.m_imm);
+		}
+		else if (arg1.m_index)
+		{
+			if (arg1.m_scale != 1)
+			{
+				sprintf_s(addressCode, "regs.%s + %d*regs.%s + 0x%08X",
+					arg1.m_reg->GetName(),
+					arg1.m_scale,
+					arg1.m_index->GetName(),
+					arg1.m_imm);
+			}
+			else
+			{
+				sprintf_s(addressCode, "regs.%s + regs.%s + 0x%08X",
+					arg1.m_reg->GetName(),
+					arg1.m_index->GetName(),
+					arg1.m_imm);
+			}
+		}
+		else
+		{
+			sprintf_s(addressCode, "regs.%s + 0x%08X",
+				arg1.m_reg->GetName(),
+				arg1.m_imm);
+		}
+
+		outCode = "cpu::op::dcbz<0>(regs, ";
+		outCode += addressCode;
+		outCode += ");";
+		return true;
+	}
+};
+
+//---------------------------------------------------------------------------
+
 template< uint32 flags,
 		decoding::Instruction::Type arg0 = decoding::Instruction::eType_None,
 		decoding::Instruction::Type arg1 = decoding::Instruction::eType_None,
@@ -2566,7 +2636,7 @@ CPU_XenonPPC::CPU_XenonPPC()
 		MOUNT__( dcbst, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
 		MOUNT__( dcbt, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
 		MOUNT__( dcbtst, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
-		MOUNT__( dcbz, CInstructiondDecoderXenon_GENERIC<0, REG,REG>() );
+		MOUNT__( dcbz, CInstructiondDecoderXenon_DCBZ() );
 
 		//  Floating point load instructions
 		MOUNT__( lfs, CInstructiondDecoderXenon_MEM_LOAD<32,0,eMemoryType_Float>() );

@@ -143,5 +143,7 @@ private:
 	EDRAMRuntimeSetup		m_runtimeSetup;
 
 	/// Copy shaders
-	CDX11ComputeShader		m_copyTextureCS;
+	CDX11ComputeShader		m_copyTextureCSFloat;
+	CDX11ComputeShader		m_copyTextureCSUnorm;
+	CDX11ComputeShader		m_copyTextureCSUint;
 };

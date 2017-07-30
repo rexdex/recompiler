@@ -30,6 +30,7 @@ CDX11AbstractLayer::CDX11AbstractLayer()
 	, m_rasterStateDirty( false )
 	, m_primitiveRestartEnabled( false )
 	, m_primitiveRestartIndex( 0xFFFF )
+	, m_eventDevice(nullptr)
 {
 	memset( &m_viewport, 0, sizeof(m_viewport) );
 	memset( &m_depthStencilState, 0, sizeof(m_depthStencilState) );
@@ -87,6 +88,13 @@ CDX11AbstractLayer::~CDX11AbstractLayer()
 		m_mainContext = NULL;
 	}
 
+	// destroy event reporter
+	if (m_eventDevice)
+	{
+		m_eventDevice->Release();
+		m_eventDevice = nullptr;
+	}
+
 	// destroy device
 	if ( m_device )
 	{
@@ -126,6 +134,23 @@ bool CDX11AbstractLayer::Initialize()
 	m_pixelShaderConsts.Create( m_device );
 	m_booleanConsts.Create( m_device );
 
+	// create the event reporter
+	m_mainContext->QueryInterface(__uuidof(m_eventDevice), reinterpret_cast<void**>(&m_eventDevice));
+
+	// disable if not profiling
+	if (m_eventDevice)
+	{
+		if (!m_eventDevice->GetStatus())
+		{
+			m_eventDevice->Release();
+			m_eventDevice = nullptr;
+		}
+		else
+		{
+			GLog.Log("DX11: Profiling event tracking enabled");
+		}
+	}
+
 	// done
 	GLog.Log( "DX11: Abstract layer initialized" );
 	return true;
@@ -139,6 +164,21 @@ bool CDX11AbstractLayer::SetDisplayMode( const uint32 width, const uint32 height
 	return true;
 }
 
+void CDX11AbstractLayer::BeginEvent(const char* name)
+{
+	if (m_eventDevice)
+	{
+		const std::wstring txt(name, name + strlen(name));
+		m_eventDevice->BeginEvent(txt.c_str());
+	}
+}
+
+void CDX11AbstractLayer::EndEvent()
+{
+	if (m_eventDevice)
+		m_eventDevice->EndEvent();
+}
+
 void CDX11AbstractLayer::BeingFrame()
 {
 	// recreate swapchain
@@ -150,12 +190,12 @@ void CDX11AbstractLayer::BeingFrame()
 		m_canRender = CreateSwapchain();
 	}
 
-	// clean to debug color
+	/*// clean to debug color
 	if ( m_canRender && m_backBufferView )
 	{
 		FLOAT debugColor[4] = { 0.2f, 1.0f, 0.2f, 1.0f };
 		m_mainContext->ClearRenderTargetView( m_backBufferView, debugColor );
-	}
+	}*/
 }
 
 void CDX11AbstractLayer::Swap( const CXenonGPUState::SwapState& ss )
@@ -163,17 +203,19 @@ void CDX11AbstractLayer::Swap( const CXenonGPUState::SwapState& ss )
 	if ( !m_canRender )
 		return;
 
+	XenonGPUScope scope(this, "Swap");
+
 	// get the texture at the
-	auto* swapTexture = m_textureManager->FindTexture( ss.m_frontBufferBase );
-	if ( 0 ) //swapTexture )
+	auto* swapTexture = m_textureManager->FindTexture(ss.m_frontBufferBase);
+	if (0) //swapTexture )
 	{
 		// we have a proper front buffer texture that we resolved scene into, copy it into the swapchain
-		ID3D11Texture2D* srcTexture = (ID3D11Texture2D*) swapTexture->GetRuntimeTexture();
+		ID3D11Texture2D* srcTexture = (ID3D11Texture2D*)swapTexture->GetRuntimeTexture();
 
 		// get the dimensions of the target area
 		D3D11_TEXTURE2D_DESC frontBufferDesc;
-		memset( &frontBufferDesc, 0, sizeof(frontBufferDesc) );
-		m_backBuffer->GetDesc( &frontBufferDesc );
+		memset(&frontBufferDesc, 0, sizeof(frontBufferDesc));
+		m_backBuffer->GetDesc(&frontBufferDesc);
 
 		// get maximum dimensions of the copy
 		const uint32 maxWidth = frontBufferDesc.Width;
@@ -195,27 +237,25 @@ void CDX11AbstractLayer::Swap( const CXenonGPUState::SwapState& ss )
 		destBox.back = 1;
 
 		// copy!
-		m_mainContext->CopySubresourceRegion( 
+		m_mainContext->CopySubresourceRegion(
 			m_backBuffer, 0,  // front buffer mip0
 			copyMinX, copyMinY, 0, // front buffer destination,
 			srcTexture, 0, // mip0 of the color0 surface
-			&destBox );		
+			&destBox);
 	}
 	else
 	{
 		// copy whatever is in the front buffer surface into the actual presentation back buffer
 		// NOTE: emulated front buffer is actual back buffer in D3D11 Swapchain, don't get those confused
-		m_surfaceManager->ResolveSwap( m_backBuffer );
+		m_surfaceManager->ResolveSwap(m_backBuffer);
 	}
 
 	// swap the frame
-	if ( m_swapChain )
-		m_swapChain->Present( 0, 0 );
+	if (m_swapChain)
+		m_swapChain->Present(0, 0);
 
 	// reset surface management for the new frame
 	m_surfaceManager->Reset();
-
-	//,,leep(100);
 
 	// reset geometry cache
 	m_drawer->Reset();
@@ -463,6 +503,11 @@ bool CDX11AbstractLayer::RealizeSurfaceSetup( uint32& outMainWidth,  uint32& out
 
 bool CDX11AbstractLayer::ResolveColorRenderTarget( const uint32 srcIndex, const XenonColorRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, const uint32 destBase, const uint32 destLogicalWidth, const uint32 destLogicalHeight, const uint32 destBlockWidth, const uint32 destBlockHeight, const XenonTextureFormat destFormat, const XenonRect2D& destRect )
 {
+	XenonGPUScope scope(this, "ResolveColor, RT=%d, SrcFormat=%hs, SrcRect=[%d,%d,%d,%d], DestFormat=%hs, DestRect=[%d,%d,%d,%d]",
+		srcIndex,
+		XenonGPUGetColorRenderTargetFormatName(srcFormat), srcRect.x, srcRect.y, srcRect.x + srcRect.w, srcRect.y + srcRect.h,
+		XenonGPUTextureFormatName(destFormat), destRect.x, destRect.y, destRect.x + destRect.w, destRect.y + destRect.h);
+
 	// create/get the target texture proxy for a memory at given physical address
 	// NOTE: this may reuse existing texture, also this may cause conflicts in memory management (waiting for DX12 I suppose)
 	CDX11AbstractTexture* destTexture = m_textureManager->GetTexture( destBase, destLogicalWidth, destLogicalHeight, destFormat );
@@ -475,6 +520,10 @@ bool CDX11AbstractLayer::ResolveColorRenderTarget( const uint32 srcIndex, const 
 
 bool CDX11AbstractLayer::ResolveDepthRenderTarget( const XenonDepthRenderTargetFormat srcFormat, const uint32 srcBase, const XenonRect2D& srcRect, const uint32 destBase, const uint32 destLogicalWidth, const uint32 destLogicalHeight, const uint32 destBlockWidth, const uint32 destBlockHeight, const XenonTextureFormat destFormat, const XenonRect2D& destRect )
 {
+	XenonGPUScope scope(this, "ResolveDepth,  SrcFormat=%hs, SrcRect=[%d,%d,%d,%d], DestFormat=%hs, DestRect=[%d,%d,%d,%d]",
+		XenonGPUGetDepthRenderTargetFormatName(srcFormat), srcRect.x, srcRect.y, srcRect.x + srcRect.w, srcRect.y + srcRect.h,
+		XenonGPUTextureFormatName(destFormat), destRect.x, destRect.y, destRect.x + destRect.w, destRect.y + destRect.h);
+
 	// create/get the target texture proxy for a memory at given physical address
 	// NOTE: this may reuse existing texture, also this may cause conflicts in memory management (waiting for DX12 I suppose)
 	CDX11AbstractTexture* destTexture = m_textureManager->GetTexture(destBase, destLogicalWidth, destLogicalHeight, destFormat);
@@ -1009,11 +1058,34 @@ bool CDX11AbstractLayer::RealizeShaderConstants()
 
 //---------------------------------------------------------------------------
 
+static const char* XenonGetPrimitiveTypeName(const XenonPrimitiveType pt)
+{
+	switch (pt)
+	{
+		case XenonPrimitiveType::PrimitiveNone: return "PrimitiveNone";
+		case XenonPrimitiveType::PrimitivePointList: return "PrimitivePointList";
+		case XenonPrimitiveType::PrimitiveLineList: return "PrimitiveLineList";
+		case XenonPrimitiveType::PrimitiveLineStrip: return "PrimitiveLineStrip";
+		case XenonPrimitiveType::PrimitiveTriangleList: return "PrimitiveTriangleList";
+		case XenonPrimitiveType::PrimitiveTriangleFan: return "PrimitiveTriangleFan";
+		case XenonPrimitiveType::PrimitiveTriangleStrip: return "PrimitiveTriangleStrip";
+		case XenonPrimitiveType::PrimitiveUnknown0x07: return "PrimitiveUnknown0x07";
+		case XenonPrimitiveType::PrimitiveRectangleList: return "PrimitiveRectangleList";
+		case XenonPrimitiveType::PrimitiveLineLoop: return "PrimitiveLineLoop";
+		case XenonPrimitiveType::PrimitiveQuadList: return "PrimitiveQuadList";
+		case XenonPrimitiveType::PrimitiveQuadStrip: return "PrimitiveQuadStrip";
+	}
+
+	return "Unknown";
+}
+
 bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds )
 {
 	// clear shader - HACK
 	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList )
 	{
+		/*XenonGPUScope scope(this, "ClearHACK");
+
 		DEBUG_CHECK(ds.m_indexCount == 3);
 
 		// get the vertex stream with clear color
@@ -1043,10 +1115,11 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 		// pass to the edram - clear the EDRAM itself
 		m_surfaceManager->ClearColor( 0, clearColor, true );
 		m_surfaceManager->ClearDepth(clearZ, 0, true);
-		return true;
+		return true;*/
 	}
 
 	// draw
+	XenonGPUScope scope(this, "Draw, PT=%hs, IndexCount=%d", XenonGetPrimitiveTypeName(ds.m_primitiveType), ds.m_indexCount);
 	return m_drawer->Draw( regs, traceDump, ds );
 }
 

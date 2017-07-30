@@ -30,6 +30,14 @@ public:
 
 	//------------------------------------------------------------
 
+	/// Begin event
+	virtual void BeginEvent(const char* name) = 0;
+
+	/// End event
+	virtual void EndEvent() = 0;
+
+	//------------------------------------------------------------
+
 	/// Bind color render target, returns reference (not reference counted) to the bounded RT
 	virtual void BindColorRenderTarget( const uint32 index, const XenonColorRenderTargetFormat format, const XenonMsaaSamples msaa, const uint32 base, const uint32 pitch ) = 0;
 
@@ -305,4 +313,32 @@ public:
 
 protected:
 	virtual ~IXenonGPUAbstractTexture() {};
+};
+
+struct XenonGPUScope
+{
+	XenonGPUScope(IXenonGPUAbstractLayer* layer, const char* name, ...)
+		: m_layer(layer)
+	{
+		if (m_layer)
+		{
+			char buffer[1024];
+			va_list args;
+
+			va_start(args, name);
+			vsprintf_s(buffer, name, args);
+			va_end(args);
+
+			m_layer->BeginEvent(buffer);
+		}
+	}
+
+	~XenonGPUScope()
+	{
+		if (m_layer)
+			m_layer->EndEvent();
+	}
+
+private:
+	IXenonGPUAbstractLayer* m_layer;
 };

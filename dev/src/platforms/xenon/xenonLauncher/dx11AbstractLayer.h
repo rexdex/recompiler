@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <d3d11.h>
+#include <d3d11_1.h>
 #include <d3dcompiler.h>
 
 #include "xenonGpuAbstractLayer.h"
@@ -26,6 +27,10 @@ public:
 	virtual bool SetDisplayMode( const uint32 width, const uint32 height ) override final;
 	virtual void BeingFrame() override final;
 	virtual void Swap( const CXenonGPUState::SwapState& ss ) override final;
+
+	// debugging
+	virtual void BeginEvent(const char* name) override final;
+	virtual void EndEvent() override final;
 
 	// RT&DS interface
 	virtual void BindColorRenderTarget( const uint32 index, const XenonColorRenderTargetFormat format, const XenonMsaaSamples msaa, const uint32 base, const uint32 pitch ) override final;
@@ -95,6 +100,9 @@ private:
 	// DX11 device, always valid
 	ID3D11Device*				m_device;
 	ID3D11DeviceContext*		m_mainContext;
+
+	// debug interface
+	ID3DUserDefinedAnnotation*	m_eventDevice;
 
 	// rendering swapchain, valid if the mode is valid
 	IDXGISwapChain*				m_swapChain;

@@ -23,6 +23,7 @@ namespace decoding
 		, m_registersModifiedCount(0)
 		, m_branchTargetAddress(0)
 		, m_branchTargetReg(NULL)
+		, m_memoryAddressMask(0xFFFFFFFF)
 	{}
 
 	bool InstructionExtendedInfo::AddRegister(const platform::CPURegister* reg, const ERegDependencyMode mode)
@@ -115,6 +116,9 @@ namespace decoding
 			const auto indexVal = trace::GetRegisterValueInteger(m_memoryAddressIndex, data, true);
 			addr += indexVal * m_memoryAddressScale;
 		}
+
+		// mask address with the bits
+		addr &= m_memoryAddressMask;
 
 		// valid address computed
 		outAddress = (uint32) addr; // TODO: the 32 bit clamp is tempshit

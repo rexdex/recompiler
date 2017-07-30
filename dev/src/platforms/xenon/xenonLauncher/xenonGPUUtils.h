@@ -288,6 +288,11 @@ namespace Helper
 struct XenonRect2D
 {
 	int x, y, w, h;
+
+	inline const bool operator==(const XenonRect2D& other) const
+	{
+		return (x == other.x) && (y == other.y) && (w == other.w) && (h == other.h);
+	}		 
 };
 
 //-----------------

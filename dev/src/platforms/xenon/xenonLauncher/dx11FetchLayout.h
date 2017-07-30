@@ -37,8 +37,8 @@ public:
 	};
 
 	// fetch limits (related to Xenon itself)
-	static const uint32 MAX_ELEMS = 8;
-	static const uint32 MAX_STREAMS = 8;
+	static const uint32 MAX_ELEMS = 16;
+	static const uint32 MAX_STREAMS = 16;
 
 	// single element in stream
 	struct ElementDesc

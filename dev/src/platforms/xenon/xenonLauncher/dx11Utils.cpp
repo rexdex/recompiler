@@ -38,6 +38,39 @@ bool CDX11ComputeShader::Load( ID3D11Device* dev, const void* data, const uint32
 
 //-----------------
 
+CDX11GeometryShader::CDX11GeometryShader(const char* name)
+	: m_shader(nullptr)
+	, m_name(name)
+{
+}
+
+CDX11GeometryShader::~CDX11GeometryShader()
+{
+	// release shader resource
+	if (m_shader)
+	{
+		m_shader->Release();
+		m_shader = nullptr;
+	}
+}
+
+bool CDX11GeometryShader::Load(ID3D11Device* dev, const void* data, const uint32 dataSize)
+{
+	if (!m_shader)
+	{
+		HRESULT hRet = dev->CreateGeometryShader(data, dataSize, NULL, &m_shader);
+		if (!m_shader || FAILED(hRet))
+		{
+			GLog.Err("D3D: Failed to load compute shader '%hs'", m_name);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+//-----------------
+
 CDX11ConstantBuffer::CDX11ConstantBuffer( void* dataPtr, const uint32 dataSize )
 	: m_dataPtr( dataPtr )
 	, m_dataSize( dataSize )

@@ -62,6 +62,7 @@ CDX11GeometryDrawer::CDX11GeometryDrawer( ID3D11Device* dev, ID3D11DeviceContext
 	, m_defaultTextureCube(nullptr)
 	, m_defaultTextureCubeView(nullptr)
 	, m_shaderTextureFetchSlots( 0 )
+	, m_geometryShaderRectList("RectListGS")
 {
 	// texture list
 	memset( m_textures, 0, sizeof(m_textures) );
@@ -90,6 +91,7 @@ CDX11GeometryDrawer::CDX11GeometryDrawer( ID3D11Device* dev, ID3D11DeviceContext
 	// create textures
 	CreateDefaultTextures();
 	CreateDefaultSamplers();
+	CreateGeometryShaders();
 }
 
 CDX11GeometryDrawer::~CDX11GeometryDrawer()
@@ -189,6 +191,17 @@ void CDX11GeometryDrawer::SetSampler(const uint32 fetchSlot, const XenonSamplerI
 {
 	auto sampler = m_samplerCache->GetSamplerState(samplerInfo);
 	m_samplers[fetchSlot] = sampler;
+}
+
+void CDX11GeometryDrawer::CreateGeometryShaders()
+{
+	// load shader
+	{
+#define char uint8
+#include "shaders/geometryRectList.gs.fx.h"
+		m_geometryShaderRectList.Load(m_device, ShaderData, ARRAYSIZE(ShaderData));
+#undef char
+	}
 }
 
 void CDX11GeometryDrawer::CreateDefaultSamplers()
@@ -688,6 +701,11 @@ bool CDX11GeometryDrawer::RealizeIndexBuffer( struct CXenonGPUState::DrawIndexSt
 		return true;
 	}
 
+	if (primitiveType == XenonPrimitiveType::PrimitiveLineList)
+	{
+		GLog.Log("Crap!");
+	}
+
 	// set data
 	if ( nullptr == ds.m_indexData )
 	{
@@ -822,6 +840,12 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	std::vector< CDX11MicrocodeShader::TextureInfo > textures;
 	ps->GetMicrocode()->GetUsedTextures( textures );
 
+	// crap
+	if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && !textures.empty())
+	{
+		GLog.Log("Copy!");
+	}
+
 	// bind pixel shader textures
 	{
 		// get texture to bind
@@ -882,6 +906,10 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	if ( !TranslatePrimitiveType( ds.m_primitiveType, primitiveType, primitiveTopology ) )
 		return false;
 
+	// bind the specialized geometry shaders
+	if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList)
+		m_mainContext->GSSetShader(m_geometryShaderRectList.GetShader(), nullptr, 0);
+
 	// prepare index buffer
 	auto dsCopy = ds;
 	if ( !RealizeIndexBuffer( dsCopy ) )
@@ -892,7 +920,7 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	m_mainContext->IASetInputLayout( vs->GetBindableInputLayout() );
 
 	// final touch - bind the extra "fake pipeline" stuff for vertex shader
-	m_mainContext->VSSetConstantBuffers( 2, 1, m_vertexViewportState.GetBufferForBinding( m_mainContext ) );
+	m_mainContext->VSSetConstantBuffers(2, 1, m_vertexViewportState.GetBufferForBinding(m_mainContext));
 
 	// do we have index data?
 	// it determines if we should do DrawIndexedPrimitive, DrawPrimitive or DrawAuto
@@ -909,9 +937,9 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 		m_mainContext->Draw( vertexCount, 0 );
 	}
 
-	GLog.Log("[GPU]: Draw %u vertices", dsCopy.m_indexCount);
-
 	// reset texture list
+	// NOTE: textures are reset every time a draw is processed
+	// TODO: optimize
 	memset( m_textures, 0, sizeof(m_textures) );
 
 	// unbind shader resources
@@ -922,6 +950,9 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 			m_mainContext->PSSetShaderResources( it.m_runtimeSlot, 1, &textureView );
 		}
 	}
+
+	// unbind geometry shader
+	m_mainContext->GSSetShader(nullptr, nullptr, 0);
 
 	// geometry rendered
 	return true;

@@ -72,6 +72,7 @@ namespace decoding
 		const platform::CPURegister*	m_memoryAddressBase;
 		const platform::CPURegister*	m_memoryAddressIndex;
 		uint32							m_memoryAddressScale;
+		uint32							m_memoryAddressMask;
 		uint32							m_memoryFlags;
 		uint32							m_memorySize;
 
