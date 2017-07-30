@@ -121,8 +121,10 @@
     <ClCompile Include="build.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="xenonInput.cpp" />
     <ClCompile Include="xenonLibDebug.cpp" />
     <ClCompile Include="xenonLibFiles.cpp" />
+    <ClCompile Include="xenonLibInput.cpp" />
     <ClCompile Include="xenonLibNatives.cpp" />
     <ClCompile Include="xenonLibThreads.cpp" />
     <ClCompile Include="xenonLibUtils.cpp" />
@@ -185,6 +187,7 @@
     <ClInclude Include="xenonGPUTraceWriter.h" />
     <ClInclude Include="xenonGPUUtils.h" />
     <ClInclude Include="xenonGraphics.h" />
+    <ClInclude Include="xenonInput.h" />
     <ClInclude Include="xenonLibNatives.h" />
     <ClInclude Include="xenonLibUtils.h" />
     <ClInclude Include="xenonKernel.h" />

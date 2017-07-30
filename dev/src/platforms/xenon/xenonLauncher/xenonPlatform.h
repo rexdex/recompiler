@@ -9,6 +9,7 @@ namespace xenon
 	class Kernel;
 	class FileSystem;
 	class Graphics;
+	class InputSystem;
 
 	/// Top level wrapper
 	class Platform : public runtime::IPlatform
@@ -21,6 +22,8 @@ namespace xenon
 		inline Graphics& GetGraphics() { return *m_graphics; }
 
 		inline native::IMemory& GetMemory() { return *m_memory;  }
+
+		inline InputSystem& GetInputSystem() const { return *m_inputSys; }
 
 	public:
 		Platform();
@@ -51,6 +54,7 @@ namespace xenon
 		Kernel*					m_kernel;		// kernel object container
 		FileSystem*				m_fileSys;		// file system
 		Graphics*				m_graphics;		// graphics subsystem
+		InputSystem*			m_inputSys;		// input system
 
 		// native
 		native::IMemory*		m_memory;		// native memory system

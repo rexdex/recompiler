@@ -5,8 +5,6 @@
 #include <mutex>
 #include "xenonPlatform.h"
 
-#pragma once 
-
 //---------------------------------------------------------------------------
 
 uint64 __fastcall XboxKernel_KeEnableFpuExceptions( uint64 ip, cpu::CpuRegs& regs )
@@ -1715,21 +1713,6 @@ uint64 __fastcall XboxKernel_KeUnlockL2( uint64 ip, cpu::CpuRegs& regs )
 	RETURN_DEFAULT();
 }
 
-uint64 __fastcall XboxKernel_XamInputGetState( uint64 ip, cpu::CpuRegs& regs )
-{
-	uint32 user = (uint32)( regs.R3 );
-	uint32 flags = (uint32)( regs.R4 );
-	void* statePtr = (void*) (uint32)( regs.R5 );
-
-	memset( statePtr, 0, sizeof(xnative::X_INPUT_STATE) );
-	RETURN_ARG(0);
-}
-
-uint64 __fastcall XboxKernel_XamInputGetCapabilities( uint64 ip, cpu::CpuRegs& regs )
-{
-	RETURN_ARG(xnative::XResult::X_ERROR_DEVICE_NOT_CONNECTED);
-}
-
 uint64 __fastcall XboxKernel_MmQueryAddressProtect( uint64 ip, cpu::CpuRegs& regs )
 {
 	uint32 address = (uint32)( regs.R3 );
@@ -1818,9 +1801,6 @@ void RegisterXboxKernel(runtime::Symbols& symbols)
 	REGISTER(KeUnlockL2);
 
 	REGISTER(KeSetCurrentProcessType);
-	
-	REGISTER(XamInputGetState);
-	REGISTER(XamInputGetCapabilities);
 
 	REGISTER( MmQueryAddressProtect );
 	REGISTER( MmSetAddressProtect );

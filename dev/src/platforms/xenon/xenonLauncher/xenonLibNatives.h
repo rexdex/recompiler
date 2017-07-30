@@ -16,6 +16,24 @@ namespace xnative
 	#define XSUCCEEDED(s)     ((s & 0xC0000000) == 0)
 	#define XFAILED(s)        (!XSUCCEEDED(s))
 
+	/// type inverted data
+	template<typename T>
+	struct Field
+	{
+		inline T Get() const
+		{
+			return mem::load<T>(&m_rawData);
+		}
+
+		inline void Set(const T& other)
+		{
+			mem::store<T>(&m_rawData, other);
+		}
+
+	private:
+		T m_rawData;
+	};
+
 	/// native data wrapper
 	class XenonNativeData
 	{
@@ -164,14 +182,18 @@ namespace xnative
 
 	struct XVIDEO_MODE
 	{
-		uint32			dwDisplayWidth;
-		uint32			dwDisplayHeight;
-		uint32			fIsInterlaced; // bool
-		uint32			fIsWideScreen; // bool
-		uint32			fIsHiDef; // bool
-		float			RefreshRate;
-		uint32			VideoStandard;
-		uint32			Reserved[5];
+		Field<uint32> dwDisplayWidth;
+		Field<uint32> dwDisplayHeight;
+		Field<uint32> fIsInterlaced; // bool
+		Field<uint32> fIsWideScreen; // bool
+		Field<uint32> fIsHiDef; // bool
+		Field<float> RefreshRate;
+		Field<uint32> VideoStandard;
+		Field<uint32> ReservedA;
+		Field<uint32> ReservedB;
+		Field<uint32> ReservedC;
+		Field<uint32> ReservedD;
+		Field<uint32> ReservedE;
 	};
 
 	enum EXCVideoStandard
@@ -654,22 +676,46 @@ namespace xnative
 
 	struct X_INPUT_GAMEPAD
 	{
-		uint16	buttons;
-		uint8	left_trigger;
-		uint8	right_trigger;
-		uint16	thumb_lx;
-		uint16	thumb_ly;
-		uint16	thumb_rx;
-		uint16	thumb_ry;
+		Field<uint16> buttons;
+		Field<uint8> left_trigger;
+		Field<uint8> right_trigger;
+		Field<uint16> thumb_lx;
+		Field<uint16> thumb_ly;
+		Field<uint16> thumb_rx;
+		Field<uint16> thumb_ry;
 	};
 	static_assert( sizeof(X_INPUT_GAMEPAD) == 12, "Structure size mismatch" );
 
 	struct X_INPUT_STATE
 	{
-		uint32			packet_number;
+		Field<uint32> packet_number;
 		X_INPUT_GAMEPAD gamepad;
 	};
 	static_assert( sizeof(X_INPUT_STATE) == 16, "Structure size mismatch" );
+
+	struct X_INPUT_VIBRATION
+	{
+		Field<uint16> left_motor_speed;
+		Field<uint16> right_motor_speed;
+	};
+
+	struct X_INPUT_CAPABILITIES
+	{
+		Field<uint8> type;
+		Field<uint8> sub_type;
+		Field<uint16> flags;
+		X_INPUT_GAMEPAD gamepad;
+		X_INPUT_VIBRATION vibration;
+	};
+
+	struct X_INPUT_KEYSTROKE
+	{
+		Field<uint16_t> virtual_key;
+		Field<uint16_t> unicode;
+		Field<uint16_t> flags;
+		Field<uint8_t> user_index;
+		Field<uint8_t> hid_code;
+	};
 
 } // xnative
 

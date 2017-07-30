@@ -12,13 +12,13 @@ uint64 __fastcall XboxVideo_XGetVideoMode( uint64 ip, cpu::CpuRegs& regs )
 
 	// 720p
 	memset( pMode, 0, sizeof(xnative::XVIDEO_MODE) );
-	pMode->dwDisplayWidth = 1280;
-	pMode->dwDisplayHeight = 720;
-	pMode->fIsInterlaced = FALSE;
-	pMode->fIsWideScreen = TRUE;
-	pMode->fIsHiDef = TRUE;
-	pMode->RefreshRate = 60;
-	pMode->VideoStandard = xnative::XC_VIDEO_STANDARD_PAL_I;
+	pMode->dwDisplayWidth.Set(1280);
+	pMode->dwDisplayHeight.Set(720);
+	pMode->fIsInterlaced.Set(FALSE);
+	pMode->fIsWideScreen.Set(TRUE);
+	pMode->fIsHiDef.Set(TRUE);
+	pMode->RefreshRate.Set(60);
+	pMode->VideoStandard.Set(xnative::XC_VIDEO_STANDARD_PAL_I);
 
 	RETURN_ARG(0);
 }
@@ -154,15 +154,15 @@ uint64 __fastcall XboxVideo_VdQueryVideoMode( uint64 ip, cpu::CpuRegs& regs )
 	if (videoMode != NULL)
 	{
 		memset( videoMode, 0, sizeof(xnative::XVIDEO_MODE) );
-		mem::store<uint32>( &videoMode->dwDisplayWidth, 1280 );
-		mem::store<uint32>( &videoMode->dwDisplayHeight, 720 );
-		mem::store<uint32>( &videoMode->fIsInterlaced, 0 );
-		mem::store<uint32>( &videoMode->fIsWideScreen, 1 );
-		mem::store<uint32>( &videoMode->fIsHiDef, 1 );
-		mem::store<float>( &videoMode->RefreshRate, 60.0f );
-		mem::store<uint32>( &videoMode->VideoStandard, 1 );
-		mem::store<uint32>( &videoMode->Reserved[0], 0x4a );
-		mem::store<uint32>( &videoMode->Reserved[1], 1 );
+		videoMode->dwDisplayWidth.Set(1280);
+		videoMode->dwDisplayHeight.Set(720);
+		videoMode->fIsInterlaced.Set(0);
+		videoMode->fIsWideScreen.Set(1);
+		videoMode->fIsHiDef.Set(1);
+		videoMode->RefreshRate.Set(60.0f);
+		videoMode->VideoStandard.Set(1);
+		videoMode->ReservedA.Set(0x4a);
+		videoMode->ReservedB.Set(1);
 	}
 
 	RETURN_ARG(0);

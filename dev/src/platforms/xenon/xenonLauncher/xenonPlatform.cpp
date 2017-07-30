@@ -8,6 +8,7 @@
 
 #include "..\..\..\launcher\backend\native.h"
 #include "..\..\..\launcher\backend\runtimeImage.h"
+#include "xenonInput.h"
 
 //-----------------------------------------------------------------------------
 
@@ -92,6 +93,10 @@ namespace xenon
 		GLog.Log("Runtime: Initializing Xenon graphics");
 		m_graphics = new Graphics(*nativeSystems.m_memory, symbols, commandline);
 
+		// create input system
+		GLog.Log("Runtime: Initializing Xenon input system");
+		m_inputSys = new InputSystem(m_kernel, commandline);
+
 		// initialize config data
 		extern void InitializeXboxConfig();
 		InitializeXboxConfig();
@@ -109,6 +114,8 @@ namespace xenon
 		RegisterXboxFiles(symbols);
 		extern void RegisterXboxDebug(runtime::Symbols& symbols);
 		RegisterXboxDebug(symbols);
+		extern void RegisterXboxInput(runtime::Symbols& symbols);
+		RegisterXboxInput(symbols);
 
 		// register the process native data
 
@@ -168,6 +175,9 @@ namespace xenon
 
 		delete m_kernel;
 		m_kernel = nullptr;
+
+		delete m_inputSys;
+		m_inputSys = nullptr;
 	}
 
 	void Platform::RequestUserExit()
