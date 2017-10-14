@@ -18,7 +18,7 @@ Forunatelly, every problem is solvable and the answard is ***YES*** in principle
 
 ## Current state of the project
 
-Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet atepmted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcace content or pirated game. Xbox360 is not yet an abbandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
+Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet attempted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcace content or pirated game. Xbox360 is not yet abandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
 
 Stuff currently implemented:
 
@@ -66,7 +66,7 @@ Stuff currently implemented:
 
 ## References
 
-- [XEX informations](http://www.openrce.org/forums/posts/111)
+- [XEX information](http://www.openrce.org/forums/posts/111)
 - [PowerPC ISA](http://fileadmin.cs.lth.se/cs/education/EDAN25/PowerISA_V2.07_PUBLIC.pdf)
 - [Free60 description of the XEX](http://www.free60.org/wiki/XEX)
 - [Sourcecode of the Free60 project](https://github.com/Free60Project)
@@ -100,7 +100,7 @@ PE style executable, unfortunatelly it's packed and encrypted.
 
 Decryption of any actual executables requires knowing the secret AES key that is used internally by the loader to compute another AES key that is actually used to decrypt the file content. I found it on a Russian site few years ago but could not retrace my steps any more, most likely the site is down gone for good. The rest of the XEX format suggests strongly that it was bascically built on top of existing PE image loader that existed in the OS. The compression used in the XEX is either simple block based compression or a variation of LZ compression. Both were identified and reversed years ago by people trying to break the Xbox360 anti-piracy protection.
 
-Any way, after dealing with those two bumps on the road and unpacking the "internal EXE" from the XEX we follow normal disassembly procedure. I general case we end up with a list of sections:
+Any way, after dealing with those two bumps on the road and unpacking the "internal EXE" from the XEX we follow normal disassembly procedure. In general case we end up with a list of sections:
 
 ```
 .rdata   0x00000400-0x0004C100 r__
@@ -121,9 +121,9 @@ Disassembling the PowerPC instructions is a pleasure. After we identify the .tex
 
 Basically in this project I've tried 3 ways to approach the subject:
 
-- Script based (for faster iteration) - I've written a LUA script that was doing the disasembly. It was fast to iterate in small samples but very slow to run and disassemble milions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way to much time.
+- Script based (for faster iteration) - I've written a LUA script that was doing the disassembly. It was fast to iterate in small samples but very slow to run and disassemble milions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way too much time.
 
-- Data drive pattern matching - Basically an big XML with binary "rules" that were mattching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "meta data" out of the code (like register dependnecies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just it's name. So, the template-based diassembler was producing an instruction named "bc" but I stil had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
+- Data driven pattern matching - Basically an big XML with binary "rules" that were matching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "metadata" out of the code (like register dependnecies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just it's name. So, the template-based diassembler was producing an instruction named "bc" but I still had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
 
 - Finally I ended up with an abstract CPUInstruction class that is implemented for every instruction that CPU implements + a big ass C++ switch() to do the disassemblly. This is actually very nice and maintaintable solution.
 
@@ -131,11 +131,11 @@ The ***biggest*** and most valuable resources on this topic were the official Po
 
 ## Testing the disassembler
 
-I had lots of bugs in the disassembler. Of course I could write an unit test for each instruction but that would just take ages. The fastest way I've found to test the corectness of the disassembly is to compare the output with something that we know works. Basically, disassembling any big PowerPC executable by IDA or any other disassemble and comparing the output of tens of milions of instructions is a very good step towards some level of trust that the disassembler is working :)
+I had lots of bugs in the disassembler. Of course I could write an unit test for each instruction but that would just take ages. The fastest way I've found to test the correctness of the disassembly is to compare the output with something that we know works. Basically, disassembling any big PowerPC executable by IDA or any other disassemble and comparing the output of tens of milions of instructions is a very good step towards some level of trust that the disassembler is working :)
 
 ## XBox360 specific instructions
 
-Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similary to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delgated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunatelly, the opcodes for those special instructions are not avaiable on the internet (or are burried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like that:
+Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similary to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delegated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunatelly, the opcodes for those special instructions are not avaiable on the internet (or are buried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like this:
 
 ```
 Instruction 'vxor128' (3 params)
@@ -167,7 +167,7 @@ Instruction 'vxor128' (3 params)
 
 ## Abstract instruction
 
-The result of disassembly process is an "unpacked instruction".  he most useful thing is that the opcode and operands are unpacked so an easy "ToString" method can be written for the presentation purposes. Surprisingly, this structure captures a lot of quirks of not only the PowerPC instructions but Intel as well. On PowerPC the operand type is closely related to the particular instruction type (add vs addi, etc). On Intel this is not the case and the same instruction (add) may be used with immediate value as well as memory location, etc. To capture this generalization the Operand structure is introduced.
+The result of disassembly process is an "unpacked instruction". The most useful thing is that the opcode and operands are unpacked so an easy "ToString" method can be written for presentation purposes. Surprisingly, this structure captures a lot of quirks of not only the PowerPC instructions but Intel as well. On PowerPC the operand type is closely related to the particular instruction type (add vs addi, etc). On Intel this is not the case and the same instruction (add) may be used with immediate value as well as memory location, etc. To capture this generalization the Operand structure is introduced.
 
 ```c++
 class  Instruction
@@ -231,7 +231,7 @@ protected:
 };
 ```
 
-In practice, the unpacked format is not good enough for many operations. After the diassembly is completed more work is needed to get the code to a useful state than just unpacking. For example we need to identify the "blocks" - a places in the code where execution enters a particular linear set of instruction that are going to be executed without interuptions until a "jump" or "call" to another block. It's nice and usefull to abstract this instruction concept a little bit more. This is done by the following class:
+In practice, the unpacked format is not good enough for many operations. After the disassembly is completed more work is needed to get the code to a useful state than just unpacking. For example we need to identify the "blocks" - places in the code where execution enters a particular linear set of instruction that are going to be executed without interuptions until a "jump" or "call" to another block. It's nice and useful to abstract this instruction concept a little bit more. This is done by the following class:
 
 ```c++
 class InstructionExtendedInfo
@@ -300,13 +300,13 @@ By filling in this class the decompiler can express much more about the instruct
 
 ## Blocks
 
-After all instructions are disassembled it's important to identify blocks of instructions that can have known single place of entry. This is done by analyzing all the "call" and "jump" instructions that can be resolved. This is not foolproof as it does not identify properly the indirect calls (vtable, function pointers) and indirect jumps (switch statements). The more knowledge about a block we have and the more certnity about the points of entry the faster code we will be able to generate.
+After all instructions are disassembled it's important to identify blocks of instructions that can have known single place of entry. This is done by analyzing all the "call" and "jump" instructions that can be resolved. This is not foolproof as it does not identify properly the indirect calls (vtable, function pointers) and indirect jumps (switch statements). The more knowledge about a block we have and the more certainty about the points of entry the faster code we will be able to generate.
 
 ![DolphinDemoScreenshot](/_images/xex_decompiled.jpg)
 
 ## Recompilation
 
-After all of the code is diassembled we can start to decompile it into logically equivalent representation. The simple trick here is to realize that for the sake of just getting it to work we don't need to convert the code into any high-level language. What matters is to get exactly the same execution results. The CPU state is represented as a structure:
+After all of the code is disassembled we can start to decompile it into logically equivalent representation. The simple trick here is to realize that for the sake of just getting it to work we don't need to convert the code into any high-level language. What matters is to get exactly the same execution results. The CPU state is represented as a structure:
 
 ```c++
 class CpuRegs : public runtime::RegisterBank
@@ -340,7 +340,7 @@ public:
 };
 ```
 
-All the PowerPC instructions are rewritten as a heavely templatized and inlined C++ functions:
+All the PowerPC instructions are rewritten as a heavily templatized and inlined C++ functions:
 
 ```c++
 // addic - add immediate with the update of the carry flag
@@ -353,13 +353,13 @@ static inline void addic( CpuRegs& regs, TReg* out, const TReg a, const uint32 i
 }
 ```
 
-Finally all the blocks that were identified are transformed 1-1 into equlivalent block functions. Blocks function signature is following:
+Finally all the blocks that were identified are transformed 1-1 into equivalent block functions. Blocks function signature is following:
 
 ```c++
 uint64 __fastcall _code__block82060508( uint64 ip, cpu::CpuRegs& regs )
 ```
 
-It takes the current IP (instruction pointer) directly as the argument + the current CPU state expressed by the "regs". The returned value represents next address to execute. This is the lowest (slowest) code generation level that we have. In this mode we are putting ***ALL BURDEN*** of optimizing this to final assembly onto the target compiler. Supprisingly, even using this naive approach most of the recompiled executables are running supprisingly well. Typical block looks like that:
+It takes the current IP (instruction pointer) directly as the argument + the current CPU state expressed by the "regs". The returned value represents next address to execute. This is the lowest (slowest) code generation level that we have. In this mode we are putting ***ALL BURDEN*** of optimizing this to final assembly to the target compiler. Suprisingly, even using this naive approach most of the recompiled executables are running suprisingly well. Typical block looks like that:
 
 ```c++
 //////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ uint64 __fastcall _code__block82060508( uint64 ip, cpu::CpuRegs& regs )
 }
 ```
 
-There are more optimization steps possible that I'm currently working on - for example if all blocks in a function are "well behaved" - no indirect jumps are found and the function follows ABI rules - clear preambule can be identified + there are all return statements have proper cleanup code than we can promote the whole function to a single C++ function pulling all blocks inside + defining all VOLATILE registers inside the function (on stack) and not using the ones in the *regs* structure. 
+There are more optimization steps possible that I'm currently working on - for example if all blocks in a function are "well behaved" - no indirect jumps are found and the function follows ABI rules - clear preamble can be identified + all return statements have proper cleanup code, then we can promote the whole function to a single C++ function pulling all blocks inside + defining all VOLATILE registers inside the function (on stack) and not using the ones in the *regs* structure. 
 
 Next optimization step can occur when two "well behaved" functions are calling each other. Then, instead of going through the generic call via the returned "next instruction address" we can generate code like this:
 
@@ -451,7 +451,7 @@ This again makes the generated code faster.
 
 ## The thread and the thread execution.
 
-All the generated blocks are than compiled using standard C++ compiler and produce a DLL. Pointers to all block functions are then registered into a "block table". Block table allows easily to retrieve the block that will contain the code for given IP (Instruction Pointer). Finally the the core of the simulated CPU thread boils down to this function:
+All the generated blocks are then compiled using standard C++ compiler and produce a DLL. Pointers to all block functions are then registered into a "block table". Block table allows easily to retrieve the block that will contain the code for given IP (Instruction Pointer). Finally the core of the simulated CPU thread boils down to this function:
 
 ```c++
 void CodeExecutor::Run()
@@ -469,7 +469,7 @@ void CodeExecutor::Run()
 
 The XEX image contains import of functions from another modules. Unlink the quite common "named" imports, the ones in the XEX executable are only ordinal based. A table is required that contans the "human readable" names of the functions as well as their ordering in the given lib. See [here](https://github.com/rexdex/recompiler/blob/master/dev/src/platforms/xenon/xenonDecompiler/Recompiler.Xenon.Platform.exports).
 
-When we load an image for decompiled executable we can patch the entries in the block table for given import stubs with a C++ reimplementation of that function. The is still the same and we have to "unpack" the arguments from the registers manually. For example:
+When we load an image for decompiled executable we can patch the entries in the block table for given import stubs with a C++ reimplementation of that function. There is still the same and we have to "unpack" the arguments from the registers manually. For example:
 
 ```c++
 uint64 __fastcall XboxThreads_KeDelayExecutionThread( uint64 ip, cpu::CpuRegs& regs )
@@ -491,4 +491,4 @@ It takes around 300 functions to get the simple app to start. Most of the are ve
 
 ## Future Work
 
-Well, it would be much coller to run an actual game, maybe some day :)
+Well, it would be much cooler to run an actual game, maybe some day :)
