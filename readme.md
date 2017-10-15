@@ -2,11 +2,11 @@
 
 ![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
 
-The idea is simple: *what if you could take the Xbox360 game and run it on your PC?* Is this even possible in principle? I was pondering this question few years ago and that should not come as a supprise that there are some obvious technical difficulties in getting this done:
+The idea is simple: *what if you could take the Xbox360 game and run it on your PC?* Is this even possible in principle? I was pondering this question a few years ago and it should not come as a supprise that there are some obvious technical difficulties in getting this done:
 
-- **Different CPUs** - Xbox360 uses PowerPC based CPU, our PCs are based on x86 architexture. They are different in so many ways that I don't even know where to start :) PowerPC is RISC based, has shitloads of registers but very simple instructions. x86 is totally different on the other hand - not so many registers and many more instructions that are more complicated (addressing modes...). It's obvious that a simple transcription is not feasible.
+- **Different CPUs** - Xbox360 uses PowerPC based CPU, while our PCs are based on x86 architexture. They are different in so many ways that I don't even know where to start :) PowerPC is RISC based, has shitloads of registers but very simple instructions. x86 is totally different on the other hand - not so many registers and many more instructions that are more complicated (addressing modes...). It's obvious that a simple transcription is not feasible.
 
-- **Memory Layout** - Xbox360 uses BigEndian byte ordering, x86 CPUs use LittleEndian. To be compatible with incoming data that is being read from files and read/written into the memory all memory based operands must be byteswapped. This may pose a significant performance issue.
+- **Memory Layout** - Xbox360 uses BigEndian byte ordering, x86 CPUs use LittleEndian. To be compatible with incoming data that is being read from files and read/written into memory, all memory based operands must be byteswapped. This may pose a significant performance issue.
 
 - **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some cleaver guys in Russia though that figured how :)
 
@@ -95,7 +95,7 @@ Stuff currently implemented:
 
 ## XEX
 
-First, the XEX (Xbox Executable) format must be ripped apart and the actual code has to be extracted. XEX is a Xbox360 specific executable packing/encryption format. It's not very complicated and quite good description can be found here: [Free60](http://free60.org/wiki/Main_Page). There are also some old references [here](http://www.openrce.org/forums/posts/111). Inside the XEX there are some platform specific headers (like file certificate, media/region information, file encryption key, etc) but also there's a normal 
+First, the XEX (Xbox Executable) format must be ripped apart and the actual code has to be extracted. XEX is a Xbox360 specific executable packing/encryption format. It's not very complicated and a very good description can be found here: [Free60](http://free60.org/wiki/Main_Page). There are also some old references [here](http://www.openrce.org/forums/posts/111). Inside the XEX there are some platform specific headers (like file certificate, media/region information, file encryption key, etc) but also there's a normal 
 PE style executable, unfortunatelly it's packed and encrypted.
 
 Decryption of any actual executables requires knowing the secret AES key that is used internally by the loader to compute another AES key that is actually used to decrypt the file content. I found it on a Russian site few years ago but could not retrace my steps any more, most likely the site is down gone for good. The rest of the XEX format suggests strongly that it was bascically built on top of existing PE image loader that existed in the OS. The compression used in the XEX is either simple block based compression or a variation of LZ compression. Both were identified and reversed years ago by people trying to break the Xbox360 anti-piracy protection.
