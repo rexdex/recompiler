@@ -2,23 +2,23 @@
 
 ![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
 
-The idea is simple: *what if you could take the Xbox360 game and run it on your PC?* Is this even possible in principle? I was pondering this question few years ago and that should not come as a supprise that there are some obvious technical difficulties in getting this done:
+The idea is simple: *what if you could take the Xbox360 game and run it on your PC?* Is this even possible in principle? I was pondering this question few years ago and that should not come as a surprise that there are some obvious technical difficulties in getting this done:
 
-- **Different CPUs** - Xbox360 uses PowerPC based CPU, our PCs are based on x86 architexture. They are different in so many ways that I don't even know where to start :) PowerPC is RISC based, has shitloads of registers but very simple instructions. x86 is totally different on the other hand - not so many registers and many more instructions that are more complicated (addressing modes...). It's obvious that a simple transcription is not feasible.
+- **Different CPUs** - Xbox360 uses PowerPC based CPU, our PCs are based on x86 architecture. They are different in so many ways that I don't even know where to start :) PowerPC is RISC based, has shitloads of registers but very simple instructions. x86 is totally different on the other hand - not so many registers and many more instructions that are more complicated (addressing modes...). It's obvious that a simple transcription is not feasible.
 
 - **Memory Layout** - Xbox360 uses BigEndian byte ordering, x86 CPUs use LittleEndian. To be compatible with incoming data that is being read from files and read/written into the memory all memory based operands must be byteswapped. This may pose a significant performance issue.
 
 - **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some cleaver guys in Russia though that figured how :)
 
-- **Different and outdated GPU architecture** - If we want to see any graphics rendered the GPU needs to be emulated. Ther are two hard nuts to crack: first, the shaders we see will be complied into the GPU compatible format, no HLSL on input, sorry. Those shaders will have to be reverse engineered as well. Secondly, the Xbox360 GPU was using ~10MB of internal memory called EDRAM that was serving as a temporary storage of render target for the duration of rendering. Although some card today still use similar concept this is never exposed directly to the user. Since there a lot of differnt ways people used the EDRAM on Xbox this part has to be emulated. To be honest probably differently for every game.
+- **Different and outdated GPU architecture** - If we want to see any graphics rendered the GPU needs to be emulated. There are two hard nuts to crack: first, the shaders we see will be complied into the GPU compatible format, no HLSL on input, sorry. Those shaders will have to be reverse engineered as well. Secondly, the Xbox360 GPU was using ~10MB of internal memory called EDRAM that was serving as a temporary storage of render target for the duration of rendering. Although some cards today still use similar concept this is never exposed directly to the user. Since there a lot of different ways people used the EDRAM on Xbox this part has to be emulated. To be honest probably differently for every game.
 
-- **Inlining of graphics/kernel functions** - Some of the functions used while compiling the executable were inlined directly into the compiled code making it much harder to write a simple API level wrapper. This kills the dream of making "function level" wrapper where we could just go and wrap the "d3d->DrawPrimitive" call directly. Nope, this is not going ot happen.
+- **Inlining of graphics/kernel functions** - Some of the functions used while compiling the executable were inlined directly into the compiled code making it much harder to write a simple API level wrapper. This kills the dream of making "function level" wrapper where we could just go and wrap the "d3d->DrawPrimitive" call directly. Nope, this is not going to happen.
 
-Forunatelly, every problem is solvable and the answard is ***YES*** in principle. If you want to know how, keep reading :)
+Fortunately, every problem is solvable and the answer is ***YES*** in principle. If you want to know how, keep reading :)
 
 ## Current state of the project
 
-Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet attempted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcace content or pirated game. Xbox360 is not yet abandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
+Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet attempted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcade content or pirated game. Xbox360 is not yet abandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
 
 Stuff currently implemented:
 
@@ -52,7 +52,7 @@ Stuff currently implemented:
 + Basic GPU trace viewer that allows to inspect internal GPU state at each point
 + *Time Machine* tool that makes it possible to find previous instruction that touched given register or memory
 
-## How to run it ?
+## How to run it?
 
 - You will need Visual Studio 2015 (sorry, Windows only)
 - Get the wxWidgets in 3.1.0 and compile the x64 DLL libs, place them in dev\external\wxWidgets-3.1.0\
@@ -61,7 +61,7 @@ Stuff currently implemented:
 - Open the project "projects\xenon\doplhin\dolphin.px"
 - Select the "Final" configuration
 - Click the "Build button"
-- Assumming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\doplhin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\doplhin\data -devkit=C:\recompiler\projects\xenon\doplhin\data"
+- Assuming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\doplhin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\doplhin\data -devkit=C:\recompiler\projects\xenon\doplhin\data"
 - To exit the app close the GPU output window
 
 ## References
@@ -96,11 +96,11 @@ Stuff currently implemented:
 ## XEX
 
 First, the XEX (Xbox Executable) format must be ripped apart and the actual code has to be extracted. XEX is a Xbox360 specific executable packing/encryption format. It's not very complicated and quite good description can be found here: [Free60](http://free60.org/wiki/Main_Page). There are also some old references [here](http://www.openrce.org/forums/posts/111). Inside the XEX there are some platform specific headers (like file certificate, media/region information, file encryption key, etc) but also there's a normal 
-PE style executable, unfortunatelly it's packed and encrypted.
+PE style executable, unfortunately it's packed and encrypted.
 
-Decryption of any actual executables requires knowing the secret AES key that is used internally by the loader to compute another AES key that is actually used to decrypt the file content. I found it on a Russian site few years ago but could not retrace my steps any more, most likely the site is down gone for good. The rest of the XEX format suggests strongly that it was bascically built on top of existing PE image loader that existed in the OS. The compression used in the XEX is either simple block based compression or a variation of LZ compression. Both were identified and reversed years ago by people trying to break the Xbox360 anti-piracy protection.
+Decryption of any actual executables requires knowing the secret AES key that is used internally by the loader to compute another AES key that is actually used to decrypt the file content. I found it on a Russian site few years ago but could not retrace my steps any more, most likely the site is down gone for good. The rest of the XEX format suggests strongly that it was basically built on top of existing PE image loader that existed in the OS. The compression used in the XEX is either simple block based compression or a variation of LZ compression. Both were identified and reversed years ago by people trying to break the Xbox360 anti-piracy protection.
 
-Any way, after dealing with those two bumps on the road and unpacking the "internal EXE" from the XEX we follow normal disassembly procedure. In general case we end up with a list of sections:
+Anyway, after dealing with those two bumps on the road and unpacking the "internal EXE" from the XEX we follow normal disassembly procedure. In general case we end up with a list of sections:
 
 ```
 .rdata   0x00000400-0x0004C100 r__
@@ -113,29 +113,29 @@ Any way, after dealing with those two bumps on the road and unpacking the "inter
 .reloc   0x002A0200-0x002B2EF4 r__
 ```
 
-The only section that contains executable code is the .text section and only that section requires disassembly. Rest of the sections must still be loaded into the memory when we try to execute the code since data may be read/written into those addresses. For now I did not implement any data relocation so the unpacked image must be loaded exactly under it's base address. Fortunatelly on 64-bit systems this is achievable fairly easy.
+The only section that contains executable code is the .text section and only that section requires disassembly. Rest of the sections must still be loaded into the memory when we try to execute the code since data may be read/written into those addresses. For now I did not implement any data relocation so the unpacked image must be loaded exactly under its base address. Fortunately on 64-bit systems this is achievable fairly easily.
 
 ## Disassembly
 
-Disassembling the PowerPC instructions is a pleasure. After we identify the .text (code) section in the PE executable the rest is straightforward. Every instruction is always 4 bytes so there is no ambigiuity like with x86 instructions and even if we don't know how to decode a particular instruction we can easily continue with the rest of the code. This allows us to have semi-working solution way sooner than with x86. See the [actual file](https://github.com/rexdex/recompiler/blob/master/dev/src/platforms/xenon/xenonDecompiler/xenonInstructionDecoding.cpp) for details. 
+Disassembling the PowerPC instructions is a pleasure. After we identify the .text (code) section in the PE executable the rest is straightforward. Every instruction is always 4 bytes so there is no ambiguity like with x86 instructions and even if we don't know how to decode a particular instruction we can easily continue with the rest of the code. This allows us to have semi-working solution way sooner than with x86. See the [actual file](https://github.com/rexdex/recompiler/blob/master/dev/src/platforms/xenon/xenonDecompiler/xenonInstructionDecoding.cpp) for details. 
 
 Basically in this project I've tried 3 ways to approach the subject:
 
-- Script based (for faster iteration) - I've written a LUA script that was doing the disassembly. It was fast to iterate in small samples but very slow to run and disassemble milions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way too much time.
+- Script based (for faster iteration) - I've written a LUA script that was doing the disassembly. It was fast to iterate in small samples but very slow to run and disassemble millions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way too much time.
 
-- Data driven pattern matching - Basically an big XML with binary "rules" that were matching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "metadata" out of the code (like register dependnecies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just it's name. So, the template-based diassembler was producing an instruction named "bc" but I still had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
+- Data driven pattern matching - Basically a big XML with binary "rules" that were matching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "metadata" out of the code (like register dependencies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just its name. So, the template-based disassembler was producing an instruction named "bc" but I still had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
 
-- Finally I ended up with an abstract CPUInstruction class that is implemented for every instruction that CPU implements + a big ass C++ switch() to do the disassemblly. This is actually very nice and maintaintable solution.
+- Finally I ended up with an abstract CPUInstruction class that is implemented for every instruction that CPU implements + a big ass C++ switch() to do the disassembly. This is actually very nice and maintainable solution.
 
 The ***biggest*** and most valuable resources on this topic were the official PowerPC instruction set documentation: [Power ISA Version 2.07](http://fileadmin.cs.lth.se/cs/education/EDAN25/PowerISA_V2.07_PUBLIC.pdf)
 
 ## Testing the disassembler
 
-I had lots of bugs in the disassembler. Of course I could write an unit test for each instruction but that would just take ages. The fastest way I've found to test the correctness of the disassembly is to compare the output with something that we know works. Basically, disassembling any big PowerPC executable by IDA or any other disassemble and comparing the output of tens of milions of instructions is a very good step towards some level of trust that the disassembler is working :)
+I had lots of bugs in the disassembler. Of course, I could write a unit test for each instruction but that would just take ages. The fastest way I've found to test the correctness of the disassembly is to compare the output with something that we know works. Basically, disassembling any big PowerPC executable by IDA or any other disassemble and comparing the output of tens of millions of instructions is a very good step towards some level of trust that the disassembler is working :)
 
 ## XBox360 specific instructions
 
-Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similary to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delegated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunatelly, the opcodes for those special instructions are not avaiable on the internet (or are buried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like this:
+Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similarly to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delegated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunately, the opcodes for those special instructions are not available on the internet (or are buried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like this:
 
 ```
 Instruction 'vxor128' (3 params)
@@ -231,7 +231,7 @@ protected:
 };
 ```
 
-In practice, the unpacked format is not good enough for many operations. After the disassembly is completed more work is needed to get the code to a useful state than just unpacking. For example we need to identify the "blocks" - places in the code where execution enters a particular linear set of instruction that are going to be executed without interuptions until a "jump" or "call" to another block. It's nice and useful to abstract this instruction concept a little bit more. This is done by the following class:
+In practice, the unpacked format is not good enough for many operations. After the disassembly is completed more work is needed to get the code to a useful state than just unpacking. For example, we need to identify the "blocks" - places in the code where execution enters a particular linear set of instruction that are going to be executed without interruptions until a "jump" or "call" to another block. It's nice and useful to abstract this instruction concept a little bit more. This is done by the following class:
 
 ```c++
 class InstructionExtendedInfo
@@ -296,7 +296,7 @@ public:
 };
 ```
 
-By filling in this class the decompiler can express much more about the instruction - ie. what is it going to do with the control flow of the program or what registeres are being read/written by it. Each actual PowerPC instruction has it's opcode class that is able to transform the Instruction into the InstructionExtendedInfo.
+By filling in this class the decompiler can express much more about the instruction - i.e. what is it going to do with the control flow of the program or what registers are being read/written by it. Each actual PowerPC instruction has its opcode class that is able to transform the Instruction into the InstructionExtendedInfo.
 
 ## Blocks
 
@@ -306,7 +306,7 @@ After all instructions are disassembled it's important to identify blocks of ins
 
 ## Recompilation
 
-After all of the code is disassembled we can start to decompile it into logically equivalent representation. The simple trick here is to realize that for the sake of just getting it to work we don't need to convert the code into any high-level language. What matters is to get exactly the same execution results. The CPU state is represented as a structure:
+After all the code is disassembled we can start to decompile it into logically equivalent representation. The simple trick here is to realize that for the sake of just getting it to work we don't need to convert the code into any high-level language. What matters is to get the same execution results. The CPU state is represented as a structure:
 
 ```c++
 class CpuRegs : public runtime::RegisterBank
@@ -359,7 +359,7 @@ Finally all the blocks that were identified are transformed 1-1 into equivalent 
 uint64 __fastcall _code__block82060508( uint64 ip, cpu::CpuRegs& regs )
 ```
 
-It takes the current IP (instruction pointer) directly as the argument + the current CPU state expressed by the "regs". The returned value represents next address to execute. This is the lowest (slowest) code generation level that we have. In this mode we are putting ***ALL BURDEN*** of optimizing this to final assembly to the target compiler. Suprisingly, even using this naive approach most of the recompiled executables are running suprisingly well. Typical block looks like that:
+It takes the current IP (instruction pointer) directly as the argument + the current CPU state expressed by the "regs". The returned value represents next address to execute. This is the lowest (slowest) code generation level that we have. In this mode we are putting ***ALL BURDEN*** of optimizing this to final assembly to the target compiler. Surprisingly, even using this naive approach most of the recompiled executables are running surprisingly well. Typical block looks like that:
 
 ```c++
 //////////////////////////////////////////////////////
@@ -451,7 +451,7 @@ This again makes the generated code faster.
 
 ## The thread and the thread execution.
 
-All the generated blocks are then compiled using standard C++ compiler and produce a DLL. Pointers to all block functions are then registered into a "block table". Block table allows easily to retrieve the block that will contain the code for given IP (Instruction Pointer). Finally the core of the simulated CPU thread boils down to this function:
+All the generated blocks are then compiled using standard C++ compiler and produce a DLL. Pointers to all block functions are then registered into a "block table". Block table allows easily to retrieve the block that will contain the code for given IP (Instruction Pointer). Finally, the core of the simulated CPU thread boils down to this function:
 
 ```c++
 void CodeExecutor::Run()
@@ -467,7 +467,7 @@ void CodeExecutor::Run()
 
 ## Imported functions
 
-The XEX image contains import of functions from another modules. Unlink the quite common "named" imports, the ones in the XEX executable are only ordinal based. A table is required that contans the "human readable" names of the functions as well as their ordering in the given lib. See [here](https://github.com/rexdex/recompiler/blob/master/dev/src/platforms/xenon/xenonDecompiler/Recompiler.Xenon.Platform.exports).
+The XEX image contains import of functions from another modules. Unlink the quite common "named" imports, the ones in the XEX executable are only ordinal based. A table is required that contains the "human readable" names of the functions as well as their ordering in the given lib. See [here](https://github.com/rexdex/recompiler/blob/master/dev/src/platforms/xenon/xenonDecompiler/Recompiler.Xenon.Platform.exports).
 
 When we load an image for decompiled executable we can patch the entries in the block table for given import stubs with a C++ reimplementation of that function. There is still the same and we have to "unpack" the arguments from the registers manually. For example:
 
@@ -491,4 +491,5 @@ It takes around 300 functions to get the simple app to start. Most of the are ve
 
 ## Future Work
 
-Well, it would be much cooler to run an actual game, maybe some day :)
+Well, it would be much cooler to run an actual game, maybe someday :)
+
