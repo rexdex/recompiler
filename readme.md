@@ -58,10 +58,10 @@ Stuff currently implemented:
 - Get the wxWidgets in 3.1.0 and compile the x64 DLL libs, place them in dev\external\wxWidgets-3.1.0\
 - Compile the whole solution from dev\src\recompile.sln 
 - Run the "framework\frontend" project
-- Open the project "projects\xenon\doplhin\dolphin.px"
+- Open the project "projects\xenon\dolphin\dolphin.px"
 - Select the "Final" configuration
 - Click the "Build button"
-- Assumming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\doplhin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\doplhin\data -devkit=C:\recompiler\projects\xenon\doplhin\data"
+- Assumming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\dolphin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\dolphin\data -devkit=C:\recompiler\projects\xenon\dolphin\data"
 - To exit the app close the GPU output window
 
 ## References
