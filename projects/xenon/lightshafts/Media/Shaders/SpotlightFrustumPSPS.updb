@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shader-pdb pdbHint="4e4a0000-9a4c258b-c0a14d03" version="21119">
+ <files>
+  <file id="0" path="C:\Program Files (x86)\Microsoft Xbox 360 SDK\Source\Samples\Media\Shaders\LightShafts_SpotLight.hlsl" time="01ccf361-58696b1f">//--------------------------------------------------------------------------------------
+// LightShafts_Spotlight.hlsl
+//
+// Shaders for spotlight rendering in the LightShafts sample
+//
+// Xbox Advanced Technology Group.
+// Copyright (C) Microsoft Corporation. All rights reserved.
+// ATI 3D Application Research Group. 
+// Copyright (C) ATI Research, Inc. All rights reserved. 
+//--------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------
+// Vertex shader constants
+//--------------------------------------------------------------------------------------
+uniform float4x4 g_matWorldViewProj : register(c0);
+
+
+//--------------------------------------------------------------------------------------
+// Pixel shader constants
+//--------------------------------------------------------------------------------------
+uniform float4   g_vEyeL            : register(c0);
+
+
+//--------------------------------------------------------------------------------------
+// Samplers
+//--------------------------------------------------------------------------------------
+sampler BaseTextureSampler : register(s0);
+
+
+//--------------------------------------------------------------------------------------
+// Vertex structures
+//--------------------------------------------------------------------------------------
+struct VS_FRUSTUM_OUTPUT
+{
+    float4 vPos      : POSITION;
+    float4 vColor    : COLOR0;
+    float2 vTexCoord : TEXCOORD0;
+};
+
+
+//--------------------------------------------------------------------------------------
+// Name: SpotlightFrustumVS()
+// Desc: Vertex Shader for shaded "light source" at tip of frustum
+//--------------------------------------------------------------------------------------
+VS_FRUSTUM_OUTPUT SpotlightFrustumVS( float3 vPosition : POSITION )
+{
+    VS_FRUSTUM_OUTPUT Out = (VS_FRUSTUM_OUTPUT)0; 
+    Out.vPos      = mul( float4(vPosition,1), g_matWorldViewProj );
+    Out.vColor    = float4(1,1,1,1);
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: SpotlightFrustumFrontVS()
+// Desc: Vertex Shader for textured front of frustum
+//--------------------------------------------------------------------------------------
+VS_FRUSTUM_OUTPUT SpotlightFrustumFrontVS( float3 vPosition : POSITION, 
+                                           float2 vTexCoord : TEXCOORD0 )
+{
+    VS_FRUSTUM_OUTPUT Out = (VS_FRUSTUM_OUTPUT)0; 
+    Out.vPos      = mul( float4(vPosition,1), g_matWorldViewProj );
+    Out.vTexCoord = vTexCoord;
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: SpotlightWireFrustumVS()
+// Desc: Vertex Shader for wireframe frustum
+//--------------------------------------------------------------------------------------
+VS_FRUSTUM_OUTPUT SpotlightWireFrustumVS( float3 vPosition : POSITION, 
+                                          float4 vColor    : COLOR0 )
+{
+    VS_FRUSTUM_OUTPUT Out = (VS_FRUSTUM_OUTPUT)0; 
+    Out.vPos      = mul( float4(vPosition,1), g_matWorldViewProj );
+    Out.vColor    = vColor;
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: SpotlightFrustumPS()
+// Desc: 
+//--------------------------------------------------------------------------------------
+float4 SpotlightFrustumPS( float4 vColor : COLOR0 ) : COLOR
+{
+    return vColor;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: SpotlightFrustumFrontPS()
+// Desc: 
+//--------------------------------------------------------------------------------------
+float4 SpotlightFrustumFrontPS( float2 vTexCoord  : TEXCOORD0 ) : COLOR
+{
+    return tex2D( BaseTextureSampler, vTexCoord );
+}
+
+</file>
+ </files>
+ <tool name="Compiler">
+  <defines>
+   <define name="EntryPoint_SpotlightFrustumPS" value="" />
+  </defines>
+  <arguments>
+   <argument name="/Zi" value="true" />
+   <argument name="/Vd" value="false" />
+   <argument name="/Xu0_deprecated" value="false" />
+   <argument name="/Odu_deprecated" value="false" />
+   <argument name="/XOd_" value="false" />
+   <argument name="/XOu" value="false" />
+   <argument name="/Xmaxtempreg" value="0" />
+   <argument name="PsSampBase" value="0" />
+   <argument name="PsSampCount" value="0" />
+   <argument name="VsSampBase" value="0" />
+   <argument name="VsSampCount" value="0" />
+   <argument name="VsInstCount" value="0" />
+   <argument name="PsInstCount" value="0" />
+   <argument name="/Od" value="false" />
+   <argument name="/Zpr" value="false" />
+   <argument name="/Zpc" value="false" />
+   <argument name="/Gpp" value="false" />
+   <argument name="/Op" value="false" />
+   <argument name="/Gfa" value="false" />
+   <argument name="/Gfp" value="false" />
+   <argument name="/XZc:zeroInit" value="false" />
+   <argument name="/XVe" value="false" />
+   <argument name="/Xbe:3-" value="false" />
+   <argument name="/Xbe:1-" value="false" />
+   <argument name="/XQInomaskedexports" value="false" />
+   <argument name="/XOautoz" value="false" />
+  </arguments>
+ </tool>
+ <shaders>
+  <shader entrypoint="SpotlightFrustumPS" target="ps_3_0" ZPass="0" pdbHint="4e4a0000-9a4c258b-c0a14d03">
+   <constanttable>
+   </constanttable>
+   <sourcemap>
+    <statement pc="0.0" file="0" line="87" scope="-1" lastinstruction="0" />
+    <statement pc="1" file="0" line="89" scope="-1" lastinstruction="0" />
+   </sourcemap>
+   <variables>
+   </variables>
+   <variableDebugInfo>
+   </variableDebugInfo>
+   <scopes>
+   </scopes>
+   <funcInfo>
+    <function id="0" name="SpotlightFrustumFrontPS" retID="21">
+     <parameter id="20" />
+    </function>
+    <function id="1" name="SpotlightFrustumPS" retID="19">
+     <parameter id="18" />
+    </function>
+    <function id="2" name="SpotlightWireFrustumVS" retID="16">
+     <parameter id="14" />
+     <parameter id="15" />
+    </function>
+    <function id="3" name="SpotlightFrustumFrontVS" retID="12">
+     <parameter id="10" />
+     <parameter id="11" />
+    </function>
+    <function id="4" name="SpotlightFrustumVS" retID="8">
+     <parameter id="7" />
+    </function>
+   </funcInfo>
+   <funcEntryExitInfo>
+   </funcEntryExitInfo>
+   <VfetchInfo>
+   </VfetchInfo>
+   <InterpolatorInfo>
+    <Interpolator Register="0" Semantic="0xa0" Mask="xyzw" />
+   </InterpolatorInfo>
+   <LiteralFloats>
+   </LiteralFloats>
+   <LiteralInts>
+   </LiteralInts>
+   <LiteralBools>
+   </LiteralBools>
+  </shader>
+ </shaders>
+</shader-pdb>

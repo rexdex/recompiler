@@ -1,0 +1,440 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="xenonLibUtils.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibNatives.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonUtils.cpp" />
+    <ClCompile Include="xenonLibVideo.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibThreads.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibKernel.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibFiles.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonKernel.cpp">
+      <Filter>devices\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonThread.cpp">
+      <Filter>devices\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonFileSystem.cpp">
+      <Filter>devices\files</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonFileSystemDevices.cpp">
+      <Filter>devices\files</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonFileSystemFiles.cpp">
+      <Filter>devices\files</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUThread.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUCommandBuffer.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPU.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11AbstarctLayer.cpp">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11RenderingWindow.cpp">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPURegisters.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUExecutor.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUUtils.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUState.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibDebug.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUTraceWriter.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11GeometryDrawer.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11SurfaceManager.cpp">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11SurfaceCache.cpp">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11StateCache.cpp">
+      <Filter>devices\graphics\gpu\dx11\state</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11SurfaceMemory.cpp">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11Utils.cpp">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUMicrocodeTransformer.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeNodes.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeBlocks.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeDecompiler.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\dump</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeShader.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11Shader.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeCache.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11MicrocodeBlocksTranslator.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11ShaderHLSLWriter.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11ShaderBuilder.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11ShaderCache.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11FetchLayout.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11GeometryBuffer.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11TextureManager.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUTextures.cpp">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11SamplerCache.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11Staging.cpp">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUDumpFormat.cpp">
+      <Filter>devices\graphics\gpu\dump</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonGPUDumpWriterImpl.cpp">
+      <Filter>devices\graphics\gpu\dump</Filter>
+    </ClCompile>
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="xenonInplaceExecution.cpp">
+      <Filter>devices\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonPlatform.cpp" />
+    <ClCompile Include="xenonGraphics.cpp">
+      <Filter>devices\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonCPU.cpp">
+      <Filter>devices\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonCPUDevice.cpp">
+      <Filter>devices\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonInput.cpp">
+      <Filter>devices\input</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibInput.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="xenonLibUtils.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonLibNatives.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonUtils.h" />
+    <ClInclude Include="xenonKernel.h">
+      <Filter>devices\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonThread.h">
+      <Filter>devices\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPU.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUCommandBuffer.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUThread.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonFileSystem.h">
+      <Filter>devices\files</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonFileSystemDevices.h">
+      <Filter>devices\files</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonFileSystemFiles.h">
+      <Filter>devices\files</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGpuAbstractLayer.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11AbstractLayer.h">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11RenderingWindow.h">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPURegisters.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPURegisterMap.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUOpcodes.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUExecutor.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUConstants.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUUtils.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUState.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUTraceWriter.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11GeometryDrawer.h">
+      <Filter>devices\graphics\gpu\dx11\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11SurfaceManager.h">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11SurfaceCache.h">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11StateCache.h">
+      <Filter>devices\graphics\gpu\dx11\state</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11SurfaceMemory.h">
+      <Filter>devices\graphics\gpu\dx11\edram</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\edramCommon.h">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11Utils.h">
+      <Filter>devices\graphics\gpu\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUMicrocodeConstants.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUMicrocodeTransformer.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeNodes.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeBlocks.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeConstants.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\dump</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeDecompiler.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\dump</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeShader.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11Shader.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeCache.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeBlocksTranslator.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11ShaderBuilder.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11MicrocodeHLSLWriter.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\microcode</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11ShaderHLSLWriter.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11ShaderCache.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11FetchLayout.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11GeometryBuffer.h">
+      <Filter>devices\graphics\gpu\dx11\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11TextureManager.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUTextures.h">
+      <Filter>devices\graphics\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11SamplerCache.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="dx11Staging.h">
+      <Filter>devices\graphics\gpu\dx11\drawing\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUDumpWriter.h">
+      <Filter>devices\graphics\gpu\dump</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUDumpFormat.h">
+      <Filter>devices\graphics\gpu\dump</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonGPUDumpWriterImpl.h">
+      <Filter>devices\graphics\gpu\dump</Filter>
+    </ClInclude>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="xenonInplaceExecution.h">
+      <Filter>devices\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonPlatform.h" />
+    <ClInclude Include="xenonGraphics.h">
+      <Filter>devices\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonCPU.h">
+      <Filter>devices\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonCPUDevice.h">
+      <Filter>devices\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonInput.h">
+      <Filter>devices\input</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="devices">
+      <UniqueIdentifier>{6776c606-1812-4969-97ae-e109c921d061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics">
+      <UniqueIdentifier>{c678efc2-6d61-4ec7-af35-78be6a9b3148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu">
+      <UniqueIdentifier>{5e0979c3-7c0c-4adb-a649-8c5195e12a04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11">
+      <UniqueIdentifier>{c9cd36d8-b4e5-4633-bedc-c1fd6542e75b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing">
+      <UniqueIdentifier>{4b4fdb9a-0aa2-4da8-af3f-eb5181b347a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing\dump">
+      <UniqueIdentifier>{d14f698b-87d9-4557-988e-23957eb55394}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing\microcode">
+      <UniqueIdentifier>{2fa9674b-1082-47bb-8993-365d53d9fa6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing\shader">
+      <UniqueIdentifier>{c576015d-6cd3-4995-88ad-db8c5e87736b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing\shader\include">
+      <UniqueIdentifier>{b707d4d3-9d40-4241-8d67-81447d636f5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\drawing\texture">
+      <UniqueIdentifier>{46d6c839-f8ff-4ca5-afe4-913702556857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\edram">
+      <UniqueIdentifier>{52b43566-6732-47a0-b7d1-5d715a62f340}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\edram\shaders">
+      <UniqueIdentifier>{c652e1d7-4c76-4290-9b94-0398923f9952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dx11\state">
+      <UniqueIdentifier>{66eb5700-146c-432d-93b8-6e3855a2c4ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\graphics\gpu\dump">
+      <UniqueIdentifier>{884f85bc-7f87-46d5-87c8-b655cb5f4c46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\kernel">
+      <UniqueIdentifier>{353741e8-e184-4f23-a596-5108ae96658c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\files">
+      <UniqueIdentifier>{39171471-f72c-4b17-ae7a-009bd1386a38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\cpu">
+      <UniqueIdentifier>{783e12eb-b39f-48f9-beb6-e7334a4b8e18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs">
+      <UniqueIdentifier>{d202397e-b00f-4b23-970b-df7b84c7fcf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\input">
+      <UniqueIdentifier>{334c6e1d-aebe-4eaf-93d2-b5b7e6e7b929}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shaders\edramClear.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\psCommon.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\vsCommon.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\instrCommon.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\edramDownload32.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\edramUpload32.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\edramClear32.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\copyTextureFloat.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\copyTextureUint.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\copyTextureUnorm.cs.fx">
+      <Filter>devices\graphics\gpu\dx11\edram\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\geometryQuadList.gs.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shaders\geometryRectList.gs.fx">
+      <Filter>devices\graphics\gpu\dx11\drawing\shader\include</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="export.def" />
+  </ItemGroup>
+</Project>

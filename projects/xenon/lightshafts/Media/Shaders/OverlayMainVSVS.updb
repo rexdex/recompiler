@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shader-pdb pdbHint="4e4a0000-db496afb-5ab30bd0" version="21119">
+ <files>
+  <file id="0" path="C:\Program Files (x86)\Microsoft Xbox 360 SDK\Source\Samples\Media\Shaders\LightShafts_OverlayQuad.hlsl" time="01ccf361-58696b1f">//--------------------------------------------------------------------------------------
+// LightShafts_OverlayQuad.hlsl
+//
+// Shaders for lightshafts overlay quads in the LightShafts sample
+//
+// Xbox Advanced Technology Group.
+// Copyright (C) Microsoft Corporation. All rights reserved.
+// ATI 3D Application Research Group. 
+// Copyright (C) ATI Research, Inc. All rights reserved. 
+//--------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------
+// Pixel shader constants
+//--------------------------------------------------------------------------------------
+#define NUM_BLUR_TAPS 12
+uniform float4 g_vFilterTaps[NUM_BLUR_TAPS] : register(c0);
+
+
+//--------------------------------------------------------------------------------------
+// Samplers
+//--------------------------------------------------------------------------------------
+sampler ShadowMapSampler  : register(s0);
+sampler FogTextureSampler : register(s0);
+
+
+//--------------------------------------------------------------------------------------
+// Vertex structures
+//--------------------------------------------------------------------------------------
+struct VS_OVERLAY_OUTPUT
+{
+   float4 vPos      : POSITION;
+   float2 vTexCoord : TEXCOORD0;
+};
+
+
+//--------------------------------------------------------------------------------------
+// Name: OverlayMainVS()
+// Desc: Vertex Shader
+//--------------------------------------------------------------------------------------
+VS_OVERLAY_OUTPUT OverlayMainVS( float4 vPosition : POSITION,
+                                 float2 vTexCoord : TEXCOORD0 )
+{
+    VS_OVERLAY_OUTPUT Out; 
+    Out.vPos      = vPosition;
+    Out.vTexCoord = vTexCoord;
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: ShadowBlurPS()
+// Desc: Routine to blur a shadow. The shadow is blurred more towards the top of the
+//       texture.
+//--------------------------------------------------------------------------------------
+float4 ShadowBlurPS( float2 vTexCoord : TEXCOORD0 ) : COLOR
+{
+    float fColorSum = 0.0f;
+    float fScale    = 0.02f * (1.0f-vTexCoord.y);
+
+    // Run through all taps in the Poisson Disc
+    for( int i = 0; i &lt; NUM_BLUR_TAPS; i++ )
+    {
+        // Compute tap coordinates
+        float2 vTapCoord = vTexCoord + g_vFilterTaps[i] * fScale;
+
+        // Accumulate color contribution
+        if( tex2D( ShadowMapSampler, vTapCoord ).r &lt; 1.0f )
+            fColorSum += 1.0f;
+    }
+
+    // Divide down and invert the accumulated color
+    float fFinalColor = 1.0f - (fColorSum / NUM_BLUR_TAPS);
+
+    return fFinalColor;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: CompositeFilteredFogPS()
+// Desc: Routine to combine four channels of fog buffer into one and apply Poisson filter
+//--------------------------------------------------------------------------------------
+float4 CompositeFilteredFogPS( float2 vTexCoord : TEXCOORD0 ) : COLOR
+{
+    float fColorSum   = 0.000f;
+    float fScale      = 0.002f;
+    float fFinalColor = 0.000f;
+
+    // Run through all taps in the Poisson Disc
+    for( int i = 0; i &lt; 9; i++ )
+    {
+        // Compute tap coordinates
+        float2 vTapCoord = vTexCoord + g_vFilterTaps[i] * fScale;
+
+        // Accumulate color and contribution
+        fColorSum += tex2D( FogTextureSampler, vTapCoord ).r;
+    }
+
+    // Return the accumulated color
+    float fMaxIntensity = 0.25f;
+    return fMaxIntensity * fColorSum;
+}
+
+</file>
+ </files>
+ <tool name="Compiler">
+  <defines>
+   <define name="EntryPoint_OverlayMainVS" value="" />
+  </defines>
+  <arguments>
+   <argument name="/Zi" value="true" />
+   <argument name="/Vd" value="false" />
+   <argument name="/Xu0_deprecated" value="false" />
+   <argument name="/Odu_deprecated" value="false" />
+   <argument name="/XOd_" value="false" />
+   <argument name="/XOu" value="false" />
+   <argument name="/Xmaxtempreg" value="0" />
+   <argument name="PsSampBase" value="0" />
+   <argument name="PsSampCount" value="0" />
+   <argument name="VsSampBase" value="0" />
+   <argument name="VsSampCount" value="0" />
+   <argument name="VsInstCount" value="0" />
+   <argument name="PsInstCount" value="0" />
+   <argument name="/Od" value="false" />
+   <argument name="/Zpr" value="false" />
+   <argument name="/Zpc" value="false" />
+   <argument name="/Gpp" value="false" />
+   <argument name="/Op" value="false" />
+   <argument name="/Gfa" value="false" />
+   <argument name="/Gfp" value="false" />
+   <argument name="/XZc:zeroInit" value="false" />
+   <argument name="/XVe" value="false" />
+   <argument name="/Xbe:3-" value="false" />
+   <argument name="/Xbe:1-" value="false" />
+   <argument name="/XQInomaskedexports" value="false" />
+   <argument name="/XOautoz" value="false" />
+  </arguments>
+ </tool>
+ <shaders>
+  <shader entrypoint="OverlayMainVS" target="vs_3_0" ZPass="0" pdbHint="4e4a0000-db496afb-5ab30bd0">
+   <constanttable>
+   </constanttable>
+   <sourcemap>
+    <statement pc="3" file="0" line="41" scope="-1" lastinstruction="0" />
+    <statement pc="4" file="0" line="41" scope="-1" lastinstruction="0" />
+    <statement pc="0.1" file="0" line="41" scope="-1" lastinstruction="0" />
+    <statement pc="5" file="0" line="47" scope="-1" lastinstruction="0" />
+    <statement pc="1.1" file="0" line="47" scope="-1" lastinstruction="0" />
+    <statement pc="6" file="0" line="47" scope="-1" lastinstruction="0" />
+   </sourcemap>
+   <variables>
+   </variables>
+   <variableDebugInfo>
+   </variableDebugInfo>
+   <scopes>
+   </scopes>
+   <funcInfo>
+    <function id="0" name="CompositeFilteredFogPS" retID="18">
+     <parameter id="17" />
+    </function>
+    <function id="1" name="ShadowBlurPS" retID="11">
+     <parameter id="10" />
+    </function>
+    <function id="2" name="OverlayMainVS" retID="8">
+     <parameter id="6" />
+     <parameter id="7" />
+    </function>
+   </funcInfo>
+   <funcEntryExitInfo>
+   </funcEntryExitInfo>
+   <VfetchInfo>
+    <vfetch Address="3" Register="1" DestSwizzle="xyzw" Semantic="0x00" End="false" />
+    <vfetch Address="4" Register="0" DestSwizzle="xy__" Semantic="0x50" End="true" />
+   </VfetchInfo>
+   <InterpolatorInfo>
+    <Interpolator Register="0" Semantic="0x50" Mask="xy" />
+   </InterpolatorInfo>
+   <LiteralFloats>
+   </LiteralFloats>
+   <LiteralInts>
+   </LiteralInts>
+   <LiteralBools>
+   </LiteralBools>
+  </shader>
+ </shaders>
+</shader-pdb>

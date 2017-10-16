@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{654994E2-500B-46E3-8E8B-CF743548964A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>recompiler_core</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(VCInstallDir)..\DIA SDK\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath)</IncludePath>
+    <LibraryPath>$(VCInstallDir)..\DIA SDK\lib;$(LibraryPath);$(UniversalCRT_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(SolutionDir)..\..\_bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\_temp\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>RECOMPILER_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(TargetDir)$(ProjectName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(SolutionDir)..\..\bin\$(Configuration).$(Platform)\recompiler_core.pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+        copy /Y "$(ProjectDir)*.xml" "$(TargetDir)"      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>RECOMPILER_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(TargetDir)$(ProjectName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(SolutionDir)..\..\bin\$(Configuration).$(Platform)\recompiler_core.pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+        copy /Y "$(ProjectDir)*.xml" "$(TargetDir)"      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="codeGenerator.h" />
+    <ClInclude Include="codeGeneratorMSVC.h" />
+    <ClInclude Include="codePrinter.h" />
+    <ClInclude Include="decodingInstruction.h" />
+    <ClInclude Include="decodingInstructionInfo.h" />
+    <ClInclude Include="platformExports.h" />
+    <ClInclude Include="traceCalltree.h" />
+    <ClInclude Include="decodingAddressMap.h" />
+    <ClInclude Include="decodingCommentMap.h" />
+    <ClInclude Include="decodingContext.h" />
+    <ClInclude Include="decodingInstructionCache.h" />
+    <ClInclude Include="decodingMemoryMap.h" />
+    <ClInclude Include="decodingNameMap.h" />
+    <ClInclude Include="traceCommon.h" />
+    <ClInclude Include="traceMemoryHistoryBuilder.h" />
+    <ClInclude Include="tracePagedFile.h" />
+    <ClInclude Include="traceData.h" />
+    <ClInclude Include="traceMemoryHistory.h" />
+    <ClInclude Include="decodingEnvironment.h" />
+    <ClInclude Include="platformCPU.h" />
+    <ClInclude Include="platformDecompilation.h" />
+    <ClInclude Include="internalFile.h" />
+    <ClInclude Include="internalUtils.h" />
+    <ClInclude Include="platformLibrary.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="output.h" />
+    <ClInclude Include="platformDefinition.h" />
+    <ClInclude Include="platformLauncher.h" />
+    <ClInclude Include="externalApp.h" />
+    <ClInclude Include="rapidxml.hpp" />
+    <ClInclude Include="rapidxml_iterators.hpp" />
+    <ClInclude Include="rapidxml_print.hpp" />
+    <ClInclude Include="rapidxml_utils.hpp" />
+    <ClInclude Include="timemachine.h" />
+    <ClInclude Include="traceUtils.h" />
+    <ClInclude Include="xmlReader.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="build.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="codeGenerator.cpp" />
+    <ClCompile Include="codeGeneratorMSVC.cpp" />
+    <ClCompile Include="codePrinter.cpp" />
+    <ClCompile Include="decodingAddressMap.cpp" />
+    <ClCompile Include="decodingCommentMap.cpp" />
+    <ClCompile Include="decodingContext.cpp" />
+    <ClCompile Include="decodingInstruction.cpp" />
+    <ClCompile Include="decodingInstructionCache.cpp" />
+    <ClCompile Include="decodingInstructionInfo.cpp" />
+    <ClCompile Include="decodingMemoryMap.cpp" />
+    <ClCompile Include="decodingNameMap.cpp" />
+    <ClCompile Include="platformExports.cpp" />
+    <ClCompile Include="traceMemoryHistoryBuilder.cpp" />
+    <ClCompile Include="tracePagedFile.cpp" />
+    <ClCompile Include="traceData.cpp" />
+    <ClCompile Include="traceCalltree.cpp" />
+    <ClCompile Include="traceMemoryHistory.cpp" />
+    <ClCompile Include="decodingEnvironment.cpp" />
+    <ClCompile Include="platformCPU.cpp" />
+    <ClCompile Include="internalFile.cpp" />
+    <ClCompile Include="internalUtils.cpp" />
+    <ClCompile Include="platformLibrary.cpp" />
+    <ClCompile Include="image.cpp" />
+    <ClCompile Include="output.cpp" />
+    <ClCompile Include="platformDefinition.cpp" />
+    <ClCompile Include="externalAppWin.cpp" />
+    <ClCompile Include="timemachine.cpp" />
+    <ClCompile Include="traceUtils.cpp" />
+    <ClCompile Include="xmlReader.cpp" />
+    <ClCompile Include="zlib\adler32.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="internalParser.inl" />
+    <None Include="platforms.xml" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

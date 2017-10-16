@@ -1,0 +1,309 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="app.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="bitmaps.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="project.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="memoryView.cpp">
+      <Filter>widgets\codeView</Filter>
+    </ClCompile>
+    <ClCompile Include="progressDialog.cpp">
+      <Filter>dialogs\progress</Filter>
+    </ClCompile>
+    <ClCompile Include="memoryViewMapping.cpp">
+      <Filter>widgets\codeView</Filter>
+    </ClCompile>
+    <ClCompile Include="projectMemoryView.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="projectAddressHistory.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="gotoAddressDialog.cpp">
+      <Filter>dialogs\goto</Filter>
+    </ClCompile>
+    <ClCompile Include="widgetHelpers.cpp">
+      <Filter>widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="projectTraceData.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="registerView.cpp">
+      <Filter>widgets\regView</Filter>
+    </ClCompile>
+    <ClCompile Include="findSymbolDialog.cpp">
+      <Filter>dialogs\findSymbol</Filter>
+    </ClCompile>
+    <ClCompile Include="traceInfoView.cpp">
+      <Filter>widgets\traceInfoView</Filter>
+    </ClCompile>
+    <ClCompile Include="projectDynamicTraceData.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="callstackFrame.cpp">
+      <Filter>widgets\callstack</Filter>
+    </ClCompile>
+    <ClCompile Include="callstackFunctionTree.cpp">
+      <Filter>widgets\callstack</Filter>
+    </ClCompile>
+    <ClCompile Include="memoryFrame.cpp">
+      <Filter>widgets\traceMemoryView</Filter>
+    </ClCompile>
+    <ClCompile Include="canvas.cpp">
+      <Filter>widgets\canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="timeMachineView.cpp">
+      <Filter>widgets\timemachine</Filter>
+    </ClCompile>
+    <ClCompile Include="timeMachineFrame.cpp">
+      <Filter>widgets\timemachine</Filter>
+    </ClCompile>
+    <ClCompile Include="choiceDialog.cpp">
+      <Filter>dialogs\choice</Filter>
+    </ClCompile>
+    <ClCompile Include="eventDispatcher.cpp">
+      <Filter>utils\events</Filter>
+    </ClCompile>
+    <ClCompile Include="eventListener.cpp">
+      <Filter>utils\events</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>utils\config</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="configManager.cpp">
+      <Filter>utils\config</Filter>
+    </ClCompile>
+    <ClCompile Include="htmlBuilder.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="fileDialog.cpp">
+      <Filter>dialogs\file</Filter>
+    </ClCompile>
+    <ClCompile Include="startWindow.cpp">
+      <Filter>windows\start</Filter>
+    </ClCompile>
+    <ClCompile Include="logWindow.cpp">
+      <Filter>windows\log</Filter>
+    </ClCompile>
+    <ClCompile Include="projectImage.cpp">
+      <Filter>project</Filter>
+    </ClCompile>
+    <ClCompile Include="projectWindow.cpp">
+      <Filter>tabs\workspace</Filter>
+    </ClCompile>
+    <ClCompile Include="projectMainTab.cpp">
+      <Filter>tabs\workspace</Filter>
+    </ClCompile>
+    <ClCompile Include="projectImageTab.cpp">
+      <Filter>tabs\workspace</Filter>
+    </ClCompile>
+    <ClCompile Include="buildDialog.cpp">
+      <Filter>dialogs\build</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="app.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="bitmaps.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="project.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="memoryView.h">
+      <Filter>widgets\codeView</Filter>
+    </ClInclude>
+    <ClInclude Include="progressDialog.h">
+      <Filter>dialogs\progress</Filter>
+    </ClInclude>
+    <ClInclude Include="memoryViewMapping.h">
+      <Filter>widgets\codeView</Filter>
+    </ClInclude>
+    <ClInclude Include="projectMemoryView.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="projectAddressHistory.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="gotoAddressDialog.h">
+      <Filter>dialogs\goto</Filter>
+    </ClInclude>
+    <ClInclude Include="widgetHelpers.h">
+      <Filter>widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="projectTraceData.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="registerView.h">
+      <Filter>widgets\regView</Filter>
+    </ClInclude>
+    <ClInclude Include="findSymbolDialog.h">
+      <Filter>dialogs\findSymbol</Filter>
+    </ClInclude>
+    <ClInclude Include="traceInfoView.h">
+      <Filter>widgets\traceInfoView</Filter>
+    </ClInclude>
+    <ClInclude Include="projectDynamicTraceData.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="callstackFrame.h">
+      <Filter>widgets\callstack</Filter>
+    </ClInclude>
+    <ClInclude Include="callstackFunctionTree.h">
+      <Filter>widgets\callstack</Filter>
+    </ClInclude>
+    <ClInclude Include="memoryFrame.h">
+      <Filter>widgets\traceMemoryView</Filter>
+    </ClInclude>
+    <ClInclude Include="canvas.h">
+      <Filter>widgets\canvas</Filter>
+    </ClInclude>
+    <ClInclude Include="timeMachineView.h">
+      <Filter>widgets\timemachine</Filter>
+    </ClInclude>
+    <ClInclude Include="timeMachineFrame.h">
+      <Filter>widgets\timemachine</Filter>
+    </ClInclude>
+    <ClInclude Include="choiceDialog.h">
+      <Filter>dialogs\choice</Filter>
+    </ClInclude>
+    <ClInclude Include="eventDispatcher.h">
+      <Filter>utils\events</Filter>
+    </ClInclude>
+    <ClInclude Include="eventListener.h">
+      <Filter>utils\events</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>utils\config</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="configManager.h">
+      <Filter>utils\config</Filter>
+    </ClInclude>
+    <ClInclude Include="htmlBuilder.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="fileDialog.h">
+      <Filter>dialogs\file</Filter>
+    </ClInclude>
+    <ClInclude Include="startWindow.h">
+      <Filter>windows\start</Filter>
+    </ClInclude>
+    <ClInclude Include="logWindow.h">
+      <Filter>windows\log</Filter>
+    </ClInclude>
+    <ClInclude Include="projectImage.h">
+      <Filter>project</Filter>
+    </ClInclude>
+    <ClInclude Include="projectMainTab.h">
+      <Filter>tabs\workspace</Filter>
+    </ClInclude>
+    <ClInclude Include="projectWindow.h">
+      <Filter>tabs\workspace</Filter>
+    </ClInclude>
+    <ClInclude Include="projectImageTab.h">
+      <Filter>tabs\workspace</Filter>
+    </ClInclude>
+    <ClInclude Include="buildDialog.h">
+      <Filter>dialogs\build</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="app">
+      <UniqueIdentifier>{7fd03347-ad00-4b6b-ad1f-8a6e4298c3d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets">
+      <UniqueIdentifier>{0e7476ab-5709-44b3-bf5b-bbb6838392d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="project">
+      <UniqueIdentifier>{f0b385b3-ecd9-4957-8ee3-251ae3c2576a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\regView">
+      <UniqueIdentifier>{280c2044-02ea-498d-8c91-845a4f1217ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\traceInfoView">
+      <UniqueIdentifier>{56e27ecc-09df-4954-9bbf-a537f5e3261d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\codeView">
+      <UniqueIdentifier>{70b603ee-9252-4f24-9107-1780d21af46a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\traceMemoryView">
+      <UniqueIdentifier>{4105f139-e825-4756-9f29-b11542762ecb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\canvas">
+      <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\timemachine">
+      <UniqueIdentifier>{38976b6e-fe69-475c-8593-0ab78d97a747}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\callstack">
+      <UniqueIdentifier>{417c6a8a-7153-4933-8f1b-258394115fff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tabs">
+      <UniqueIdentifier>{68ee44ab-d299-47ff-8242-157afb33fae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tabs\workspace">
+      <UniqueIdentifier>{218337ce-fea6-42a6-a91e-720e0cbee76b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{45413b93-9026-4403-a463-a041677fac10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\events">
+      <UniqueIdentifier>{84101fc2-485e-478e-ad4d-4600555c9c2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\config">
+      <UniqueIdentifier>{9316bdb4-6d0d-45ee-bb1a-bed8c63f462c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{a26cd69b-1278-49c7-bb05-2e66c8f9a7a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\findSymbol">
+      <UniqueIdentifier>{45f7a4a9-6d8d-4591-887d-fead918b7d8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\goto">
+      <UniqueIdentifier>{38cdede2-a1d4-458e-bf1e-24ca3f994757}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\progress">
+      <UniqueIdentifier>{21f4ea9d-5b93-49e6-88b7-c5493bbcdb0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="windows">
+      <UniqueIdentifier>{1c8c6abe-d56c-4626-a42a-77261440043e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\file">
+      <UniqueIdentifier>{a2c47bf6-abd2-4596-a09f-88b922543d6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="windows\start">
+      <UniqueIdentifier>{dc9b3cf2-0221-44ff-ba81-8889512e163c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\choice">
+      <UniqueIdentifier>{aaa8f649-f488-49e7-9e5d-a50b6c54d2e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="windows\log">
+      <UniqueIdentifier>{09503f47-427b-412e-ab6c-b3bc971debb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tabs\image">
+      <UniqueIdentifier>{5018fdc6-45a5-4d90-973f-52fef75959a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs\build">
+      <UniqueIdentifier>{9d701f21-a4af-469b-9770-454e0a97e241}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources.rc" />
+  </ItemGroup>
+</Project>

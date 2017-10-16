@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommandArguments>-verbose -image=q:\git\projects\recompiler\projects\xenon\doplhin\.temp\dolphin_0xC89B668F6DB04974\cpp_msvc_debug\code.bin -root=q:\git\projects\recompiler\projects\xenon\doplhin\</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>-verbose -image=Q:\git\projects\recompiler\projects\xenon\lightshafts\.temp\LightShafts_0xD88AE70F77AF7E8E\cpp_msvc_safe\code.bin -root=Q:\git\projects\recompiler\projects\xenon\lightshafts\</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>

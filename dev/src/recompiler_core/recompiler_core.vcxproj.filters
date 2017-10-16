@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="rapidxml.hpp">
+      <Filter>utils\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml_iterators.hpp">
+      <Filter>utils\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml_print.hpp">
+      <Filter>utils\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml_utils.hpp">
+      <Filter>utils\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="xmlReader.h">
+      <Filter>utils\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingContext.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>image</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingMemoryMap.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingInstructionCache.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingCommentMap.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingNameMap.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="codePrinter.h">
+      <Filter>code</Filter>
+    </ClInclude>
+    <ClInclude Include="codeGenerator.h">
+      <Filter>code</Filter>
+    </ClInclude>
+    <ClInclude Include="platformDefinition.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="platformCPU.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingInstruction.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\crc32.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\deflate.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffast.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffixed.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inflate.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inftrees.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\trees.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zlib.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zutil.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="timemachine.h">
+      <Filter>timemachine</Filter>
+    </ClInclude>
+    <ClInclude Include="platformLauncher.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="platformDecompilation.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingAddressMap.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingInstructionInfo.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="tracePagedFile.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceData.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceMemoryHistory.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceCalltree.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceMemoryHistoryBuilder.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="decodingEnvironment.h">
+      <Filter>decoding</Filter>
+    </ClInclude>
+    <ClInclude Include="platformLibrary.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="platformExports.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="traceUtils.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceCommon.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="codeGeneratorMSVC.h">
+      <Filter>code</Filter>
+    </ClInclude>
+    <ClInclude Include="externalApp.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="internalFile.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="internalUtils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="output.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="xmlReader.cpp">
+      <Filter>utils\xml</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingContext.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="image.cpp">
+      <Filter>image</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingMemoryMap.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingInstructionCache.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingCommentMap.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingNameMap.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="codePrinter.cpp">
+      <Filter>code</Filter>
+    </ClCompile>
+    <ClCompile Include="codeGenerator.cpp">
+      <Filter>code</Filter>
+    </ClCompile>
+    <ClCompile Include="platformDefinition.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="platformCPU.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingInstruction.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>compress</Filter>
+    </ClCompile>
+    <ClCompile Include="timemachine.cpp">
+      <Filter>timemachine</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingAddressMap.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingInstructionInfo.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="tracePagedFile.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceData.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceMemoryHistory.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceCalltree.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceMemoryHistoryBuilder.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="decodingEnvironment.cpp">
+      <Filter>decoding</Filter>
+    </ClCompile>
+    <ClCompile Include="platformLibrary.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="platformExports.cpp">
+      <Filter>platform</Filter>
+    </ClCompile>
+    <ClCompile Include="traceUtils.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="codeGeneratorMSVC.cpp">
+      <Filter>code</Filter>
+    </ClCompile>
+    <ClCompile Include="internalFile.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="internalUtils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="output.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="externalAppWin.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="decoding">
+      <UniqueIdentifier>{b6a87e73-f48f-4a43-b751-f4d160f90196}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="image">
+      <UniqueIdentifier>{c22db00f-3e4f-4102-9639-7dbccd786a48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="code">
+      <UniqueIdentifier>{88f0a4e1-12ed-4ddc-bde6-fbb157ede9af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{565d93e1-011d-4c24-8b71-e52009e1e4a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="compress">
+      <UniqueIdentifier>{aeb56552-4017-42c7-bfe7-feb3e25c9e62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="timemachine">
+      <UniqueIdentifier>{2a2dfaba-d104-4e6f-9ea2-929b5686f334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="trace">
+      <UniqueIdentifier>{8279a46a-8f59-49fc-bb4e-f4c5865bb56c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{1201b1f4-b9ef-4bf3-9763-4aab753448f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils\xml">
+      <UniqueIdentifier>{6e25932b-1a15-499c-a543-dd00422af839}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="internalParser.inl">
+      <Filter>utils</Filter>
+    </None>
+    <None Include="platforms.xml" />
+  </ItemGroup>
+</Project>
