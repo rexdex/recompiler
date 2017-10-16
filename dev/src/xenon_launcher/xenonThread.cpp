@@ -58,6 +58,7 @@ namespace xenon
 		m_regs.R13 = m_memory.GetPRCAddr(); // always at r13
 		m_regs.RES = &GReservation;
 		m_regs.INT = &GPlatform.GetInterruptTable();
+		m_regs.IO = &GPlatform.GetIOTable();
 
 		// reservation locking
 		GReservation.LOCK = &ReservationLock;

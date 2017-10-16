@@ -144,32 +144,6 @@ namespace runtime
 		return true;
 	}
 
-	static const Symbols* GGlobalSymbols = nullptr;
-
-	void GlobalMemReadFunc(const uint64_t ip, const uint64_t address, const uint64_t size, void* outPtr)
-	{
-		auto func = GGlobalSymbols->FindMemoryIOReader(address);
-		func(ip, address, size, outPtr);
-	}
-
-	void GlobalMemWriteFunc(const uint64_t ip, const uint64_t address, const uint64_t size, const void* inPtr)
-	{
-		auto func = GGlobalSymbols->FindMemoryIOWriter(address);
-		func(ip, address, size, inPtr);
-	}
-
-	void GlobalPortReadFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr)
-	{
-		auto func = GGlobalSymbols->FindPortIOReader(portIndex);
-		func(ip, portIndex, size, outPtr);
-	}
-
-	void GlobalPortWriteFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, const void* inPtr)
-	{
-		auto func = GGlobalSymbols->FindPortIOWriter(portIndex);
-		func(ip, portIndex, size, inPtr);
-	}
-
 	bool Image::Bind(const Symbols& symbols)
 	{
 		bool status = true;
@@ -277,13 +251,6 @@ namespace runtime
 			// bind
 			info.m_functionPtr = handler;
 		}
-
-		// patch the IO bank
-		GGlobalSymbols = &symbols;
-		m_imageInfo->m_ioBank->m_memReadPtr = &GlobalMemReadFunc;
-		m_imageInfo->m_ioBank->m_memWritePtr = &GlobalMemWriteFunc;
-		m_imageInfo->m_ioBank->m_portReadPtr = &GlobalPortReadFunc;
-		m_imageInfo->m_ioBank->m_portWritePtr = &GlobalPortWriteFunc;
 
 		// stats
 		GLog.Log("Image: Imported and patched %d functions and %d symbols", numImportedFunctions, numImportedSymbols);

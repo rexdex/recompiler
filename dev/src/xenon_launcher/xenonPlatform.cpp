@@ -1,3 +1,4 @@
+MEM_READ
 #include "build.h"
 #include "xenonPlatform.h"
 #include "xenonKernel.h"
@@ -24,6 +25,7 @@ namespace xenon
 		, m_graphics(nullptr)
 		, m_memory(nullptr)
 		, m_interruptTable(nullptr)
+		, m_ioTable(nullptr)
 		, m_userExitRequested(false)
 	{
 	}
@@ -66,6 +68,54 @@ namespace xenon
 	static void UnimplementedInterrupt(const uint64_t ip, const uint32_t index, const runtime::RegisterBank& regs)
 	{
 		throw runtime::TrapException(ip, index);
+	}
+
+	static const runtime::Symbols* GGlobalSymbols = nullptr;
+
+	static void GlobalMemReadFunc(const uint64_t ip, const uint64_t address, const uint64_t size, void* outPtr)
+	{
+		auto func = GGlobalSymbols->FindMemoryIOReader(address);
+		func(ip, address, size, outPtr);
+	}
+
+	static void GlobalMemWriteFunc(const uint64_t ip, const uint64_t address, const uint64_t size, const void* inPtr)
+	{
+		auto func = GGlobalSymbols->FindMemoryIOWriter(address);
+		func(ip, address, size, inPtr);
+	}
+
+	static void DefaultMemReadFunc(const uint64_t ip, const uint64_t address, const uint64_t size, void* outPtr)
+	{
+		switch (size)
+		{
+			case 8: *(uint64_t*)outPtr = cpu::mem::loadAddr<uint64>((const uint32_t)address); break;
+			case 4: *(uint32_t*)outPtr = cpu::mem::loadAddr<uint32>((const uint32_t)address); break;
+			case 2: *(uint16_t*)outPtr = cpu::mem::loadAddr<uint16>((const uint32_t)address); break;
+			case 1: *(uint8_t*)outPtr = cpu::mem::loadAddr<uint8>((const uint32_t)address); break;
+		}
+	}
+
+	static void DefaultMemWriteFunc(const uint64_t ip, const uint64_t address, const uint64_t size, const void* inPtr)
+	{
+		switch (size)
+		{
+			case 8: cpu::mem::storeAddr<uint64>((const uint32_t)address, *(const uint64_t*)inPtr); break;
+			case 4: cpu::mem::storeAddr<uint32>((const uint32_t)address, *(const uint32_t*)inPtr); break;
+			case 2: cpu::mem::storeAddr<uint16>((const uint32_t)address, *(const uint16_t*)inPtr); break;
+			case 1: cpu::mem::storeAddr<uint8>((const uint32_t)address, *(const uint8_t*)inPtr); break;
+		}
+	}
+
+	static void GlobalPortReadFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr)
+	{
+		auto func = GGlobalSymbols->FindPortIOReader(portIndex);
+		func(ip, portIndex, size, outPtr);
+	}
+
+	static void GlobalPortWriteFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, const void* inPtr)
+	{
+		auto func = GGlobalSymbols->FindPortIOWriter(portIndex);
+		func(ip, portIndex, size, inPtr);
 	}
 
 	bool Platform::Initialize(const native::Systems& nativeSystems, const launcher::Commandline& commandline, runtime::Symbols& symbols)
@@ -174,6 +224,17 @@ namespace xenon
 			m_interruptTable->INTERRUPTS[i] = func ? func : &UnimplementedInterrupt;
 		}
 
+		// set default memory read/write function in case of dynamic access
+		symbols.SetDefaultMemoryIO(&DefaultMemReadFunc, &DefaultMemWriteFunc);
+
+		// initialize IO table
+		GGlobalSymbols = &symbols; // HACK
+		m_ioTable = new cpu::GeneralIO();
+		m_ioTable->MEM_READ = &GlobalMemReadFunc;
+		m_ioTable->MEM_WRITE = &GlobalMemWriteFunc;
+		m_ioTable->PORT_READ = &GlobalPortReadFunc;
+		m_ioTable->PORT_WRITE = &GlobalPortWriteFunc;
+
 		GLog.Log("Runtime: Xenon platform initialized");
 		return true;
 	}
@@ -194,6 +255,9 @@ namespace xenon
 
 		delete m_interruptTable;
 		m_interruptTable = nullptr;
+
+		delete m_ioTable;
+		m_ioTable = nullptr;
 	}
 
 	void Platform::RequestUserExit()

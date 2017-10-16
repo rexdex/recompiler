@@ -104,9 +104,6 @@ namespace code
 				}
 
 				m_currentFile->m_codePrinter->Printf("\n");
-
-				m_currentFile->m_codePrinter->Printf("extern runtime::IOBank ExportedIOBank;\n");
-				m_currentFile->m_codePrinter->Printf("\n");
 			}
 
 			m_inBlock = false;
@@ -255,18 +252,6 @@ namespace code
 				m_currentFile->m_codePrinter->Printf("\n");
 			}
 
-			// io bank
-			{
-				m_currentFile->m_codePrinter->Print("// input output bank\n");
-				m_currentFile->m_codePrinter->Print("runtime::IOBank ExportedIOBank = {\n");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemReadFunc) &runtime::UnhandledGlobalRead,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemWriteFunc) &runtime::UnhandledGlobalWrite,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortReadFunc) &runtime::UnhandledPortRead,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortWriteFunc) &runtime::UnhandledPortWrite,\n ");
-				m_currentFile->m_codePrinter->Print("};\n");
-				m_currentFile->m_codePrinter->Print("\n");
-			}
-
 			// interrupts
 			if (!m_exportedInterrupts.empty())
 			{
@@ -364,9 +349,6 @@ namespace code
 				}
 
 				m_currentFile->m_codePrinter->Printf("\tExportImageInfo.m_entryAddress = 0x%llx;\n", m_imageEntryAdrdress);
-
-				// io bank
-				m_currentFile->m_codePrinter->Printf("\tExportImageInfo.m_ioBank = &ExportedIOBank;\n", m_exportedInterrupts.size());
 
 				// interrupts
 				m_currentFile->m_codePrinter->Printf("\tExportImageInfo.m_numInterrupts = %d;\n", m_exportedInterrupts.size());

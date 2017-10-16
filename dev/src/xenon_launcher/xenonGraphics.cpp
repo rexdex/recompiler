@@ -82,6 +82,11 @@ namespace xenon
 			const uint32 val = *(const uint32*)inPtr;
 			GPlatform.GetGraphics().m_gpu->WriteWord(val, (uint32)addr);
 		}
+		else
+		{
+			GLog.Err("Graphics: Unaligned write to GPU command buffer");
+			abort();
+		}
 	}
 
 	void Graphics::ReadGPUWord(const uint64_t ip, const uint64_t addr, const uint32_t size, void* outPtr)
@@ -91,6 +96,11 @@ namespace xenon
 			uint64 val = 0;
 			GPlatform.GetGraphics().m_gpu->ReadWord(&val, (uint32)addr);
 			*(uint32*)outPtr = (uint32)val;
+		}
+		else
+		{
+			GLog.Err("Graphics: Unaligned read from GPU command buffer");
+			abort();
 		}
 	}
 

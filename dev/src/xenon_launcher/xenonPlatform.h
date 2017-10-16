@@ -27,6 +27,8 @@ namespace xenon
 
 		inline cpu::Interrupts& GetInterruptTable() const { return *m_interruptTable; }
 
+		inline cpu::GeneralIO& GetIOTable() const { return *m_ioTable; }
+
 	public:
 		Platform();
 		virtual ~Platform();
@@ -74,6 +76,7 @@ namespace xenon
 
 		// interrupt table
 		cpu::Interrupts*	m_interruptTable;
+		cpu::GeneralIO*		m_ioTable;
 
 		// external exit
 		bool m_userExitRequested;

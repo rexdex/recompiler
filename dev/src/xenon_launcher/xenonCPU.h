@@ -547,8 +547,6 @@ namespace cpu
 
 	struct GeneralIO
 	{
-		static const uint32 MAX_INTERRUPTS = 0x40;
-
 		runtime::TGlobalMemReadFunc MEM_READ;
 		runtime::TGlobalMemWriteFunc MEM_WRITE;
 		runtime::TGlobalPortReadFunc PORT_READ;

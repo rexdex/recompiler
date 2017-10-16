@@ -14,14 +14,6 @@ namespace runtime
 
 	typedef uint64 (__fastcall *TBlockFunc)(const uint64_t ip, RegisterBank& regs);
 
-	struct IOBank
-	{
-		TGlobalMemReadFunc		m_memReadPtr;
-		TGlobalMemWriteFunc		m_memWritePtr;
-		TGlobalPortReadFunc		m_portReadPtr;
-		TGlobalPortWriteFunc	m_portWritePtr;
-	};
-
 	struct InterruptCall
 	{
 		uint32				m_type;
@@ -64,8 +56,6 @@ namespace runtime
 
 		uint32				m_numImports;
 		ImportInfo*			m_imports;
-
-		IOBank*				m_ioBank;
 
 		uint32				m_numInterrupts;
 		InterruptCall*		m_interrupts;

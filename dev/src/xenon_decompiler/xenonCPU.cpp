@@ -569,7 +569,7 @@ public:
 		if (exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap)
 		{
 			functionPrefix = "";
-			functionName = "ExportedIOBank.m_memReadPtr";
+			functionName = "regs.IO->MEM_READ";
 		}
 
 		// format address calculation code
@@ -699,7 +699,7 @@ public:
 		if ( exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap )
 		{
 			functionPrefix = "";
-			functionName = "ExportedIOBank.m_memWritePtr";
+			functionName = "regs.IO->MEM_WRITE";
 		}
 
 		// format address calculation code
