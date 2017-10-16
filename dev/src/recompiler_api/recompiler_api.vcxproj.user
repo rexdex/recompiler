@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-command=recompile  -generator=cpp_msvc -in="Q:\git\projects\recompiler\projects\xenon\doplhin\dolphin.pdi" -out="Q:\git\projects\recompiler\projects\xenon\doplhin\.temp\dolphin_0xC89B668F6DB04974\cpp_msvc_debug\\"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-command=recompile  -generator=cpp_msvc -in="Q:\\git\\projects\\recompiler\\projects\\xenon\\doplhin\\dolphin.pdi" -out="Q:\\git\\projects\\recompiler\\projects\\xenon\\doplhin\\.temp\\dolphin_0xC89B668F6DB04974\\cpp_msvc_debug\\" -O0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

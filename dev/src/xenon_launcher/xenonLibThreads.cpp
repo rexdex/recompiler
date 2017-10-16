@@ -88,12 +88,12 @@ uint64 __fastcall XboxThreads_ExCreateThread(uint64 ip, cpu::CpuRegs& regs)
 uint64 __fastcall XboxThreads_ExTerminateThread(uint64 ip, cpu::CpuRegs& regs)
 {
 	// get exit code
-	uint32 exitCode = (uint32)regs.R3;
-	GLog.Log("ExTerminateThread(%d) for TID %d", exitCode, xenon::KernelThread::GetCurrentThreadID());
+	const auto tid = xenon::KernelThread::GetCurrentThreadID();
+	const auto exitCode = (uint32)regs.R3;
+	GLog.Log("ExTerminateThread(%d) for TID %d", exitCode, tid);
 
 	// exit the thread directly
-	ULONG_PTR args[1] = { exitCode }; // exit code
-	RaiseException(cpu::EXCEPTION_TERMINATE_THREAD, EXCEPTION_NONCONTINUABLE, 1, &args[0]);
+	throw runtime::TerminateThreadException(ip, tid, exitCode);
 
 	// should not return
 	RETURN_ARG(0);
@@ -176,7 +176,7 @@ uint64 __fastcall XboxThreads_KeDelayExecutionThread(uint64 ip, cpu::CpuRegs& re
 	const uint32 processor_mode = (const uint32)regs.R3;
 	const uint32 alertable = (const uint32)regs.R4;
 	const uint32 internalPtr = (const uint32)regs.R5;
-	const uint64 interval = mem::loadAddr<uint64>(internalPtr);
+	const uint64 interval = cpu::mem::loadAddr<uint64>(internalPtr);
 
 	auto* currentThread = xenon::KernelThread::GetCurrentThread();
 	const uint32 result = currentThread->Delay(processor_mode, alertable, interval);
@@ -196,7 +196,7 @@ uint64 __fastcall XboxThreads_KeQuerySystemTime(uint64 ip, cpu::CpuRegs& regs)
 {
 	const uint32 dataPtr = (const uint32)regs.R3;
 	GLog.Log("KeQuerySystemTime(0x%08X)", dataPtr);
-	mem::storeAddr<uint64>(dataPtr, 0);
+	cpu::mem::storeAddr<uint64>(dataPtr, 0);
 	RETURN_DEFAULT();
 }
 
@@ -254,7 +254,7 @@ uint64 __fastcall XboxThreads_NtCreateEvent(uint64 ip, cpu::CpuRegs& regs)
 	if (!evt)
 		RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
 
-	mem::storeAddr(outPtr, evt->GetHandle());
+	cpu::mem::storeAddr(outPtr, evt->GetHandle());
 	RETURN_ARG(0);
 }
 
@@ -265,7 +265,7 @@ uint64 __fastcall XboxThreads_KeSetEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 wait = (const uint32)regs.R5;
 
 	auto* nativeEvent = (xnative::XEVENT*) eventPtr;
-	mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 1);
+	cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 1);
 
 	auto* obj = GPlatform.GetKernel().ResolveObject((void*)eventPtr, xenon::NativeKernelObjectType::EventNotificationObject);
 	if (!obj)
@@ -292,7 +292,7 @@ uint64 __fastcall XboxThreads_NtSetEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 ret = evt->Set(0, false);
 
 	if (statePtr)
-		mem::storeAddr(statePtr, ret);
+		cpu::mem::storeAddr(statePtr, ret);
 
 	RETURN_ARG(0);
 }
@@ -316,7 +316,7 @@ uint64 __fastcall XboxThreads_NtPulseEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 ret = evt->Set(0, false);
 
 	if (statePtr)
-		mem::storeAddr(statePtr, ret);
+		cpu::mem::storeAddr(statePtr, ret);
 
 	RETURN_ARG(ret);
 }
@@ -326,7 +326,7 @@ uint64 __fastcall XboxThreads_KeResetEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 eventPtr = (const uint32)regs.R3;
 
 	auto* nativeEvent = (xnative::XEVENT*) eventPtr;
-	mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 0);
+	cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 0);
 
 	auto* obj = GPlatform.GetKernel().ResolveObject(nativeEvent, xenon::NativeKernelObjectType::EventNotificationObject);
 	if (!obj)
@@ -552,7 +552,7 @@ uint64 __fastcall XboxThreads_KeWaitForSingleObject(uint64 ip, cpu::CpuRegs& reg
 		RETURN_ARG(xnative::X_STATUS_ABANDONED_WAIT_0);
 	}
 
-	const int64 timeout = timeoutPtr ? mem::loadAddr<int64>(timeoutPtr) : 0;
+	const int64 timeout = timeoutPtr ? cpu::mem::loadAddr<int64>(timeoutPtr) : 0;
 	auto* waitObject = static_cast<xenon::IKernelWaitObject*>(object);
 	xnative::X_STATUS result = waitObject->Wait(waitReason, processorMode, !!alertable, timeoutPtr ? &timeout : nullptr);
 	RETURN_ARG(result);
@@ -564,7 +564,7 @@ uint64 __fastcall XboxThreads_NtWaitForSingleObjectEx(uint64 ip, cpu::CpuRegs& r
 	const uint8 wait_mode = (const uint8)regs.R4;
 	const uint32 alertable = (const uint32)regs.R5;
 	const uint32 timeoutPtr = (const uint32)regs.R6;
-	GLog.Log("WaitSingle(%08Xh, mode=%d, alert=%d, tptr=%08Xh, timeout=%d)", object_handle, wait_mode, alertable, timeoutPtr, timeoutPtr ? mem::loadAddr<int64>(timeoutPtr) : 0);
+	GLog.Log("WaitSingle(%08Xh, mode=%d, alert=%d, tptr=%08Xh, timeout=%d)", object_handle, wait_mode, alertable, timeoutPtr, timeoutPtr ? cpu::mem::loadAddr<int64>(timeoutPtr) : 0);
 
 	auto* object = GPlatform.GetKernel().ResolveHandle(object_handle, xenon::KernelObjectType::Unknown);
 	if (!object)
@@ -581,7 +581,7 @@ uint64 __fastcall XboxThreads_NtWaitForSingleObjectEx(uint64 ip, cpu::CpuRegs& r
 
 	auto* waitObject = static_cast<xenon::IKernelWaitObject*>(object);
 
-	const int64 timeout = timeoutPtr ? mem::loadAddr<int64>(timeoutPtr) : 0;
+	const int64 timeout = timeoutPtr ? cpu::mem::loadAddr<int64>(timeoutPtr) : 0;
 	const uint32 result = waitObject->Wait(3, wait_mode, !!alertable, timeoutPtr ? &timeout : nullptr);
 	RETURN_ARG(result);
 }

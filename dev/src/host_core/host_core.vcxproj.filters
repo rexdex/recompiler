@@ -86,6 +86,9 @@
     <ClCompile Include="runtimeTraceWriter.cpp">
       <Filter>runtime</Filter>
     </ClCompile>
+    <ClCompile Include="runtimeException.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zlib\crc32.h">
@@ -189,6 +192,9 @@
       <Filter>native</Filter>
     </ClInclude>
     <ClInclude Include="runtimeTraceWriter.h">
+      <Filter>runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeExceptions.h">
       <Filter>runtime</Filter>
     </ClInclude>
   </ItemGroup>

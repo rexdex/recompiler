@@ -81,17 +81,17 @@ namespace xenon
 		xnative::XDISPATCH_HEADER* headerBE = (xnative::XDISPATCH_HEADER*) nativePtr;
 
 		xnative::XDISPATCH_HEADER header;
-		header.TypeFlags = mem::load<uint32>(&headerBE->TypeFlags);
-		header.SignalState = mem::load<uint32>(&headerBE->SignalState);
-		header.WaitListFLink = mem::load<uint32>(&headerBE->WaitListFLink);
-		header.WaitListBLink = mem::load<uint32>(&headerBE->WaitListBLink);
+		header.TypeFlags = cpu::mem::load<uint32>(&headerBE->TypeFlags);
+		header.SignalState = cpu::mem::load<uint32>(&headerBE->SignalState);
+		header.WaitListFLink = cpu::mem::load<uint32>(&headerBE->WaitListFLink);
+		header.WaitListBLink = cpu::mem::load<uint32>(&headerBE->WaitListBLink);
 		DEBUG_CHECK(!(header.WaitListBLink & 0x1));
 
 		// Stash pointer in struct
 		uint64 objectPtr = reinterpret_cast<uint64>(this);
 		objectPtr |= 0x1;
-		mem::store<uint32>(&headerBE->WaitListFLink, (uint32)(objectPtr >> 32));
-		mem::store<uint32>(&headerBE->WaitListBLink, (uint32)(objectPtr >> 0));
+		cpu::mem::store<uint32>(&headerBE->WaitListFLink, (uint32)(objectPtr >> 32));
+		cpu::mem::store<uint32>(&headerBE->WaitListBLink, (uint32)(objectPtr >> 0));
 	}
 
 	//-----------------------------------------------------------------------------
@@ -136,43 +136,43 @@ namespace xenon
 
 	void KernelList::Insert(const uint32 listEntryPtr)
 	{
-		mem::storeAddr<uint32>(listEntryPtr + 0, m_headAddr);
-		mem::storeAddr<uint32>(listEntryPtr + 4, m_headAddr);
+		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, m_headAddr);
+		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, m_headAddr);
 
 		if (m_headAddr != INVALID)
-			mem::storeAddr<uint32>(m_headAddr + 4, listEntryPtr);
+			cpu::mem::storeAddr<uint32>(m_headAddr + 4, listEntryPtr);
 	}
 
 	bool KernelList::IsQueued(const uint32 listEntryPtr)
 	{
-		const uint32 flink = mem::loadAddr<uint32>(listEntryPtr + 0);
-		const uint32 blink = mem::loadAddr<uint32>(listEntryPtr + 4);
+		const uint32 flink = cpu::mem::loadAddr<uint32>(listEntryPtr + 0);
+		const uint32 blink = cpu::mem::loadAddr<uint32>(listEntryPtr + 4);
 		return (m_headAddr == listEntryPtr) || (flink != 0) || (blink != 0);
 	}
 
 	void KernelList::Remove(const uint32 listEntryPtr)
 	{
-		const uint32 flink = mem::loadAddr<uint32>(listEntryPtr + 0);
-		const uint32 blink = mem::loadAddr<uint32>(listEntryPtr + 4);
+		const uint32 flink = cpu::mem::loadAddr<uint32>(listEntryPtr + 0);
+		const uint32 blink = cpu::mem::loadAddr<uint32>(listEntryPtr + 4);
 
 		if (listEntryPtr == m_headAddr)
 		{
 			m_headAddr = flink;
 
 			if (flink != 0)
-				mem::storeAddr<uint32>(flink + 4, 0);
+				cpu::mem::storeAddr<uint32>(flink + 4, 0);
 		}
 		else
 		{
 			if (blink != 0)
-				mem::storeAddr<uint32>(blink + 0, flink);
+				cpu::mem::storeAddr<uint32>(blink + 0, flink);
 
 			if (flink != 0)
-				mem::storeAddr<uint32>(flink + 4, blink);
+				cpu::mem::storeAddr<uint32>(flink + 4, blink);
 		}
 
-		mem::storeAddr<uint32>(listEntryPtr + 0, 0);
-		mem::storeAddr<uint32>(listEntryPtr + 4, 0);
+		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, 0);
+		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, 0);
 	}
 
 	const uint32 KernelList::Pop()
@@ -269,52 +269,52 @@ namespace xenon
 		m_scratchAddr = (uint32)&base[TLS_COUNT + PRC_DATA_SIZE + THREAD_DATA_SIZE];
 
 		// setup prc data block
-		mem::storeAddr<uint32>(m_prcAddr + 0x000, m_tlsDataAddr); // tls address
-		mem::storeAddr<uint32>(m_prcAddr + 0x030, m_prcAddr); // prc address
-		mem::storeAddr<uint32>(m_prcAddr + 0x070, (uint32)m_stack.GetTop()); // stack to
-		mem::storeAddr<uint32>(m_prcAddr + 0x070, (uint32)m_stack.GetBase()); // stack base
-		mem::storeAddr<uint32>(m_prcAddr + 0x100, m_threadDataAddr); // thread data block
-		mem::storeAddr<uint8>(m_prcAddr + 0x10C, cpuIndex); // cpu flag
-		mem::storeAddr<uint32>(m_prcAddr + 0x150, 1); // dpc flag (guess)
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x000, m_tlsDataAddr); // tls address
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x030, m_prcAddr); // prc address
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x070, (uint32)m_stack.GetTop()); // stack to
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x070, (uint32)m_stack.GetBase()); // stack base
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x100, m_threadDataAddr); // thread data block
+		cpu::mem::storeAddr<uint8>(m_prcAddr + 0x10C, cpuIndex); // cpu flag
+		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x150, 1); // dpc flag (guess)
 
 													  // setup internal descriptor layout
 													  // xnative::XDISPATCH_HEADER
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x000, 6); // ThreadObject
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x008, m_threadDataAddr + 0x008); // list pointer
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x00C, m_threadDataAddr + 0x008);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x010, m_threadDataAddr + 0x010); // list pointer
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x000, 6); // ThreadObject
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x008, m_threadDataAddr + 0x008); // list pointer
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x00C, m_threadDataAddr + 0x008);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x010, m_threadDataAddr + 0x010); // list pointer
 
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x014, m_threadDataAddr + 0x010);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x040, m_threadDataAddr + 0x020); // list pointer
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x044, m_threadDataAddr + 0x020);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x048, m_threadDataAddr + 0x000);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x04C, m_threadDataAddr + 0x018);
-		mem::storeAddr<uint16>(m_threadDataAddr + 0x054, 0x102);
-		mem::storeAddr<uint16>(m_threadDataAddr + 0x056, 0x1);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x05C, (uint32)m_stack.GetTop());
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x060, (uint32)m_stack.GetBase());
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x068, m_tlsDataAddr);
-		mem::storeAddr<uint8>(m_threadDataAddr + 0x06C, 0);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x074, m_threadDataAddr + 0x074);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x078, m_threadDataAddr + 0x074);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x07C, m_threadDataAddr + 0x07C);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x080, m_threadDataAddr + 0x07C);
-		mem::storeAddr<uint8>(m_threadDataAddr + 0x08B, 1);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x09C, 0xFDFFD7FF);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x0D0, (uint32)m_stack.GetTop());
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x144, m_threadDataAddr + 0x144);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x148, m_threadDataAddr + 0x144);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x14C, (uint32)GetIndex());
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x150, (uint32)entryPoint);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x154, m_threadDataAddr + 0x154);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x158, m_threadDataAddr + 0x154);
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x160, 0); // last error
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x16C, 0); // creation flags
-		mem::storeAddr<uint32>(m_threadDataAddr + 0x17C, 1);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x014, m_threadDataAddr + 0x010);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x040, m_threadDataAddr + 0x020); // list pointer
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x044, m_threadDataAddr + 0x020);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x048, m_threadDataAddr + 0x000);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x04C, m_threadDataAddr + 0x018);
+		cpu::mem::storeAddr<uint16>(m_threadDataAddr + 0x054, 0x102);
+		cpu::mem::storeAddr<uint16>(m_threadDataAddr + 0x056, 0x1);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x05C, (uint32)m_stack.GetTop());
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x060, (uint32)m_stack.GetBase());
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x068, m_tlsDataAddr);
+		cpu::mem::storeAddr<uint8>(m_threadDataAddr + 0x06C, 0);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x074, m_threadDataAddr + 0x074);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x078, m_threadDataAddr + 0x074);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x07C, m_threadDataAddr + 0x07C);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x080, m_threadDataAddr + 0x07C);
+		cpu::mem::storeAddr<uint8>(m_threadDataAddr + 0x08B, 1);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x09C, 0xFDFFD7FF);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x0D0, (uint32)m_stack.GetTop());
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x144, m_threadDataAddr + 0x144);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x148, m_threadDataAddr + 0x144);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x14C, (uint32)GetIndex());
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x150, (uint32)entryPoint);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x154, m_threadDataAddr + 0x154);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x158, m_threadDataAddr + 0x154);
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x160, 0); // last error
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x16C, 0); // creation flags
+		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x17C, 1);
 
 		FILETIME t;
 		GetSystemTimeAsFileTime(&t);
-		mem::storeAddr<uint64>(m_threadDataAddr + 0x130, ((uint64)t.dwHighDateTime << 32) | t.dwLowDateTime);
+		cpu::mem::storeAddr<uint64>(m_threadDataAddr + 0x130, ((uint64)t.dwHighDateTime << 32) | t.dwLowDateTime);
 	}
 
 	KernelThreadMemory::~KernelThreadMemory()
@@ -572,7 +572,6 @@ namespace xenon
 		if (!object)
 		{
 			GLog.Err("Kernel: unresolved object, ID=%08X", handle);
-			cpu::UnhandledSystemError("Kernel object not found");
 			return nullptr;
 		}
 
@@ -580,7 +579,6 @@ namespace xenon
 		if (object->GetType() != type)
 		{
 			GLog.Err("Kernel: unresolved object, ID=%08X, type=%d/%d", handle, type, object->GetType());
-			cpu::UnhandledSystemError("Kernel object mismatch");
 			return nullptr;
 		}
 
@@ -607,10 +605,10 @@ namespace xenon
 
 		// get true header
 		xnative::XDISPATCH_HEADER header;
-		header.TypeFlags = mem::load<uint32>(&headerBE->TypeFlags);
-		header.SignalState = mem::load<uint32>(&headerBE->SignalState);
-		header.WaitListFLink = mem::load<uint32>(&headerBE->WaitListFLink);
-		header.WaitListBLink = mem::load<uint32>(&headerBE->WaitListBLink);
+		header.TypeFlags = cpu::mem::load<uint32>(&headerBE->TypeFlags);
+		header.SignalState = cpu::mem::load<uint32>(&headerBE->SignalState);
+		header.WaitListFLink = cpu::mem::load<uint32>(&headerBE->WaitListFLink);
+		header.WaitListBLink = cpu::mem::load<uint32>(&headerBE->WaitListBLink);
 
 		// use the existing type
 		if (requestedType == NativeKernelObjectType::Unknown)
@@ -694,8 +692,8 @@ namespace xenon
 		// Stash pointer in struct
 		uint64 objectPtr = reinterpret_cast<uint64>(object);
 		objectPtr |= 0x1;
-		mem::store<uint32>(&headerBE->WaitListFLink, (uint32)(objectPtr >> 32));
-		mem::store<uint32>(&headerBE->WaitListBLink, (uint32)(objectPtr >> 0));
+		cpu::mem::store<uint32>(&headerBE->WaitListFLink, (uint32)(objectPtr >> 32));
+		cpu::mem::store<uint32>(&headerBE->WaitListBLink, (uint32)(objectPtr >> 0));
 
 		// return mapped object
 		return object;

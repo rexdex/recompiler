@@ -38,7 +38,7 @@ const uint32 CXenonGPUCommandBufferReader::Read()
 {
 	DEBUG_CHECK(m_readIndex != m_readEndIndex);
 
-	auto ret = mem::load< uint32 >(m_bufferBase + m_readIndex);
+	auto ret = cpu::mem::load< uint32 >(m_bufferBase + m_readIndex);
 	Advance(1);
 
 	return ret;
@@ -113,7 +113,7 @@ void CXenonGPUCommandBuffer::AdvanceWriteIndex(const uint32 newIndex)
 	for ( uint32 i=oldIndex; i<newIndex; ++i )
 	{
 		const auto memAddr = m_commandBufferPtr + i;
-		GLog.Log( "GPU: Mem[+%d, @%d]: 0x%08X", i-oldIndex, i, mem::load<uint32>( memAddr) );
+		GLog.Log( "GPU: Mem[+%d, @%d]: 0x%08X", i-oldIndex, i, cpu::mem::load<uint32>( memAddr) );
 	}*/
 }
 
@@ -139,7 +139,7 @@ bool CXenonGPUCommandBuffer::BeginRead(CXenonGPUCommandBufferReader& outReader)
 	/*GLog.Log("GPU: Read started at %d, end %d", readStartIndex, readEndIndex);
 	for (uint32 i = readStartIndex; i < readEndIndex; ++i)
 	{
-		auto data = mem::load<uint32>(m_commandBufferPtr + i);
+		auto data = cpu::mem::load<uint32>(m_commandBufferPtr + i);
 		GLog.Log("GPU: RMem[+%d, @%d]: 0x%08X", i - readStartIndex, i, data);
 	}*/
 
@@ -156,7 +156,7 @@ void CXenonGPUCommandBuffer::EndRead()
 	if (m_writeBackPtr)
 	{
 		const uint32 cpuAddr = GPlatform.GetMemory().TranslatePhysicalAddress(m_writeBackPtr);
-		mem::storeAddr< uint32 >(cpuAddr, m_readIndex);
+		cpu::mem::storeAddr< uint32 >(cpuAddr, m_readIndex);
 		//GLog.Log("GPU STORE at %08Xh, val %d (%08Xh)", cpuAddr, m_readIndex, m_readIndex);
 	}
 }

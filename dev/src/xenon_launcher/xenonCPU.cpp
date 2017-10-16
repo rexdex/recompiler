@@ -7,6 +7,7 @@ namespace cpu
 	CpuRegs::CpuRegs()
 		: RegisterBank( &xenon::CPU_RegisterBankInfo::GetInstance() )
 		, RES( nullptr )
+		, INT(nullptr)
 	{
 		const auto size = (ptrdiff_t)((char*)&RES - (char*)&LR);
 		memset(&LR, 0, size);

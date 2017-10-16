@@ -980,12 +980,12 @@ bool CXenonGPUExecutor::ExecutePacketType3_EVENT_WRITE_EXT(CXenonGPUCommandBuffe
 
 	// compute write address
 	const uint32 writeAddr = GPlatform.GetMemory().TranslatePhysicalAddress(address & ~0x3);
-	mem::storeAddr(writeAddr + 0, extents[0]);
-	mem::storeAddr(writeAddr + 2, extents[1]);
-	mem::storeAddr(writeAddr + 4, extents[2]);
-	mem::storeAddr(writeAddr + 6, extents[3]);
-	mem::storeAddr(writeAddr + 8, extents[4]);
-	mem::storeAddr(writeAddr + 10, extents[5]);
+	cpu::mem::storeAddr(writeAddr + 0, extents[0]);
+	cpu::mem::storeAddr(writeAddr + 2, extents[1]);
+	cpu::mem::storeAddr(writeAddr + 4, extents[2]);
+	cpu::mem::storeAddr(writeAddr + 6, extents[3]);
+	cpu::mem::storeAddr(writeAddr + 8, extents[4]);
+	cpu::mem::storeAddr(writeAddr + 10, extents[5]);
 	return true;
 }
 
@@ -1362,7 +1362,7 @@ void CXenonGPUExecutor::WriteRegister(const uint32 registerIndex, const uint32 r
 
 			// write
 			const uint32 writeAddr = GPlatform.GetMemory().TranslatePhysicalAddress(memAddr & ~0x3);
-			mem::storeAddr< uint32 >(writeAddr, registerData);
+			cpu::mem::storeAddr< uint32 >(writeAddr, registerData);
 
 			// Add to trace
 			if (m_traceDumpFile)

@@ -29,7 +29,7 @@ uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
 	uint64 allocation_size = 0;  // is this correct???
 	if (allocation_size_ptr != 0)
 	{
-		allocation_size = mem::loadAddr<uint64>(allocation_size_ptr);
+		allocation_size = cpu::mem::loadAddr<uint64>(allocation_size_ptr);
 	}
 
 	xenon::FileSystemEntry* entry = NULL;
@@ -64,7 +64,7 @@ uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
 
 		if (handle_ptr)
 		{
-			mem::storeAddr<uint32>(handle_ptr, file->GetHandle());
+			cpu::mem::storeAddr<uint32>(handle_ptr, file->GetHandle());
 		}
 	}
 	else
@@ -75,15 +75,15 @@ uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
 
 		if (handle_ptr)
 		{
-			mem::storeAddr<uint32>(handle_ptr, 0);
+			cpu::mem::storeAddr<uint32>(handle_ptr, 0);
 		}
 	}
 
 	// io data
 	if (io_status_block_ptr)
 	{
-		mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-		mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
 	}
 
 	// cleanup
@@ -118,7 +118,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 				// Internal unique file pointer. Not sure why anyone would want this.
 				DEBUG_CHECK(length == 8);
 				info = 8;
-				mem::storeAddr<uint64>(file_info_ptr, 0);
+				cpu::mem::storeAddr<uint64>(file_info_ptr, 0);
 				result = xnative::X_STATUS_SUCCESS;
 			}
 			else if (fileInfoType == xnative::XFilePositionInformation)
@@ -129,7 +129,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 				uint64 fileOffset = 0;
 				if (file->GetOffset(fileOffset))
 				{
-					mem::storeAddr<uint64>(file_info_ptr, fileOffset);
+					cpu::mem::storeAddr<uint64>(file_info_ptr, fileOffset);
 					result = xnative::X_STATUS_SUCCESS;
 				}
 			}
@@ -157,7 +157,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 					if (read == sizeof(magic))
 					{
 						info = 4;
-						mem::storeAddr<uint32>(file_info_ptr, magic == _byteswap_ulong(0x0FF512ED));
+						cpu::mem::storeAddr<uint32>(file_info_ptr, magic == _byteswap_ulong(0x0FF512ED));
 						result = xnative::X_STATUS_SUCCESS;
 					}
 				}
@@ -172,8 +172,8 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 
 	if (io_status_block_ptr)
 	{
-		mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-		mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
 	}
 
 	RETURN_ARG(result);
@@ -190,7 +190,7 @@ uint64 __fastcall XboxFiles_NtWriteFile(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 buffer_length = (const uint32)regs.R9;
 	const uint32 byte_offset_ptr = (const uint32)regs.R10;
 
-	uint64 byte_offset = byte_offset_ptr ? mem::loadAddr<uint64>(byte_offset_ptr) : 0;
+	uint64 byte_offset = byte_offset_ptr ? cpu::mem::loadAddr<uint64>(byte_offset_ptr) : 0;
 	GLog.Log("NtWriteFile(%08X, %08X, %08X, %08X, %08X, %08X, %d, %08X(%d))",
 		file_handle, event_handle, apc_routine_ptr, apc_context,
 		io_status_block_ptr, buffer, buffer_length, byte_offset_ptr,
@@ -251,8 +251,8 @@ uint64 __fastcall XboxFiles_NtWriteFile(uint64 ip, cpu::CpuRegs& regs)
 	// io data
 	if (io_status_block_ptr)
 	{
-		mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-		mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
 	}
 
 	// signal event
@@ -278,7 +278,7 @@ uint64 __fastcall XboxFiles_NtReadFile(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 buffer_length = (const uint32)regs.R9;
 	const uint32 byte_offset_ptr = (const uint32)regs.R10;
 
-	uint64 byte_offset = byte_offset_ptr ? mem::loadAddr<uint64>(byte_offset_ptr) : 0;
+	uint64 byte_offset = byte_offset_ptr ? cpu::mem::loadAddr<uint64>(byte_offset_ptr) : 0;
 	GLog.Log("NtReadFile(%08X, %08X, %08X, %08X, %08X, %08X, %d, %08X(%d))",
 		file_handle, event_handle, apc_routine_ptr, apc_context,
 		io_status_block_ptr, buffer, buffer_length, byte_offset_ptr,
@@ -339,8 +339,8 @@ uint64 __fastcall XboxFiles_NtReadFile(uint64 ip, cpu::CpuRegs& regs)
 	// io data
 	if (io_status_block_ptr)
 	{
-		mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-		mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
 	}
 
 	// signal event
@@ -420,7 +420,7 @@ uint64 __fastcall XboxFiles_NtSetInformationFile(uint64 ip, cpu::CpuRegs& regs)
 			DEBUG_CHECK(length == 8);
 			info = 8;
 
-			const uint64 offset = mem::loadAddr<uint64>(file_info_ptr);
+			const uint64 offset = cpu::mem::loadAddr<uint64>(file_info_ptr);
 			if (file->SetOffset(offset))
 			{
 				result = xnative::X_STATUS_SUCCESS;
@@ -435,8 +435,8 @@ uint64 __fastcall XboxFiles_NtSetInformationFile(uint64 ip, cpu::CpuRegs& regs)
 
 	if (io_status_block_ptr)
 	{
-		mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-		mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
+		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
 	}
 
 	RETURN_ARG(result);

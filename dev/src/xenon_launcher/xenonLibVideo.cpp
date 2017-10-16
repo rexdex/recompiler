@@ -105,8 +105,8 @@ uint64 __fastcall XboxVideo_VdGetCurrentDisplayGamma(uint64 ip, cpu::CpuRegs& re
 	const uint32 arg1_ptr = (const uint32)regs.R4;
 
 	GLog.Log("VdGetCurrentDisplayGamma(%08X, %08X)", arg0_ptr, arg1_ptr);
-	mem::storeAddr<uint32>(arg0_ptr, 2);
-	mem::storeAddr<float>(arg0_ptr, 2.22222233f);
+	cpu::mem::storeAddr<uint32>(arg0_ptr, 2);
+	cpu::mem::storeAddr<float>(arg0_ptr, 2.22222233f);
 	RETURN_ARG(0);
 }
 
@@ -116,28 +116,28 @@ uint64 __fastcall XboxVideo_VdGetCurrentDisplayInformation(uint64 ip, cpu::CpuRe
 	GLog.Log("VdGetCurrentDisplayInformation(%08X)", ptr);
 
 	// experimental...
-	mem::storeAddr<uint32>(ptr + 0, (1280 << 16) | 720);
-	mem::storeAddr<uint32>(ptr + 4, 0);
-	mem::storeAddr<uint32>(ptr + 8, 0);
-	mem::storeAddr<uint32>(ptr + 12, 0);
-	mem::storeAddr<uint32>(ptr + 16, 1280);  // backbuffer width?
-	mem::storeAddr<uint32>(ptr + 20, 720);   // backbuffer height?
-	mem::storeAddr<uint32>(ptr + 24, 1280);
-	mem::storeAddr<uint32>(ptr + 28, 720);
-	mem::storeAddr<uint32>(ptr + 32, 1);
-	mem::storeAddr<uint32>(ptr + 36, 0);
-	mem::storeAddr<uint32>(ptr + 40, 0);
-	mem::storeAddr<uint32>(ptr + 44, 0);
-	mem::storeAddr<uint32>(ptr + 48, 1);
-	mem::storeAddr<uint32>(ptr + 52, 0);
-	mem::storeAddr<uint32>(ptr + 56, 0);
-	mem::storeAddr<uint32>(ptr + 60, 0);
-	mem::storeAddr<uint32>(ptr + 64, 0x014000B4);          // ?
-	mem::storeAddr<uint32>(ptr + 68, 0x014000B4);          // ?
-	mem::storeAddr<uint32>(ptr + 72, (1280 << 16) | 720);  // actual display size?
-	mem::storeAddr<uint32>(ptr + 76, 0x42700000);
-	mem::storeAddr<uint32>(ptr + 80, 0);
-	mem::storeAddr<uint32>(ptr + 84, 1280);  // display width
+	cpu::mem::storeAddr<uint32>(ptr + 0, (1280 << 16) | 720);
+	cpu::mem::storeAddr<uint32>(ptr + 4, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 8, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 12, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 16, 1280);  // backbuffer width?
+	cpu::mem::storeAddr<uint32>(ptr + 20, 720);   // backbuffer height?
+	cpu::mem::storeAddr<uint32>(ptr + 24, 1280);
+	cpu::mem::storeAddr<uint32>(ptr + 28, 720);
+	cpu::mem::storeAddr<uint32>(ptr + 32, 1);
+	cpu::mem::storeAddr<uint32>(ptr + 36, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 40, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 44, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 48, 1);
+	cpu::mem::storeAddr<uint32>(ptr + 52, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 56, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 60, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 64, 0x014000B4);          // ?
+	cpu::mem::storeAddr<uint32>(ptr + 68, 0x014000B4);          // ?
+	cpu::mem::storeAddr<uint32>(ptr + 72, (1280 << 16) | 720);  // actual display size?
+	cpu::mem::storeAddr<uint32>(ptr + 76, 0x42700000);
+	cpu::mem::storeAddr<uint32>(ptr + 80, 0);
+	cpu::mem::storeAddr<uint32>(ptr + 84, 1280);  // display width
 	RETURN_ARG(0);
 }
 
@@ -286,7 +286,7 @@ uint64 __fastcall XboxVideo_VdSwap(uint64 ip, cpu::CpuRegs& regs)
 	uint32 param6 = (const uint32)regs.R9;
 	uint32 param7 = (const uint32)regs.R10;
 
-	uint32 frontbuffer = mem::loadAddr<uint32>(fronBufferPtr);
+	uint32 frontbuffer = cpu::mem::loadAddr<uint32>(fronBufferPtr);
 
 	GLog.Log("VdSwap, frontBuffer=0x%08X, ringBuffer=0x%08X", frontbuffer, ringBufferPtr);
 
@@ -298,12 +298,12 @@ uint64 __fastcall XboxVideo_VdSwap(uint64 ip, cpu::CpuRegs& regs)
 	memset((uint32*)ringBufferPtr, 0, 64 * 4);
 
 	static const uint32 PM4_HACK_SWAP = 0x42;
-	mem::storeAddr<uint32>(ringBufferPtr + 0, (3 << 30) | (62 << 16) | (PM4_HACK_SWAP << 8));
-	mem::storeAddr<uint32>(ringBufferPtr + 4, frontbuffer);
+	cpu::mem::storeAddr<uint32>(ringBufferPtr + 0, (3 << 30) | (62 << 16) | (PM4_HACK_SWAP << 8));
+	cpu::mem::storeAddr<uint32>(ringBufferPtr + 4, frontbuffer);
 
 	// Set by VdCallGraphicsNotificationRoutines.
-	mem::storeAddr<uint32>(ringBufferPtr + 8, GLastFrontBufferWidth);
-	mem::storeAddr<uint32>(ringBufferPtr + 12, GLastFrontBufferHeight);
+	cpu::mem::storeAddr<uint32>(ringBufferPtr + 8, GLastFrontBufferWidth);
+	cpu::mem::storeAddr<uint32>(ringBufferPtr + 12, GLastFrontBufferHeight);
 
 	RETURN_ARG(0);
 }
@@ -321,10 +321,10 @@ uint64 __fastcall XboxVideo_VdCallGraphicsNotificationRoutines(uint64 ip, cpu::C
 	const uint32 param0 = (const uint32)regs.R3;
 	const uint32 argsPtr = (const uint32)regs.R4;
 
-	uint16 frontWidth = mem::loadAddr<uint16>(argsPtr + 0);
-	uint16 frontHeight = mem::loadAddr<uint16>(argsPtr + 2);
-	uint16 backWidth = mem::loadAddr<uint16>(argsPtr + 4);
-	uint16 backHeight = mem::loadAddr<uint16>(argsPtr + 6);
+	uint16 frontWidth = cpu::mem::loadAddr<uint16>(argsPtr + 0);
+	uint16 frontHeight = cpu::mem::loadAddr<uint16>(argsPtr + 2);
+	uint16 backWidth = cpu::mem::loadAddr<uint16>(argsPtr + 4);
+	uint16 backHeight = cpu::mem::loadAddr<uint16>(argsPtr + 6);
 
 	GLastFrontBufferWidth = frontWidth;
 	GLastFrontBufferHeight = frontHeight;
@@ -351,7 +351,7 @@ uint64 __fastcall XboxVideo_VdInitializeScalerCommandBuffer(uint64 ip, cpu::CpuR
 	const uint32 param6 = (const uint32)regs.R9;  // 0x2004909c <-- points to zeros?
 	const uint32 param7 = (const uint32)regs.R10;  // 7?
 
-	const uint32 destPtr = mem::loadAddr<uint32>((const uint32)(regs.R1 + 0x54)); // 
+	const uint32 destPtr = cpu::mem::loadAddr<uint32>((const uint32)(regs.R1 + 0x54)); // 
 	GLog.Log("VdInitializeScalerCommandBuffer(destPtr=0x%08X)", destPtr);
 
 	// We could fake the commands here, but I'm not sure the game checks for

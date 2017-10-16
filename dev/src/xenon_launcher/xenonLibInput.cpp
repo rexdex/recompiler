@@ -34,7 +34,7 @@ uint64 __fastcall XboxInput_XamUserGetDeviceContext(uint64 ip, cpu::CpuRegs& reg
 
 	GLog.Log("XamUserGetDeviceContext(%d, %d, %.8X)", user, unk, outPtr);
 
-	mem::store<uint32>(outPtr, 0);
+	cpu::mem::store<uint32>(outPtr, 0);
 
 	if (!user || (user & 0xFF) == 0xFF)
 	{
@@ -152,7 +152,7 @@ uint64 __fastcall XboxInput_XamInputGetKeystroke(uint64 ip, cpu::CpuRegs& regs)
 // http://ffplay360.googlecode.com/svn/Test/Common/AtgXime.cpp
 uint64 __fastcall XboxInput_XamInputGetKeystrokeEx(uint64 ip, cpu::CpuRegs& regs)
 {
-	auto user = mem::loadAddr<uint32>((uint32)regs.R3);
+	auto user = cpu::mem::loadAddr<uint32>((uint32)regs.R3);
 	auto flags = (uint32)regs.R4;
 	auto* ptr = (xnative::X_INPUT_KEYSTROKE*)regs.R5;
 

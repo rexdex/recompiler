@@ -608,8 +608,9 @@ public:
 		// emit code
 		if (exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap)
 		{
-			PrintCodef(outCode, "%s%s( (uint32)(%s), %d, &regs.%s );",
+			PrintCodef(outCode, "%s%s( 0x%08X, (uint32)(%s), %d, &regs.%s );",
 				functionPrefix, functionName,
+				address,
 				addressCode, exInfo.m_memorySize, op.GetArg0().m_reg->GetName());
 		}
 		else
@@ -737,8 +738,9 @@ public:
 		// emit code
 		if (exInfo.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_DirectMap)
 		{
-			PrintCodef(outCode, "%s%s( (uint32)(%s), %d, &regs.%s );",
+			PrintCodef(outCode, "%s%s( 0x%08X, (uint32)(%s), %d, &regs.%s );",
 				functionPrefix, functionName,
+				address,
 				addressCode, exInfo.m_memorySize, op.GetArg0().m_reg->GetName());
 		}
 		else
@@ -1286,11 +1288,7 @@ public:
 		const uint32 flags = op.GetArg0().m_imm & 0x1F;
 		if (flags == 0x1F)
 		{
-			const uint32 index = op.GetArg2().m_imm;
-
-			PrintCodef(outCode, "cpu::op::t%s<%d>(0x%08X, regs.%s, 0x%08X);",
-				BitSize == 32 ? "w" : "d",
-				index,
+			PrintCodef(outCode, "cpu::op::trap(regs, 0x%08X, regs.%s, 0x%08X);",
 				address,
 				op.GetArg1().m_reg->GetName(),
 				op.GetArg2().m_imm);
@@ -1299,7 +1297,7 @@ public:
 		}
 
 		// generic trap
-		PrintCodef( outCode, "cpu::op::t%si<%d>(0x%08X, regs.%s, 0x%08X);",
+		PrintCodef( outCode, "cpu::op::t%s<%d>(regs, 0x%08X, regs.%s, 0x%08X);",
 			BitSize == 32 ? "w" : "d",
 			flags,
 			address,
@@ -1342,7 +1340,7 @@ public:
 		if (flags == 0x1F)
 		{
 			// general trap
-			PrintCodef(outCode, "cpu::op::trap%hs(0x%08X, regs.%s, regs.%s);",
+			PrintCodef(outCode, "cpu::op::trap(regs, 0x%08X, regs.%s, regs.%s);",
 				BitSize == 32 ? "w" : "d",
 				address,
 				op.GetArg1().m_reg->GetName(),
@@ -1351,7 +1349,7 @@ public:
 		}
 
 		// general trap
-		PrintCodef( outCode, "cpu::op::t%s<%d>(0x%08X, regs.%s, regs.%s);",
+		PrintCodef( outCode, "cpu::op::t%s<%d>(regs, 0x%08X, regs.%s, regs.%s);",
 			BitSize == 32 ? "w" : "d",
 			flags,
 			address,

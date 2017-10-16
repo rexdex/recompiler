@@ -22,6 +22,7 @@ namespace xenon
 		m_regs.R8 = params.m_args[5];
 		m_regs.R13 = m_memory.GetPRCAddr(); // always at r13
 		m_regs.RES = &GReservation;
+		m_regs.INT = &GPlatform.GetInterruptTable();
 	}
 
 	InplaceExecution::~InplaceExecution()

@@ -110,11 +110,21 @@ bool CXenonGPUState::IssueDraw( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 		return IssueCopy( abstractLayer, traceDump, regs );
 	}
 
+	// clear only
+	/*if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && ds.m_indexCount == 3)
+	{
+		if (!UpdateViewportState(abstractLayer, regs))
+			return ReportFailedDraw("UpdateViewport failed");
+		if (!UpdateRenderTargets(abstractLayer, regs))
+			return ReportFailedDraw("UpdateRenderTargets failed");
+		return abstractLayer->DrawGeometry(regs, traceDump, ds);
+	}*/
+
 	// prepare drawing conditions
+	if (!UpdateViewportState(abstractLayer, regs))
+		return ReportFailedDraw("UpdateViewport failed");
 	if ( !UpdateRenderTargets( abstractLayer, regs ) )
 		return ReportFailedDraw( "UpdateRenderTargets failed" );
-	if ( !UpdateViewportState( abstractLayer, regs ) )
-		return ReportFailedDraw( "UpdateViewport failed" );
 	if ( !UpdateDepthState( abstractLayer, regs ) )
 		return ReportFailedDraw( "UpdateDepthState failed" );
 	if ( !UpdateBlendState( abstractLayer, regs ) )
@@ -360,8 +370,8 @@ bool CXenonGPUState::UpdateRenderTargets( IXenonGPUAbstractLayer* abstractLayer,
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_DEPTH_INFO, m_rtState.regDepthInfo );
 
 	// check if state is up to date
-	if ( !stateChanged )
-		return true;
+	/*if ( !stateChanged )
+		return true;*/
 
 	// apply the state
 	return ApplyRenderTargets( abstractLayer, m_rtState, m_physicalRenderWidth, m_physicalRenderHeight );
@@ -385,8 +395,8 @@ bool CXenonGPUState::UpdateViewportState( IXenonGPUAbstractLayer* abstractLayer,
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_PA_CL_VPORT_ZSCALE, m_viewState.regPaClVportZscale );
 
 	// check if state is up to date
-	if ( !stateChanged )
-		return true;
+	/*if ( !stateChanged )
+		return true;*/
 
 	// apply the state
 	return ApplyViewportState( abstractLayer, m_viewState, m_physicalRenderWidth, m_physicalRenderHeight );
@@ -402,8 +412,8 @@ bool CXenonGPUState::UpdateRasterState( IXenonGPUAbstractLayer* abstractLayer, c
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_VGT_MULTI_PRIM_IB_RESET_INDX, m_rasterState.regMultiPrimIbResetIndex );
 
 	// check if state is up to date
-	if ( !stateChanged )
-		return true;
+	/*if ( !stateChanged )
+		return true;*/
 
 	// apply the state
 	return ApplyRasterState( abstractLayer, m_rasterState );
@@ -438,8 +448,8 @@ bool CXenonGPUState::UpdateDepthState( IXenonGPUAbstractLayer* abstractLayer, co
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_STENCILREFMASK, m_depthState.regRbStencilRefMask );
 
 	// check if state is up to date
-	if ( !stateChanged )
-		return true;
+	/*if ( !stateChanged )
+		return true;*/
 
 	// apply the state
 	return ApplyDepthState( abstractLayer, m_depthState );

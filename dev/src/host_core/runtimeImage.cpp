@@ -146,28 +146,28 @@ namespace runtime
 
 	static const Symbols* GGlobalSymbols = nullptr;
 
-	void GlobalMemReadFunc(uint64 address, const uint32 size, void* outPtr)
+	void GlobalMemReadFunc(const uint64_t ip, const uint64_t address, const uint64_t size, void* outPtr)
 	{
 		auto func = GGlobalSymbols->FindMemoryIOReader(address);
-		func(address, size, outPtr);
+		func(ip, address, size, outPtr);
 	}
 
-	void GlobalMemWriteFunc(uint64 address, const uint32 size, const void* inPtr)
+	void GlobalMemWriteFunc(const uint64_t ip, const uint64_t address, const uint64_t size, const void* inPtr)
 	{
 		auto func = GGlobalSymbols->FindMemoryIOWriter(address);
-		func(address, size, inPtr);
+		func(ip, address, size, inPtr);
 	}
 
-	void GlobalPortReadFunc(uint16 portIndex, const uint32 size, void* outPtr)
+	void GlobalPortReadFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr)
 	{
 		auto func = GGlobalSymbols->FindPortIOReader(portIndex);
-		func(portIndex, size, outPtr);
+		func(ip, portIndex, size, outPtr);
 	}
 
-	void GlobalPortWriteFunc(uint16 portIndex, const uint32 size, const void* inPtr)
+	void GlobalPortWriteFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, const void* inPtr)
 	{
 		auto func = GGlobalSymbols->FindPortIOWriter(portIndex);
-		func(portIndex, size, inPtr);
+		func(ip, portIndex, size, inPtr);
 	}
 
 	bool Image::Bind(const Symbols& symbols)

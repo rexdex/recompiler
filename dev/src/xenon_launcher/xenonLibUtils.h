@@ -24,13 +24,13 @@ static inline uint8 ToPlatform(const uint8 val)
 	return val;
 }
 
-static inline void Append( char*& stream, char* streamEnd, char value )
+static inline void Append(char*& stream, char* streamEnd, char value)
 {
 	*stream = value;
-	stream = (stream < streamEnd) ? stream+1 : stream;
+	stream = (stream < streamEnd) ? stream + 1 : stream;
 }
 
-static inline void AppendString( char*& stream, char* streamEnd, const char* value )
+static inline void AppendString(char*& stream, char* streamEnd, const char* value)
 {
 	while (*value)
 	{
@@ -39,33 +39,33 @@ static inline void AppendString( char*& stream, char* streamEnd, const char* val
 	}
 }
 
-static inline void AppendHex( char*& stream, char* streamEnd, const uint64 value )
+static inline void AppendHex(char*& stream, char* streamEnd, const uint64 value)
 {
 	char buf[64];
-	sprintf_s( buf, "%llX", value );
-	AppendString( stream, streamEnd, buf );
+	sprintf_s(buf, "%llX", value);
+	AppendString(stream, streamEnd, buf);
 }
 
-static inline void AppendInt( char*& stream, char* streamEnd, const uint64 value )
+static inline void AppendInt(char*& stream, char* streamEnd, const uint64 value)
 {
 	char buf[64];
 	uint32 u32 = (uint32)value;
-	sprintf_s( buf, "%d", (int&)u32 );
-	AppendString( stream, streamEnd, buf );
+	sprintf_s(buf, "%d", (int&)u32);
+	AppendString(stream, streamEnd, buf);
 }
 
-static inline void AppendUint( char*& stream, char* streamEnd, const uint64 value )
+static inline void AppendUint(char*& stream, char* streamEnd, const uint64 value)
 {
 	char buf[64];
 	uint32 u32 = (uint32)value;
-	sprintf_s( buf, "%u", u32 );
-	AppendString( stream, streamEnd, buf );
+	sprintf_s(buf, "%u", u32);
+	AppendString(stream, streamEnd, buf);
 }
 
 //---------------------------------------------------------------------------
 
 template< typename T >
-static inline T* GetPointer( const TReg reg )
+static inline T* GetPointer(const uint64_t reg)
 {
 	T* ptr = (T*)(uint32)(reg);
 	return ptr;

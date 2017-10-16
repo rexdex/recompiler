@@ -6,13 +6,13 @@ namespace runtime
 {
 	class RegisterBank;
 
-	typedef void(*TGlobalMemReadFunc)(uint64 address, const uint32 size, void* outPtr);
-	typedef void(*TGlobalMemWriteFunc)(uint64 address, const uint32 size, const void* inPtr);
-	typedef void(*TGlobalPortReadFunc)(uint16 portIndex, const uint32 size, void* outPtr);
-	typedef void(*TGlobalPortWriteFunc)(uint16 portIndex, const uint32 size, const void* inPtr);
-	typedef void(*TInterruptFunc)(uint64 ip, RegisterBank& regs);
+	typedef void(*TGlobalMemReadFunc)(const uint64_t ip, const uint64_t address, const uint64_t size, void* outPtr);
+	typedef void(*TGlobalMemWriteFunc)(const uint64_t ip, const uint64_t address, const uint64_t size, const void* inPtr);
+	typedef void(*TGlobalPortReadFunc)(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr);
+	typedef void(*TGlobalPortWriteFunc)(const uint64_t ip, const uint16_t portIndex, const uint64_t size, const void* inPtr);
+	typedef void(*TInterruptFunc)(const uint64_t ip, const uint32_t index, const RegisterBank& regs);
 
-	typedef uint64 (__fastcall *TBlockFunc)(uint64 ip, RegisterBank& regs);
+	typedef uint64 (__fastcall *TBlockFunc)(const uint64_t ip, RegisterBank& regs);
 
 	struct IOBank
 	{

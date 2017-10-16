@@ -89,6 +89,7 @@
     <ClCompile Include="runtimeCPU.cpp" />
     <ClCompile Include="runtimeDevice.cpp" />
     <ClCompile Include="runtimeEnvironment.cpp" />
+    <ClCompile Include="runtimeException.cpp" />
     <ClCompile Include="runtimePlatform.cpp" />
     <ClCompile Include="runtimeRegisterBank.cpp" />
     <ClCompile Include="runtimeImage.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="runtimeDevice.h" />
     <ClInclude Include="runtimeCodeExecutor.h" />
     <ClInclude Include="runtimeEnvironment.h" />
+    <ClInclude Include="runtimeExceptions.h" />
     <ClInclude Include="runtimeImageInfo.h" />
     <ClInclude Include="networkAddress.h" />
     <ClInclude Include="networkManager.h" />

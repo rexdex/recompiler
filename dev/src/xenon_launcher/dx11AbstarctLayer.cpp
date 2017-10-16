@@ -1096,13 +1096,13 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 		// get the clear color - first vertex
 		float clearColor[4];
 		const uint32 srcMemoryAddress = GPlatform.GetMemory().TranslatePhysicalAddress( (fetchEntry.address<<2) + 0 );
-		clearColor[0] = mem::loadAddr<float>( srcMemoryAddress + 12 + 0 );
-		clearColor[1] = mem::loadAddr<float>( srcMemoryAddress + 12 + 4 );
-		clearColor[2] = mem::loadAddr<float>( srcMemoryAddress + 12 + 8 );
-		clearColor[3] = mem::loadAddr<float>( srcMemoryAddress + 12 + 12 );
+		clearColor[0] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 0 );
+		clearColor[1] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 4 );
+		clearColor[2] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 8 );
+		clearColor[3] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 12 );
 
 		// get the Z to clear
-		const auto clearZ = 1.0f;// mem::loadAddr<float>(srcMemoryAddress + 8);
+		const auto clearZ = 1.0f;// cpu::mem::loadAddr<float>(srcMemoryAddress + 8);
 
 		// compensate for packed color
 		const float packMin = -32896.503f;

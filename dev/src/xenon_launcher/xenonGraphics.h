@@ -37,8 +37,8 @@ namespace xenon
 		bool		m_gpuInitialized;
 
 		// IO to/from GPU
-		static void WriteGPUWord(uint64 addr, const uint32 size, const void* inPtr);
-		static void ReadGPUWord(uint64 addr, const uint32 size, void* outPtr);
+		static void WriteGPUWord(const uint64_t ip, const uint64_t addr, const uint32_t size, const void* inPtr);
+		static void ReadGPUWord(const uint64_t ip, const uint64_t addr, const uint32_t size, void* outPtr);
 	};
 
 } // xenon

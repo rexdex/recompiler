@@ -39,8 +39,7 @@ uint64 __fastcall XboxKernel_XGetAVPack(uint64 ip, cpu::CpuRegs& regs)
 uint64 __fastcall XboxKernel_XamLoaderTerminateTitle(uint64 ip, cpu::CpuRegs& regs)
 {
 	GLog.Log("XamLoaderTerminateTitle: called");
-	ULONG_PTR args[1] = { 0 }; // exit code
-	RaiseException(cpu::EXCEPTION_TERMINATE_PROCESS, EXCEPTION_NONCONTINUABLE, 1, &args[0]);
+	throw runtime::TerminateProcessException(ip, 0);
 	RETURN();
 }
 
@@ -182,7 +181,7 @@ uint64 __fastcall XboxKernel_DbgPrint(uint64 ip, cpu::CpuRegs& regs)
 		char* writeEnd = buffer + sizeof(buffer) - 1;
 
 		// format values
-		const TReg* curReg = &regs.R4;
+		const auto* curReg = &regs.R4;
 		while (cur < end)
 		{
 			const char ch = *cur++;
@@ -1641,7 +1640,7 @@ uint64 __fastcall XboxKernel_ObReferenceObjectByHandle(uint64 ip, cpu::CpuRegs& 
 	// save the shit
 	if (outObjectPtr)
 	{
-		mem::storeAddr<uint32>(outObjectPtr, nativeAddr);
+		cpu::mem::storeAddr<uint32>(outObjectPtr, nativeAddr);
 	}
 
 	RETURN_ARG(0);
@@ -1704,13 +1703,13 @@ uint64 __fastcall XboxKernel_KeInitializeDpc(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 importance = 0;
 	const uint32 unkown = 0;
 
-	mem::storeAddr<uint32>(dpcPtr + 0, (type << 24) | (importance << 16) | (unkown));
-	mem::storeAddr<uint32>(dpcPtr + 4, 0);  // flink
-	mem::storeAddr<uint32>(dpcPtr + 8, 0);  // blink
-	mem::storeAddr<uint32>(dpcPtr + 12, addr);
-	mem::storeAddr<uint32>(dpcPtr + 16, context);
-	mem::storeAddr<uint32>(dpcPtr + 20, 0);  // arg1
-	mem::storeAddr<uint32>(dpcPtr + 24, 0);  // arg2
+	cpu::mem::storeAddr<uint32>(dpcPtr + 0, (type << 24) | (importance << 16) | (unkown));
+	cpu::mem::storeAddr<uint32>(dpcPtr + 4, 0);  // flink
+	cpu::mem::storeAddr<uint32>(dpcPtr + 8, 0);  // blink
+	cpu::mem::storeAddr<uint32>(dpcPtr + 12, addr);
+	cpu::mem::storeAddr<uint32>(dpcPtr + 16, context);
+	cpu::mem::storeAddr<uint32>(dpcPtr + 20, 0);  // arg1
+	cpu::mem::storeAddr<uint32>(dpcPtr + 24, 0);  // arg2
 
 	RETURN();
 }
@@ -1738,8 +1737,8 @@ uint64 __fastcall XboxKernel_KeInsertQueueDpc(uint64 ip, cpu::CpuRegs& regs)
 	}
 
 	// Prep DPC.
-	mem::storeAddr<uint32>(dpcPtr + 20, arg1);
-	mem::storeAddr<uint32>(dpcPtr + 24, arg2);
+	cpu::mem::storeAddr<uint32>(dpcPtr + 20, arg1);
+	cpu::mem::storeAddr<uint32>(dpcPtr + 24, arg2);
 
 	dpcList->Insert(listEntryPtr);
 	dispatcher.Unlock();
@@ -1783,14 +1782,14 @@ uint64 __fastcall XboxKernel_InterlockedPopEntrySList(uint64 ip, cpu::CpuRegs& r
 
 	std::lock_guard<std::mutex> lock(GGlobalListMutex);
 
-	uint32 first = mem::loadAddr<uint32>(plistPtr);
+	uint32 first = cpu::mem::loadAddr<uint32>(plistPtr);
 	if (first == 0)
 	{
 		RETURN_ARG(0);
 	}
 
-	uint32 second = mem::loadAddr<uint32>(first);
-	mem::storeAddr< uint32 >(plistPtr, second);
+	uint32 second = cpu::mem::loadAddr<uint32>(first);
+	cpu::mem::storeAddr< uint32 >(plistPtr, second);
 
 	RETURN_ARG(first);
 }

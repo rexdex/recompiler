@@ -57,6 +57,7 @@ namespace xenon
 		m_regs.R4 = params.m_args[1];
 		m_regs.R13 = m_memory.GetPRCAddr(); // always at r13
 		m_regs.RES = &GReservation;
+		m_regs.INT = &GPlatform.GetInterruptTable();
 
 		// reservation locking
 		GReservation.LOCK = &ReservationLock;
@@ -167,148 +168,6 @@ namespace xenon
 		return xnative::X_STATUS_SUCCESS;
 	}
 
-	static INT ThreadExceptions(DWORD code, struct _EXCEPTION_POINTERS *ep, const uint32 ip, int32* exitCode)
-	{
-		// debug print :)
-		if (code == (cpu::EXCEPTION_CODE_TRAP | 0x1F))
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint32 type = (const uint32)ep->ExceptionRecord->ExceptionInformation[1];
-			const cpu::CpuRegs& regs = *(const cpu::CpuRegs*) ep->ExceptionRecord->ExceptionInformation[2];
-
-			if (type == 20)
-			{
-				const char* txt = (const char*)(regs.R3 & 0xFFFFFFFF);
-				GLog.Log("Debug: %s", txt);
-				return EXCEPTION_CONTINUE_EXECUTION;
-			}
-		}
-
-		// execution exceptions
-		if (code == EXCEPTION_ACCESS_VIOLATION)
-		{
-			GLog.Err("Thread: Access violation %s memory %06llXh",
-				ep->ExceptionRecord->ExceptionInformation[0] ? "writing" : "reading",
-				(uint64)ep->ExceptionRecord->ExceptionInformation[1]);
-			*exitCode = -1;
-
-			if (IsDebuggerPresent())
-				return EXCEPTION_CONTINUE_SEARCH;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_CODE_TRAP)
-		{
-			const uint32 flags = code & 0xFF;
-
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint64 val = (const uint64)ep->ExceptionRecord->ExceptionInformation[1];
-			const uint64 cmp = (const uint64)ep->ExceptionRecord->ExceptionInformation[2];
-
-			if (flags == 0x1F) // all flags set - unconditional trap
-			{
-				GLog.Err("Thread: Unconditional trap at IP=%06Xh", ip);
-				*exitCode = -2;
-			}
-			else
-			{
-				GLog.Err("Thread: Trap %d at IP=%06llXh with value=%d and trigger=%d",
-					flags, ip, val, cmp);
-				*exitCode = -3;
-			}
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_INVALID_CODE_ADDRESS)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint32 blockIp = (const uint32)ep->ExceptionRecord->ExceptionInformation[1];
-
-			GLog.Err("Thread: Invalid branch IP=%06Xh in block at %06Xh", ip, blockIp);
-			*exitCode = -4;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_INVALID_CODE_INSTRUCTON)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint32 blockIp = (const uint32)ep->ExceptionRecord->ExceptionInformation[1];
-
-			GLog.Err("Thread: Invalid instruction at IP=%06Xh in block at %06Xh", ip, blockIp);
-			*exitCode = -1;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNIMPLEMENTED_FUNCTION)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const char* name = (const char*)ep->ExceptionRecord->ExceptionInformation[1];
-
-			GLog.Err("Thread: Called unimplemented import function '%s' at IP=%06Xh", name, ip);
-			*exitCode = -5;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_TERMINATE_PROCESS)
-		{
-			const uint32 retCode = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			GLog.Log("Thread: Got request to terminate the process. This is not an error. ExitCode = %d (%08Xh)", retCode, retCode);
-			*exitCode = retCode;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_TERMINATE_THREAD)
-		{
-			const uint32 retCode = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			GLog.Log("Thread: Got request to terminate thread. ExitCode = %d (%08Xh)", retCode, retCode);
-			*exitCode = retCode;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNHANDLED_INTERRUPT)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			GLog.Err("Thread: Unhandled interrupt at IP=%06Xh", ip);
-
-			*exitCode = -6;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNHANDLED_GLOBAL_READ)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint32 address = (const uint32)ep->ExceptionRecord->ExceptionInformation[2];
-			const uint32 size = (const uint32)ep->ExceptionRecord->ExceptionInformation[3];
-			GLog.Err("Thread: Unhandled read from absolute memory at IP=%06Xh, memory address=%06Xh, size=%d", ip, address, size);
-
-			*exitCode = -7;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNHANDLED_GLOBAL_WRITE)
-		{
-			const uint32 ip = (const uint32)ep->ExceptionRecord->ExceptionInformation[0];
-			const uint32 address = (const uint32)ep->ExceptionRecord->ExceptionInformation[2];
-			const uint32 size = (const uint32)ep->ExceptionRecord->ExceptionInformation[3];
-			GLog.Err("Thread: Unhandled write to absolute memory at IP=%06Xh, memory address=%06Xh, size=%d", ip, address, size);
-
-			*exitCode = -8;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_SYSTEM_KERNEL_ERROR)
-		{
-			const char* errorText = (const char*)ep->ExceptionRecord->ExceptionInformation[0];
-			GLog.Err("Thread: Unhandled system error: %s", errorText);
-
-			*exitCode = -9;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNHANDLED_MMAP_READ)
-		{
-			const uint32 size = (const uint32)ep->ExceptionRecord->ExceptionInformation[2];
-			const uint32 address = (const uint32)ep->ExceptionRecord->ExceptionInformation[3];
-			GLog.Err("Thread: Unhandled memory mapped read from absolute address=%06Xh, size=%d", address, size);
-
-			*exitCode = -12;
-		}
-		else if ((code & 0xFFFFFF00) == cpu::EXCEPTION_UNHANDLED_MMAP_WRITE)
-		{
-			const uint32 size = (const uint32)ep->ExceptionRecord->ExceptionInformation[2];
-			const uint32 address = (const uint32)ep->ExceptionRecord->ExceptionInformation[3];
-			GLog.Err("Thread: Unhandled memory mapped write to absolute address=%06Xh, size=%d", address, size);
-
-			*exitCode = -13;
-		}
-		else
-		{
-			auto* currentThread = KernelThread::GetCurrentThread();
-			GLog.Err("Thread: Fatal exception %08X occurred at IP=%06Xh in thread '%s' (ID=%d)", ip, currentThread->GetName(), currentThread->GetIndex());
-			*exitCode = -10;
-		}
-
-		return EXCEPTION_EXECUTE_HANDLER;
-	}
-
 	int KernelThread::Run(native::IThread& thread)
 	{
 		// bind the current thread
@@ -319,7 +178,7 @@ namespace xenon
 
 		// start the execution loop
 		int exitCode = 0;
-		__try
+		try
 		{
 			if (m_traceFile != nullptr)
 			{
@@ -334,18 +193,19 @@ namespace xenon
 			}
 		}
 
-		__except (ThreadExceptions(GetExceptionCode(), GetExceptionInformation(), (uint32)m_code.GetInstructionPointer(), &exitCode))
+		catch (runtime::TerminateProcessException& e)
 		{
-			// report error
-			if ((int)exitCode < 0)
-			{
-				GLog.Err("Thread: Thread '%hs' (ID=%u) finished unexpectedly with error code %d (%08Xh)", GetName(), GetIndex(), exitCode, exitCode);
-				m_isCrashed = true;
-			}
-			else
-			{
-				GLog.Warn("Thread: Thread '%hs' (ID=%u) finished gracefully", GetName(), GetIndex());
-			}
+			GLog.Log("Thread: Thread '%hs' (ID=%u) requested to terminate the process with exit code %u", GetName(), GetIndex(), e.GetExitCode());
+		}
+		catch (runtime::TerminateThreadException& e)
+		{
+			GLog.Log("Thread: Thread '%hs' (ID=%u) requested to terminate the thread with exit code %u", GetName(), GetIndex(), e.GetExitCode());
+			exitCode = (int)e.GetExitCode();
+		}
+		catch (runtime::Exception& e)
+		{
+			GLog.Err("Thread: Thread '%hs' (ID=%u) received unhandled exception %s at 0x%08llX", GetName(), GetIndex(), e.what(), e.GetInstructionPointer());
+			m_isCrashed = true;
 		}
 
 		// close trace file, hopefully it contains the last executed instruction
@@ -399,25 +259,25 @@ namespace xenon
 			// Get APC entry (offset for LIST_ENTRY offset) and cache what we need.
 			// Calling the routine may delete the memory/overwrite it.
 			const uint32 apcAddress = (const uint32)m_apcList->Pop() - 8;
-			const uint32 kernelRoutine = mem::loadAddr<uint32>(apcAddress + 16);
-			const uint32 normalRoutine = mem::loadAddr<uint32>(apcAddress + 24);
-			const uint32 normalContext = mem::loadAddr<uint32>(apcAddress + 28);
-			const uint32 systemArg1 = mem::loadAddr<uint32>(apcAddress + 32);
-			const uint32 systemArg2 = mem::loadAddr<uint32>(apcAddress + 36);
+			const uint32 kernelRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 16);
+			const uint32 normalRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 24);
+			const uint32 normalContext = cpu::mem::loadAddr<uint32>(apcAddress + 28);
+			const uint32 systemArg1 = cpu::mem::loadAddr<uint32>(apcAddress + 32);
+			const uint32 systemArg2 = cpu::mem::loadAddr<uint32>(apcAddress + 36);
 
 			// Mark as uninserted so that it can be reinserted again by the routine.
-			const uint32 oldFlags = mem::loadAddr<uint32>(apcAddress + 40);
-			mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
+			const uint32 oldFlags = cpu::mem::loadAddr<uint32>(apcAddress + 40);
+			cpu::mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
 
 			// Call kernel routine.
 			// The routine can modify all of its arguments before passing it on.
 			// Since we need to give guest accessible pointers over, we copy things
 			// into and out of scratch.
 			const uint32 scratchAddr = m_memory.GetScratchAddr();
-			mem::storeAddr<uint32>(scratchAddr + 0, normalRoutine);
-			mem::storeAddr<uint32>(scratchAddr + 4, normalContext);
-			mem::storeAddr<uint32>(scratchAddr + 8, systemArg1);
-			mem::storeAddr<uint32>(scratchAddr + 12, systemArg2);
+			cpu::mem::storeAddr<uint32>(scratchAddr + 0, normalRoutine);
+			cpu::mem::storeAddr<uint32>(scratchAddr + 4, normalContext);
+			cpu::mem::storeAddr<uint32>(scratchAddr + 8, systemArg1);
+			cpu::mem::storeAddr<uint32>(scratchAddr + 12, systemArg2);
 
 			// setup execution params
 			// kernel_routine(apc_address, &normalRoutine, &normalContext, &systemArg1, &systemArg2)
@@ -435,10 +295,10 @@ namespace xenon
 			InplaceExecution executor(GetOwner(), executionParams);
 			if (executor.Execute())
 			{
-				const uint32 userNormalRoutine = mem::loadAddr<uint32>(scratchAddr + 0);
-				const uint32 userNormalContext = mem::loadAddr<uint32>(scratchAddr + 4);
-				const uint32 userSystemArg1 = mem::loadAddr<uint32>(scratchAddr + 8);
-				const uint32 userSystemArg2 = mem::loadAddr<uint32>(scratchAddr + 12);
+				const uint32 userNormalRoutine = cpu::mem::loadAddr<uint32>(scratchAddr + 0);
+				const uint32 userNormalContext = cpu::mem::loadAddr<uint32>(scratchAddr + 4);
+				const uint32 userSystemArg1 = cpu::mem::loadAddr<uint32>(scratchAddr + 8);
+				const uint32 userSystemArg2 = cpu::mem::loadAddr<uint32>(scratchAddr + 12);
 
 				// Call the normal routine. Note that it may have been killed by the kernel routine.
 				if (userNormalRoutine)
@@ -475,11 +335,11 @@ namespace xenon
 			// Get APC entry (offset for LIST_ENTRY offset) and cache what we need.
 			// Calling the routine may delete the memory/overwrite it.
 			const uint32 apcAddress = m_apcList->Pop() - 8;
-			const uint32 rundownRoutine = mem::loadAddr<uint32>(apcAddress + 20);
+			const uint32 rundownRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 20);
 
 			// Mark as uninserted so that it can be reinserted again by the routine.
-			const uint32 oldFlags = mem::loadAddr<uint32>(apcAddress + 40);
-			mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
+			const uint32 oldFlags = cpu::mem::loadAddr<uint32>(apcAddress + 40);
+			cpu::mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
 
 			// Call the rundown routine.
 			if (rundownRoutine)

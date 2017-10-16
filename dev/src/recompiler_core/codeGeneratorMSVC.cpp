@@ -259,10 +259,10 @@ namespace code
 			{
 				m_currentFile->m_codePrinter->Print("// input output bank\n");
 				m_currentFile->m_codePrinter->Print("runtime::IOBank ExportedIOBank = {\n");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemReadFunc) &cpu::UnhandledGlobalRead,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemWriteFunc) &cpu::UnhandledGlobalWrite,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortReadFunc) &cpu::UnhandledPortRead,\n ");
-				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortWriteFunc) &cpu::UnhandledPortWrite,\n ");
+				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemReadFunc) &runtime::UnhandledGlobalRead,\n ");
+				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalMemWriteFunc) &runtime::UnhandledGlobalWrite,\n ");
+				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortReadFunc) &runtime::UnhandledPortRead,\n ");
+				m_currentFile->m_codePrinter->Print("   (runtime::TGlobalPortWriteFunc) &runtime::UnhandledPortWrite,\n ");
 				m_currentFile->m_codePrinter->Print("};\n");
 				m_currentFile->m_codePrinter->Print("\n");
 			}
@@ -275,7 +275,7 @@ namespace code
 				for (uint32 i = 0; i < m_exportedInterrupts.size(); ++i)
 				{
 					const InterruptInfo& info = m_exportedInterrupts[i];
-					m_currentFile->m_codePrinter->Printf("{ %d, %d, (runtime::TInterruptFunc) &cpu::UnhandledInterruptCall }, // used %d times \n",
+					m_currentFile->m_codePrinter->Printf("{ %d, %d, (runtime::TInterruptFunc) &runtime::UnhandledInterruptCall }, // used %d times \n",
 						info.m_type,
 						info.m_index,
 						info.m_useCount);
@@ -475,13 +475,13 @@ namespace code
 			// block addr switch
 			if (m_isBlockMultiAddress)
 			{
-				m_currentFile->m_codePrinter->Printf("const uint32 local_instr = (uint32)(ip - 0x%08X) / 4;\n", addr);
+				m_currentFile->m_codePrinter->Printf("const uint32 local_instr = (uint32)(ip - 0x%08llX) / 4;\n", addr);
 				m_currentFile->m_codePrinter->Print("switch ( local_instr )\n");
 				m_currentFile->m_codePrinter->Print("{\n");
 				m_currentFile->m_codePrinter->Indent(1);
 
 				// todo: optional multi address protection
-				m_currentFile->m_codePrinter->Printf("default:\tcpu::invalid_address( ip, 0x%08X );\n", m_blockBaseAddress);
+				m_currentFile->m_codePrinter->Printf("default:\truntime::InvalidAddress(ip, 0x%08llX);\n", m_blockBaseAddress);
 			}
 
 			// stats

@@ -3,6 +3,7 @@
 
 namespace runtime
 {
+	//----
 
 	RegisterInfo::RegisterInfo(RegisterType type, const char* name, const uint32 index, const uint32 bitSize, const uint32 dataOffset)
 		: m_type(type)

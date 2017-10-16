@@ -1,36 +1,17 @@
 #include "build.h"
 #include "runtimeSymbols.h"
 #include "runtimeRegisterBank.h"
+#include "runtimeExceptions.h"
 
 namespace runtime
 {
 
-	static void DefaultGlobalRead(uint64 address, const uint32 size, void* outPtr)
-	{
-		GLog.Err("Unhandled memory read at 0x%08llx, size %d", address, size);
-	}
-
-	static void DefaultGlobalWrite(uint64 address, const uint32 size, const void* dataPtr)
-	{
-		GLog.Err("Unhandled memory writer at 0x%08llx, size %d", address, size);
-	}
-
-	static void DefaultPortRead(uint16 portIndex, const uint32 size, void* outPtr)
-	{
-		GLog.Err("Unhandled port %u read, size %d", portIndex, size);
-	}
-
-	static void DefaultPortWrite(uint16 portIndex, const uint32 size, const void* dataPtr)
-	{
-		GLog.Err("Unhandled port %u write, size %d", portIndex, size);
-	}
-
 	Symbols::Symbols()
 	{
-		m_defaultMemReaderFunc = &DefaultGlobalRead;
-		m_defaultMemWriterFunc = &DefaultGlobalWrite;
-		m_defaultPortReaderFunc = &DefaultPortRead;
-		m_defaultPortWriterFunc = &DefaultPortWrite;
+		m_defaultMemReaderFunc = &UnhandledGlobalRead;
+		m_defaultMemWriterFunc = &UnhandledGlobalWrite;
+		m_defaultPortReaderFunc = &UnhandledPortRead;
+		m_defaultPortWriterFunc = &UnhandledPortWrite;
 	}
 
 	void Symbols::RegisterSymbol(const char* name, const void* ptr)

@@ -25,6 +25,8 @@ namespace xenon
 
 		inline InputSystem& GetInputSystem() const { return *m_inputSys; }
 
+		inline cpu::Interrupts& GetInterruptTable() const { return *m_interruptTable; }
+
 	public:
 		Platform();
 		virtual ~Platform();
@@ -69,6 +71,9 @@ namespace xenon
 		xnative::XenonNativeData	m_nativeXboxKrnlVersion;
 		xnative::XenonNativeData	m_nativeKeTimeStampBundle;
 		xnative::XenonNativeData	m_nativeExThreadObjectType;
+
+		// interrupt table
+		cpu::Interrupts*	m_interruptTable;
 
 		// external exit
 		bool m_userExitRequested;

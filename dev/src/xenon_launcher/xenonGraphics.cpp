@@ -75,7 +75,7 @@ namespace xenon
 		m_gpu->EnableReadPointerWriteBack(ptr, blockSize);
 	}
 
-	void Graphics::WriteGPUWord(uint64 addr, const uint32 size, const void* inPtr)
+	void Graphics::WriteGPUWord(const uint64_t ip, const uint64_t addr, const uint32_t size, const void* inPtr)
 	{
 		if (size == 4)
 		{
@@ -84,7 +84,7 @@ namespace xenon
 		}
 	}
 
-	void Graphics::ReadGPUWord(uint64 addr, const uint32 size, void* outPtr)
+	void Graphics::ReadGPUWord(const uint64_t ip, const uint64_t addr, const uint32_t size, void* outPtr)
 	{
 		if (size == 4)
 		{

@@ -22,12 +22,12 @@ namespace xnative
 	{
 		inline T Get() const
 		{
-			return mem::load<T>(&m_rawData);
+			return cpu::mem::load<T>(&m_rawData);
 		}
 
 		inline void Set(const T& other)
 		{
-			mem::store<T>(&m_rawData, other);
+			cpu::mem::store<T>(&m_rawData, other);
 		}
 
 	private:
@@ -56,13 +56,13 @@ namespace xnative
 		template< typename T >
 		inline void Write(const uint32 offset, const T& val)
 		{
-			mem::store(&m_data[offset], val);
+			cpu::mem::store(&m_data[offset], val);
 		}
 
 		template< typename T >
 		inline T Read(const uint32 offset) const
 		{
-			return mem::load(&m_data[offset]);
+			return cpu::mem::load(&m_data[offset]);
 		}
 
 	private:
@@ -435,11 +435,11 @@ namespace xnative
 
 		inline void Read(const uint8* base, uint32 p)
 		{
-			Length = mem::load<uint16>(base + p);
-			MaximumLength = mem::load<uint16>(base + p + 2);
+			Length = cpu::mem::load<uint16>(base + p);
+			MaximumLength = cpu::mem::load<uint16>(base + p + 2);
 
 			if (MaximumLength)
-				BufferPtr = (uint32)(base + mem::load<uint32>(base + p + 4));
+				BufferPtr = (uint32)(base + cpu::mem::load<uint32>(base + p + 4));
 			else
 				BufferPtr = 0;
 		}
@@ -484,9 +484,9 @@ namespace xnative
 
 		void Read(const uint8* base, uint32 p)
 		{
-			RootDirectory = mem::load<uint32>(base + p);
-			ObjectNamePtr = mem::load<uint32>(base + p + 4);
-			Attributes = mem::load<uint32>(base + p + 8);
+			RootDirectory = cpu::mem::load<uint32>(base + p);
+			ObjectNamePtr = cpu::mem::load<uint32>(base + p + 4);
+			Attributes = cpu::mem::load<uint32>(base + p + 8);
 
 			if (ObjectNamePtr)
 			{
@@ -581,14 +581,14 @@ namespace xnative
 
 		void Write(uint8* base, uint32 p)
 		{
-			mem::store<uint64>(base + p + 0, CreationTime);
-			mem::store<uint64>(base + p + 8, LastAccessTime);
-			mem::store<uint64>(base + p + 16, LastWriteTime);
-			mem::store<uint64>(base + p + 24, ChangeTime);
-			mem::store<uint64>(base + p + 32, AllocationSize);
-			mem::store<uint64>(base + p + 40, FileLength);
-			mem::store<uint32>(base + p + 48, Attributes);
-			mem::store<uint32>(base + p + 52, Padding);
+			cpu::mem::store<uint64>(base + p + 0, CreationTime);
+			cpu::mem::store<uint64>(base + p + 8, LastAccessTime);
+			cpu::mem::store<uint64>(base + p + 16, LastWriteTime);
+			cpu::mem::store<uint64>(base + p + 24, ChangeTime);
+			cpu::mem::store<uint64>(base + p + 32, AllocationSize);
+			cpu::mem::store<uint64>(base + p + 40, FileLength);
+			cpu::mem::store<uint32>(base + p + 48, Attributes);
+			cpu::mem::store<uint32>(base + p + 52, Padding);
 		}
 	};
 	static_assert(sizeof(X_FILE_INFO) == 56, "Structure size mismatch");
@@ -616,16 +616,16 @@ namespace xnative
 			do
 			{
 				info = (X_DIR_INFO*)src;
-				mem::store<uint32>(dst, info->NextEntryOffset);
-				mem::store<uint32>(dst + 4, info->FileIndex);
-				mem::store<uint64>(dst + 8, info->CreationTime);
-				mem::store<uint64>(dst + 16, info->LastAccessTime);
-				mem::store<uint64>(dst + 24, info->LastWriteTime);
-				mem::store<uint64>(dst + 32, info->ChangeTime);
-				mem::store<uint64>(dst + 40, info->EndOfFile);
-				mem::store<uint64>(dst + 48, info->AllocationSize);
-				mem::store<uint32>(dst + 56, info->Attributes);
-				mem::store<uint32>(dst + 60, info->FileNameLength);
+				cpu::mem::store<uint32>(dst, info->NextEntryOffset);
+				cpu::mem::store<uint32>(dst + 4, info->FileIndex);
+				cpu::mem::store<uint64>(dst + 8, info->CreationTime);
+				cpu::mem::store<uint64>(dst + 16, info->LastAccessTime);
+				cpu::mem::store<uint64>(dst + 24, info->LastWriteTime);
+				cpu::mem::store<uint64>(dst + 32, info->ChangeTime);
+				cpu::mem::store<uint64>(dst + 40, info->EndOfFile);
+				cpu::mem::store<uint64>(dst + 48, info->AllocationSize);
+				cpu::mem::store<uint32>(dst + 56, info->Attributes);
+				cpu::mem::store<uint32>(dst + 60, info->FileNameLength);
 				memcpy(dst + 64, info->FileName, info->FileNameLength);
 				dst += info->NextEntryOffset;
 				src += info->NextEntryOffset;
@@ -646,10 +646,10 @@ namespace xnative
 		void Write(uint8* base, uint32 p)
 		{
 			uint8* dst = base + p;
-			mem::store<uint64>(dst + 0, this->CreationTime);
-			mem::store<uint32>(dst + 8, this->SerialNumber);
-			mem::store<uint32>(dst + 12, this->LabelLength);
-			mem::store<uint32>(dst + 16, this->SupportsObjects);
+			cpu::mem::store<uint64>(dst + 0, this->CreationTime);
+			cpu::mem::store<uint32>(dst + 8, this->SerialNumber);
+			cpu::mem::store<uint32>(dst + 12, this->LabelLength);
+			cpu::mem::store<uint32>(dst + 16, this->SupportsObjects);
 			memcpy(dst + 20, this->Label, this->LabelLength);
 		}
 	};
@@ -666,9 +666,9 @@ namespace xnative
 		void Write(uint8* base, uint32 p)
 		{
 			uint8* dst = base + p;
-			mem::store<uint32>(dst + 0, this->Attributes);
-			mem::store<uint32>(dst + 4, this->MaximumComponentNameLength);
-			mem::store<uint32>(dst + 8, this->FSNameLength);
+			cpu::mem::store<uint32>(dst + 0, this->Attributes);
+			cpu::mem::store<uint32>(dst + 4, this->MaximumComponentNameLength);
+			cpu::mem::store<uint32>(dst + 8, this->FSNameLength);
 			memcpy(dst + 12, this->FSName, this->FSNameLength);
 		}
 	};

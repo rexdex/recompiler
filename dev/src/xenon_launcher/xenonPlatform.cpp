@@ -23,6 +23,7 @@ namespace xenon
 		, m_fileSys(nullptr)
 		, m_graphics(nullptr)
 		, m_memory(nullptr)
+		, m_interruptTable(nullptr)
 		, m_userExitRequested(false)
 	{
 	}
@@ -60,6 +61,11 @@ namespace xenon
 			return &CPU_PowerPC::GetInstance();
 
 		return nullptr;
+	}
+
+	static void UnimplementedInterrupt(const uint64_t ip, const uint32_t index, const runtime::RegisterBank& regs)
+	{
+		throw runtime::TrapException(ip, index);
 	}
 
 	bool Platform::Initialize(const native::Systems& nativeSystems, const launcher::Commandline& commandline, runtime::Symbols& symbols)
@@ -160,6 +166,14 @@ namespace xenon
 		m_nativeExThreadObjectType.Write<uint32>(0, 0xD01BBEEF);
 		symbols.RegisterSymbol("ExThreadObjectType", m_nativeExThreadObjectType.Data());
 
+		// initialize interrupt table
+		m_interruptTable = new cpu::Interrupts();
+		for (uint32_t i = 0; i < cpu::Interrupts::MAX_INTERRUPTS; ++i)
+		{
+			const auto func = symbols.FindInterruptCallback(i);
+			m_interruptTable->INTERRUPTS[i] = func ? func : &UnimplementedInterrupt;
+		}
+
 		GLog.Log("Runtime: Xenon platform initialized");
 		return true;
 	}
@@ -177,6 +191,9 @@ namespace xenon
 
 		delete m_inputSys;
 		m_inputSys = nullptr;
+
+		delete m_interruptTable;
+		m_interruptTable = nullptr;
 	}
 
 	void Platform::RequestUserExit()
