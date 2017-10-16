@@ -486,7 +486,7 @@ uint64 __fastcall XboxThreads_KeDelayExecutionThread( uint64 ip, cpu::CpuRegs& r
 }
 ```
 
-It takes around 300 functions to get the simple app to start. Most of the are very similar (if not exactly the same) as the Windows counterparts. The rest is mostly guess work.
+It takes around 300 functions to get the simple app to start. Most of them are very similar (if not exactly the same) as the Windows counterparts. The rest is mostly guess work.
 
 
 ## Future Work
