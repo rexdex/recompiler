@@ -1,0 +1,2237 @@
+<XFileATG Version="1.6">
+    <!-- Time: Fri May 12 12:39:35 2006 -->
+    <!-- Exporter: GTG Content Exporter for Maya version 1.1 (Debug) -->
+    <!-- DCC: Maya 7.0 -->
+    <!-- Stats: 13641 vertices, 22507 triangles, 6 materials, 15.344 seconds to parse scene. -->
+    <LoadHint MeshCount="4" MaterialCount="6" AnimationCount="1" FrameCount="167" />
+    <PhysicalMemoryFile BigEndian="1">scenes\SkinnedCharacter.pmem</PhysicalMemoryFile>
+    <BundledResources>textures\SkinnedCharacter.xpr</BundledResources>
+    <Mesh Name="L_eyeBallShape">
+        <MeshTopology VertexBufferCount="1">
+            <VertexBuffer Name="Default" Stream="0" Stride="24">
+                <VertexDecls Count="4">
+                    <VertexDecl Offset="0" Type="FLOAT3" Usage="POSITION" />
+                    <VertexDecl Offset="12" Type="DEC3N" Usage="NORMAL" />
+                    <VertexDecl Offset="16" Type="FLOAT16_2" Usage="TEXCOORD" />
+                    <VertexDecl Offset="20" Type="DEC3N" Usage="TANGENT" />
+                </VertexDecls>
+                <PhysicalBinaryData Offset="0" Size="3288" Count="137" />
+            </VertexBuffer>
+            <IndexBuffer IndexSize="16">
+                <PhysicalBinaryData Offset="3296" Size="1326" Count="663" />
+            </IndexBuffer>
+            <IBSubset Name="subset0_eyeBallM" PrimitiveType="TriangleList" StartIndex="0" IndexCount="663" />
+        </MeshTopology>
+    </Mesh>
+    <Mesh Name="R_eyeBallShape">
+        <MeshTopology VertexBufferCount="1">
+            <VertexBuffer Name="Default" Stream="0" Stride="24">
+                <VertexDecls Count="4">
+                    <VertexDecl Offset="0" Type="FLOAT3" Usage="POSITION" />
+                    <VertexDecl Offset="12" Type="DEC3N" Usage="NORMAL" />
+                    <VertexDecl Offset="16" Type="FLOAT16_2" Usage="TEXCOORD" />
+                    <VertexDecl Offset="20" Type="DEC3N" Usage="TANGENT" />
+                </VertexDecls>
+                <PhysicalBinaryData Offset="4640" Size="3288" Count="137" />
+            </VertexBuffer>
+            <IndexBuffer IndexSize="16">
+                <PhysicalBinaryData Offset="7936" Size="1326" Count="663" />
+            </IndexBuffer>
+            <IBSubset Name="subset0_eyeBallM" PrimitiveType="TriangleList" StartIndex="0" IndexCount="663" />
+        </MeshTopology>
+    </Mesh>
+    <Mesh Name="headShape" Skinned="TRUE">
+        <MeshTopology VertexBufferCount="1">
+            <InfluenceObjects Count="4">
+                <E>R_eye_joint</E>
+                <E>Head</E>
+                <E>L_eye_joint1</E>
+                <E>Neck</E>
+            </InfluenceObjects>
+            <VertexBuffer Name="Default" Stream="0" Stride="32">
+                <VertexDecls Count="6">
+                    <VertexDecl Offset="0" Type="FLOAT3" Usage="POSITION" />
+                    <VertexDecl Offset="12" Type="UBYTE4N" Usage="BLENDWEIGHT" />
+                    <VertexDecl Offset="16" Type="UBYTE4" Usage="BLENDINDICES" />
+                    <VertexDecl Offset="20" Type="DEC3N" Usage="NORMAL" />
+                    <VertexDecl Offset="24" Type="FLOAT16_2" Usage="TEXCOORD" />
+                    <VertexDecl Offset="28" Type="DEC3N" Usage="TANGENT" />
+                </VertexDecls>
+                <PhysicalBinaryData Offset="9280" Size="124448" Count="3889" />
+            </VertexBuffer>
+            <IndexBuffer IndexSize="16">
+                <PhysicalBinaryData Offset="133728" Size="43380" Count="21690" />
+            </IndexBuffer>
+            <IBSubset Name="subset0_headM" PrimitiveType="TriangleList" StartIndex="0" IndexCount="21690" />
+        </MeshTopology>
+    </Mesh>
+    <Mesh Name="bodyShape" Skinned="TRUE">
+        <MeshTopology VertexBufferCount="1">
+            <InfluenceObjects Count="66">
+                <E>Root</E>
+                <E>Pelvis</E>
+                <E>Spine</E>
+                <E>Spine1</E>
+                <E>Spine2</E>
+                <E>Spine3</E>
+                <E>Neck</E>
+                <E>Head</E>
+                <E>L_Clavicle</E>
+                <E>L_UpperArm</E>
+                <E>L_Forearm</E>
+                <E>L_Hand</E>
+                <E>L_Thumb1</E>
+                <E>L_Thumb2</E>
+                <E>L_Thumb3</E>
+                <E>L_Thumb4</E>
+                <E>L_Index1</E>
+                <E>L_Index2</E>
+                <E>L_Index3</E>
+                <E>L_Index4</E>
+                <E>L_Middle1</E>
+                <E>L_Middle2</E>
+                <E>L_Middle3</E>
+                <E>L_Middle4</E>
+                <E>L_Ring1</E>
+                <E>L_Ring2</E>
+                <E>L_Ring3</E>
+                <E>L_Ring4</E>
+                <E>L_Pinky1</E>
+                <E>L_Pinky2</E>
+                <E>L_Pinky3</E>
+                <E>L_Pinky4</E>
+                <E>R_Clavicle</E>
+                <E>R_UpperArm</E>
+                <E>R_Forearm</E>
+                <E>R_Hand</E>
+                <E>R_Thumb1</E>
+                <E>R_Thumb2</E>
+                <E>R_Thumb3</E>
+                <E>R_Thumb4</E>
+                <E>R_Index1</E>
+                <E>R_Index2</E>
+                <E>R_Index3</E>
+                <E>R_Index4</E>
+                <E>R_Middle1</E>
+                <E>R_Middle2</E>
+                <E>R_Middle3</E>
+                <E>R_Middle4</E>
+                <E>R_Ring1</E>
+                <E>R_Ring2</E>
+                <E>R_Ring3</E>
+                <E>R_Ring4</E>
+                <E>R_Pinky1</E>
+                <E>R_Pinky2</E>
+                <E>R_Pinky3</E>
+                <E>R_Pinky4</E>
+                <E>L_Thigh1</E>
+                <E>L_Knee2</E>
+                <E>L_Ankle1</E>
+                <E>L_Ball</E>
+                <E>L_Toe</E>
+                <E>R_Thigh</E>
+                <E>R_Knee</E>
+                <E>R_Ankle</E>
+                <E>R_Ball</E>
+                <E>R_Toe</E>
+            </InfluenceObjects>
+            <VertexBuffer Name="Default" Stream="0" Stride="32">
+                <VertexDecls Count="6">
+                    <VertexDecl Offset="0" Type="FLOAT3" Usage="POSITION" />
+                    <VertexDecl Offset="12" Type="UBYTE4N" Usage="BLENDWEIGHT" />
+                    <VertexDecl Offset="16" Type="UBYTE4" Usage="BLENDINDICES" />
+                    <VertexDecl Offset="20" Type="DEC3N" Usage="NORMAL" />
+                    <VertexDecl Offset="24" Type="FLOAT16_2" Usage="TEXCOORD" />
+                    <VertexDecl Offset="28" Type="DEC3N" Usage="TANGENT" />
+                </VertexDecls>
+                <PhysicalBinaryData Offset="177120" Size="303296" Count="9478" />
+            </VertexBuffer>
+            <IndexBuffer IndexSize="16">
+                <PhysicalBinaryData Offset="480416" Size="89010" Count="44505" />
+            </IndexBuffer>
+            <IBSubset Name="subset0_lambert1" PrimitiveType="TriangleList" StartIndex="0" IndexCount="33" />
+            <IBSubset Name="subset1_pantsM" PrimitiveType="TriangleList" StartIndex="33" IndexCount="19704" />
+            <IBSubset Name="subset2_jacketM" PrimitiveType="TriangleList" StartIndex="19737" IndexCount="13347" />
+            <IBSubset Name="subset3_upBodyM" PrimitiveType="TriangleList" StartIndex="33084" IndexCount="11421" />
+        </MeshTopology>
+    </Mesh>
+    <MaterialDatabase FileName="C:\x\xenon\private\atg\samples\Sharkx\ContentExporter\ATGContentExporterMaya6\MaterialDB.xml" MaterialCount="2" />
+    <MaterialInstance Name="eyeBallM" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodyc.tga</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodyn.tga</Value>
+        </ParamString>
+        <ParamString Name="SpecularMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodys.tga</Value>
+        </ParamString>
+    </MaterialInstance>
+    <MaterialInstance Name="headM" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>head.tga</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>headn.tga</Value>
+        </ParamString>
+        <ParamString Name="SpecularMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>heads.tga</Value>
+        </ParamString>
+    </MaterialInstance>
+    <MaterialInstance Name="lambert1" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>default.dds</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>default-normalmap.dds</Value>
+        </ParamString>
+    </MaterialInstance>
+    <MaterialInstance Name="pantsM" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>pants.tga</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>pantsn.tga</Value>
+        </ParamString>
+        <ParamString Name="SpecularMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>pantss.tga</Value>
+        </ParamString>
+    </MaterialInstance>
+    <MaterialInstance Name="jacketM" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>jacket.tga</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>jacketn.tga</Value>
+        </ParamString>
+        <ParamString Name="SpecularMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>jackets.tga</Value>
+        </ParamString>
+    </MaterialInstance>
+    <MaterialInstance Name="upBodyM" MaterialName="Default">
+        <ParamString Name="DiffuseTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodyc.tga</Value>
+        </ParamString>
+        <ParamString Name="NormalMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodyn.tga</Value>
+        </ParamString>
+        <ParamString Name="SpecularMapTexture" Type="Texture2D" InstanceParam="TRUE">
+            <Value>upbodys.tga</Value>
+        </ParamString>
+    </MaterialInstance>
+    <Animation Name="Untitled" Duration="1.250000">
+        <AnimationTrack Name="pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="soldier_Walk_bk:pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="soldier_bindPose:pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Pelvis">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.005862, -0.000680, 0.000686" />
+            </PositionKeys>
+            <OrientationKeys Count="67">
+                <OrientationKey Time="0.000000" Orientation="-0.459841, 0.554588, 0.461063, 0.518072" />
+                <OrientationKey Time="0.020833" Orientation="-0.456452, 0.551916, 0.463501, 0.521734" />
+                <OrientationKey Time="0.031250" Orientation="-0.455315, 0.550589, 0.464208, 0.523499" />
+                <OrientationKey Time="0.052083" Orientation="-0.454646, 0.547815, 0.466051, 0.525350" />
+                <OrientationKey Time="0.062500" Orientation="-0.454532, 0.546145, 0.466879, 0.526451" />
+                <OrientationKey Time="0.072917" Orientation="-0.454419, 0.545794, 0.466618, 0.527144" />
+                <OrientationKey Time="0.093750" Orientation="-0.453639, 0.544536, 0.463218, 0.532091" />
+                <OrientationKey Time="0.104167" Orientation="-0.453212, 0.544365, 0.462826, 0.532971" />
+                <OrientationKey Time="0.114583" Orientation="-0.450462, 0.543789, 0.462790, 0.535914" />
+                <OrientationKey Time="0.135417" Orientation="-0.447146, 0.542278, 0.461415, 0.541379" />
+                <OrientationKey Time="0.145833" Orientation="-0.444382, 0.541541, 0.462482, 0.543479" />
+                <OrientationKey Time="0.156250" Orientation="-0.440922, 0.539298, 0.463403, 0.547726" />
+                <OrientationKey Time="0.166667" Orientation="-0.439611, 0.537729, 0.463429, 0.550293" />
+                <OrientationKey Time="0.197917" Orientation="-0.437680, 0.536243, 0.464679, 0.552226" />
+                <OrientationKey Time="0.218750" Orientation="-0.439350, 0.537553, 0.460586, 0.553054" />
+                <OrientationKey Time="0.229167" Orientation="-0.440277, 0.538576, 0.458193, 0.553309" />
+                <OrientationKey Time="0.239583" Orientation="-0.440460, 0.538868, 0.457984, 0.553052" />
+                <OrientationKey Time="0.260417" Orientation="-0.441310, 0.540159, 0.458418, 0.550751" />
+                <OrientationKey Time="0.270833" Orientation="-0.441359, 0.540207, 0.458524, 0.550576" />
+                <OrientationKey Time="0.302083" Orientation="-0.440009, 0.538204, 0.460184, 0.552231" />
+                <OrientationKey Time="0.322917" Orientation="-0.438249, 0.538993, 0.462161, 0.551209" />
+                <OrientationKey Time="0.333333" Orientation="-0.437713, 0.539318, 0.462764, 0.550812" />
+                <OrientationKey Time="0.354167" Orientation="-0.436708, 0.540352, 0.464668, 0.548990" />
+                <OrientationKey Time="0.364583" Orientation="-0.436312, 0.540905, 0.465462, 0.548085" />
+                <OrientationKey Time="0.395833" Orientation="-0.434421, 0.541721, 0.469189, 0.545599" />
+                <OrientationKey Time="0.427083" Orientation="-0.432377, 0.540087, 0.476044, 0.542898" />
+                <OrientationKey Time="0.437500" Orientation="-0.432104, 0.539732, 0.477065, 0.542572" />
+                <OrientationKey Time="0.468750" Orientation="-0.430655, 0.534922, 0.484252, 0.542121" />
+                <OrientationKey Time="0.500000" Orientation="-0.428098, 0.528118, 0.491234, 0.544529" />
+                <OrientationKey Time="0.520833" Orientation="-0.428275, 0.521559, 0.495114, 0.547192" />
+                <OrientationKey Time="0.531250" Orientation="-0.428559, 0.518466, 0.496624, 0.548539" />
+                <OrientationKey Time="0.541667" Orientation="-0.428138, 0.518199, 0.497312, 0.548497" />
+                <OrientationKey Time="0.562500" Orientation="-0.425889, 0.517549, 0.500555, 0.547911" />
+                <OrientationKey Time="0.572917" Orientation="-0.425690, 0.517781, 0.500680, 0.547732" />
+                <OrientationKey Time="0.593750" Orientation="-0.425039, 0.520153, 0.500181, 0.546444" />
+                <OrientationKey Time="0.604167" Orientation="-0.425210, 0.520430, 0.500111, 0.546111" />
+                <OrientationKey Time="0.635417" Orientation="-0.430674, 0.520480, 0.499891, 0.541968" />
+                <OrientationKey Time="0.656250" Orientation="-0.435432, 0.524412, 0.497737, 0.536329" />
+                <OrientationKey Time="0.666667" Orientation="-0.436982, 0.525415, 0.496963, 0.534802" />
+                <OrientationKey Time="0.697917" Orientation="-0.441329, 0.528702, 0.490342, 0.534104" />
+                <OrientationKey Time="0.718750" Orientation="-0.446609, 0.532746, 0.484101, 0.531384" />
+                <OrientationKey Time="0.729167" Orientation="-0.449937, 0.534325, 0.480176, 0.530552" />
+                <OrientationKey Time="0.739584" Orientation="-0.451540, 0.535314, 0.479136, 0.529131" />
+                <OrientationKey Time="0.750000" Orientation="-0.457344, 0.537339, 0.476046, 0.524865" />
+                <OrientationKey Time="0.760417" Orientation="-0.463293, 0.536763, 0.472820, 0.523151" />
+                <OrientationKey Time="0.770834" Orientation="-0.464617, 0.536803, 0.472231, 0.522466" />
+                <OrientationKey Time="0.781250" Orientation="-0.467351, 0.540911, 0.470685, 0.517160" />
+                <OrientationKey Time="0.791667" Orientation="-0.474144, 0.544260, 0.465253, 0.512355" />
+                <OrientationKey Time="0.802084" Orientation="-0.477477, 0.544710, 0.462498, 0.511275" />
+                <OrientationKey Time="0.833334" Orientation="-0.487306, 0.547979, 0.460443, 0.500244" />
+                <OrientationKey Time="0.864584" Orientation="-0.488073, 0.545445, 0.458959, 0.503618" />
+                <OrientationKey Time="0.875000" Orientation="-0.488110, 0.545370, 0.459091, 0.503543" />
+                <OrientationKey Time="0.895834" Orientation="-0.488268, 0.545119, 0.459840, 0.502977" />
+                <OrientationKey Time="0.927084" Orientation="-0.488695, 0.546258, 0.457175, 0.503756" />
+                <OrientationKey Time="0.937501" Orientation="-0.488609, 0.546423, 0.456800, 0.504000" />
+                <OrientationKey Time="0.968751" Orientation="-0.485645, 0.547725, 0.454472, 0.507545" />
+                <OrientationKey Time="1.000001" Orientation="-0.482306, 0.550825, 0.452622, 0.509024" />
+                <OrientationKey Time="1.020834" Orientation="-0.476028, 0.551562, 0.455514, 0.511550" />
+                <OrientationKey Time="1.031251" Orientation="-0.473395, 0.551611, 0.456621, 0.512952" />
+                <OrientationKey Time="1.052084" Orientation="-0.468333, 0.552478, 0.459448, 0.514140" />
+                <OrientationKey Time="1.062500" Orientation="-0.465479, 0.552643, 0.460981, 0.515181" />
+                <OrientationKey Time="1.104167" Orientation="-0.460994, 0.552892, 0.464307, 0.515959" />
+                <OrientationKey Time="1.156250" Orientation="-0.467492, 0.554648, 0.459211, 0.512778" />
+                <OrientationKey Time="1.166667" Orientation="-0.468704, 0.554824, 0.458273, 0.512322" />
+                <OrientationKey Time="1.197917" Orientation="-0.466651, 0.557828, 0.457756, 0.511395" />
+                <OrientationKey Time="1.229167" Orientation="-0.463550, 0.556753, 0.458054, 0.515105" />
+                <OrientationKey Time="1.239583" Orientation="-0.463066, 0.556535, 0.458362, 0.515502" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Spine1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.045433, -0.000036, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="33">
+                <OrientationKey Time="0.000000" Orientation="-0.036495, 0.010809, -0.051940, 0.997925" />
+                <OrientationKey Time="0.031250" Orientation="-0.035348, 0.008140, -0.054553, 0.997852" />
+                <OrientationKey Time="0.062500" Orientation="-0.032606, 0.006279, -0.056365, 0.997858" />
+                <OrientationKey Time="0.072917" Orientation="-0.032061, 0.006186, -0.056556, 0.997865" />
+                <OrientationKey Time="0.093750" Orientation="-0.028233, 0.006085, -0.057563, 0.997924" />
+                <OrientationKey Time="0.104167" Orientation="-0.027686, 0.006347, -0.057688, 0.997931" />
+                <OrientationKey Time="0.135417" Orientation="-0.025384, 0.012579, -0.057859, 0.997923" />
+                <OrientationKey Time="0.166667" Orientation="-0.024985, 0.025709, -0.056441, 0.997762" />
+                <OrientationKey Time="0.197917" Orientation="-0.020987, 0.029216, -0.056233, 0.997769" />
+                <OrientationKey Time="0.260417" Orientation="-0.013224, 0.031169, -0.054145, 0.997959" />
+                <OrientationKey Time="0.270833" Orientation="-0.012600, 0.031407, -0.054028, 0.997966" />
+                <OrientationKey Time="0.302083" Orientation="-0.008372, 0.033639, -0.053570, 0.997962" />
+                <OrientationKey Time="0.333333" Orientation="-0.003825, 0.034388, -0.053601, 0.997963" />
+                <OrientationKey Time="0.364583" Orientation="0.001435, 0.033822, -0.053298, 0.998005" />
+                <OrientationKey Time="0.406250" Orientation="0.007745, 0.034263, -0.053040, 0.997974" />
+                <OrientationKey Time="0.437500" Orientation="0.014088, 0.035486, -0.053479, 0.997839" />
+                <OrientationKey Time="0.468750" Orientation="0.020336, 0.038792, -0.053942, 0.997583" />
+                <OrientationKey Time="0.531250" Orientation="0.031617, 0.049396, -0.055354, 0.996743" />
+                <OrientationKey Time="0.541667" Orientation="0.032117, 0.049190, -0.055471, 0.996731" />
+                <OrientationKey Time="0.562500" Orientation="0.034349, 0.047787, -0.056039, 0.996693" />
+                <OrientationKey Time="0.572917" Orientation="0.034444, 0.047318, -0.056028, 0.996712" />
+                <OrientationKey Time="0.604167" Orientation="0.034261, 0.043072, -0.055609, 0.996935" />
+                <OrientationKey Time="0.635417" Orientation="0.035690, 0.037096, -0.055448, 0.997134" />
+                <OrientationKey Time="0.666667" Orientation="0.037182, 0.032826, -0.056465, 0.997172" />
+                <OrientationKey Time="0.760417" Orientation="0.034110, 0.002340, -0.051884, 0.998068" />
+                <OrientationKey Time="0.833334" Orientation="0.034973, -0.034816, -0.047824, 0.997636" />
+                <OrientationKey Time="0.927084" Orientation="0.018131, -0.039056, -0.049556, 0.997843" />
+                <OrientationKey Time="0.937501" Orientation="0.017150, -0.038961, -0.049671, 0.997858" />
+                <OrientationKey Time="1.000001" Orientation="0.000184, -0.028734, -0.051040, 0.998283" />
+                <OrientationKey Time="1.104167" Orientation="-0.021884, 0.006326, -0.051231, 0.998427" />
+                <OrientationKey Time="1.135417" Orientation="-0.026382, 0.006018, -0.050720, 0.998346" />
+                <OrientationKey Time="1.166667" Orientation="-0.028489, 0.002152, -0.050743, 0.998303" />
+                <OrientationKey Time="1.197917" Orientation="-0.030476, 0.003051, -0.051555, 0.998200" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Spine2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.045440, -0.000036, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="36">
+                <OrientationKey Time="0.000000" Orientation="-0.036338, -0.010447, 0.041571, 0.998420" />
+                <OrientationKey Time="0.031250" Orientation="-0.037177, -0.002928, 0.037173, 0.998613" />
+                <OrientationKey Time="0.072917" Orientation="-0.036873, 0.004519, 0.034494, 0.998714" />
+                <OrientationKey Time="0.104167" Orientation="-0.036305, 0.007036, 0.033383, 0.998758" />
+                <OrientationKey Time="0.135417" Orientation="-0.035748, 0.010785, 0.033126, 0.998753" />
+                <OrientationKey Time="0.166667" Orientation="-0.032154, 0.015016, 0.034300, 0.998781" />
+                <OrientationKey Time="0.197917" Orientation="-0.025675, 0.018588, 0.034919, 0.998887" />
+                <OrientationKey Time="0.239583" Orientation="-0.018853, 0.016696, 0.037715, 0.998971" />
+                <OrientationKey Time="0.270833" Orientation="-0.010576, 0.015408, 0.039885, 0.999029" />
+                <OrientationKey Time="0.302083" Orientation="-0.003625, 0.015920, 0.040951, 0.999028" />
+                <OrientationKey Time="0.333333" Orientation="0.002569, 0.015362, 0.041066, 0.999035" />
+                <OrientationKey Time="0.395833" Orientation="0.014444, 0.013243, 0.042593, 0.998900" />
+                <OrientationKey Time="0.437500" Orientation="0.021030, 0.012201, 0.042055, 0.998819" />
+                <OrientationKey Time="0.468750" Orientation="0.025525, 0.012474, 0.041738, 0.998725" />
+                <OrientationKey Time="0.500000" Orientation="0.029139, 0.012779, 0.040724, 0.998664" />
+                <OrientationKey Time="0.531250" Orientation="0.033423, 0.013637, 0.040809, 0.998515" />
+                <OrientationKey Time="0.562500" Orientation="0.036445, 0.012407, 0.038984, 0.998498" />
+                <OrientationKey Time="0.572917" Orientation="0.036882, 0.012049, 0.038890, 0.998490" />
+                <OrientationKey Time="0.604167" Orientation="0.040154, 0.008896, 0.038725, 0.998403" />
+                <OrientationKey Time="0.635417" Orientation="0.044866, 0.006777, 0.037681, 0.998259" />
+                <OrientationKey Time="0.666667" Orientation="0.048073, 0.000922, 0.034898, 0.998233" />
+                <OrientationKey Time="0.697917" Orientation="0.047927, -0.003253, 0.035103, 0.998228" />
+                <OrientationKey Time="0.729167" Orientation="0.047890, -0.009025, 0.036380, 0.998149" />
+                <OrientationKey Time="0.760417" Orientation="0.047064, -0.013459, 0.039238, 0.998030" />
+                <OrientationKey Time="0.770834" Orientation="0.046859, -0.014091, 0.039618, 0.998016" />
+                <OrientationKey Time="0.833334" Orientation="0.042900, -0.020653, 0.042948, 0.997942" />
+                <OrientationKey Time="0.895834" Orientation="0.029736, -0.018119, 0.044184, 0.998416" />
+                <OrientationKey Time="0.968751" Orientation="0.011989, -0.018823, 0.045023, 0.998737" />
+                <OrientationKey Time="1.000001" Orientation="0.003457, -0.020472, 0.045701, 0.998739" />
+                <OrientationKey Time="1.072917" Orientation="-0.013843, -0.017277, 0.045375, 0.998725" />
+                <OrientationKey Time="1.104167" Orientation="-0.019638, -0.015639, 0.046141, 0.998619" />
+                <OrientationKey Time="1.135417" Orientation="-0.024305, -0.015720, 0.047125, 0.998469" />
+                <OrientationKey Time="1.166667" Orientation="-0.027432, -0.016386, 0.047546, 0.998358" />
+                <OrientationKey Time="1.197917" Orientation="-0.031372, -0.016195, 0.045580, 0.998337" />
+                <OrientationKey Time="1.229167" Orientation="-0.034882, -0.013985, 0.044598, 0.998298" />
+                <OrientationKey Time="1.239583" Orientation="-0.035155, -0.013576, 0.044287, 0.998308" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Spine3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.045440, -0.000044, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="36">
+                <OrientationKey Time="0.000000" Orientation="-0.037057, -0.007725, 0.022702, 0.999025" />
+                <OrientationKey Time="0.031250" Orientation="-0.037316, -0.000131, 0.018242, 0.999137" />
+                <OrientationKey Time="0.072917" Orientation="-0.036422, 0.007319, 0.015511, 0.999189" />
+                <OrientationKey Time="0.104167" Orientation="-0.035650, 0.009825, 0.014388, 0.999213" />
+                <OrientationKey Time="0.135417" Orientation="-0.034826, 0.013524, 0.014177, 0.999201" />
+                <OrientationKey Time="0.166667" Orientation="-0.030999, 0.017411, 0.015469, 0.999248" />
+                <OrientationKey Time="0.197917" Orientation="-0.024269, 0.020487, 0.016096, 0.999366" />
+                <OrientationKey Time="0.260417" Orientation="-0.010533, 0.016364, 0.020788, 0.999595" />
+                <OrientationKey Time="0.270833" Orientation="-0.009442, 0.016175, 0.021047, 0.999603" />
+                <OrientationKey Time="0.302083" Orientation="-0.002471, 0.016154, 0.022101, 0.999622" />
+                <OrientationKey Time="0.333333" Orientation="0.003666, 0.015121, 0.022196, 0.999633" />
+                <OrientationKey Time="0.395833" Orientation="0.015364, 0.012077, 0.023678, 0.999529" />
+                <OrientationKey Time="0.437500" Orientation="0.021856, 0.010504, 0.023102, 0.999439" />
+                <OrientationKey Time="0.468750" Orientation="0.026373, 0.010386, 0.022745, 0.999339" />
+                <OrientationKey Time="0.500000" Orientation="0.030025, 0.010335, 0.021684, 0.999261" />
+                <OrientationKey Time="0.531250" Orientation="0.034377, 0.010784, 0.021702, 0.999115" />
+                <OrientationKey Time="0.562500" Orientation="0.037267, 0.009325, 0.019860, 0.999065" />
+                <OrientationKey Time="0.572917" Orientation="0.037670, 0.008937, 0.019766, 0.999055" />
+                <OrientationKey Time="0.604167" Orientation="0.040668, 0.005570, 0.019613, 0.998965" />
+                <OrientationKey Time="0.635417" Orientation="0.045177, 0.003152, 0.018576, 0.998801" />
+                <OrientationKey Time="0.666667" Orientation="0.047884, -0.002882, 0.015778, 0.998724" />
+                <OrientationKey Time="0.697917" Orientation="0.047412, -0.006990, 0.015978, 0.998723" />
+                <OrientationKey Time="0.729167" Orientation="0.046981, -0.012608, 0.017341, 0.998666" />
+                <OrientationKey Time="0.760417" Orientation="0.045910, -0.016871, 0.020338, 0.998596" />
+                <OrientationKey Time="0.770834" Orientation="0.045672, -0.017471, 0.020740, 0.998588" />
+                <OrientationKey Time="0.833334" Orientation="0.041423, -0.023558, 0.024429, 0.998565" />
+                <OrientationKey Time="0.895834" Orientation="0.028387, -0.020216, 0.025545, 0.999066" />
+                <OrientationKey Time="0.968751" Orientation="0.010538, -0.019677, 0.026169, 0.999408" />
+                <OrientationKey Time="1.000001" Orientation="0.001859, -0.020668, 0.026759, 0.999427" />
+                <OrientationKey Time="1.072917" Orientation="-0.015182, -0.016121, 0.026421, 0.999406" />
+                <OrientationKey Time="1.104167" Orientation="-0.020838, -0.014058, 0.027250, 0.999313" />
+                <OrientationKey Time="1.135417" Orientation="-0.025500, -0.013786, 0.028246, 0.999181" />
+                <OrientationKey Time="1.166667" Orientation="-0.028673, -0.014205, 0.028641, 0.999077" />
+                <OrientationKey Time="1.197917" Orientation="-0.032578, -0.013734, 0.026682, 0.999019" />
+                <OrientationKey Time="1.229167" Orientation="-0.035894, -0.011296, 0.025714, 0.998961" />
+                <OrientationKey Time="1.239583" Orientation="-0.036133, -0.010875, 0.025404, 0.998965" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Neck">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.055363, -0.000029, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="41">
+                <OrientationKey Time="0.000000" Orientation="0.061708, -0.012104, 0.249754, 0.966265" />
+                <OrientationKey Time="0.031250" Orientation="0.060438, -0.012712, 0.251931, 0.965772" />
+                <OrientationKey Time="0.062500" Orientation="0.059290, -0.013885, 0.253282, 0.965474" />
+                <OrientationKey Time="0.093750" Orientation="0.057073, -0.014744, 0.255091, 0.965119" />
+                <OrientationKey Time="0.104167" Orientation="0.056733, -0.014863, 0.255293, 0.965083" />
+                <OrientationKey Time="0.135417" Orientation="0.054160, -0.015640, 0.255712, 0.965108" />
+                <OrientationKey Time="0.166667" Orientation="0.050880, -0.016379, 0.254638, 0.965558" />
+                <OrientationKey Time="0.197917" Orientation="0.047985, -0.015698, 0.255119, 0.965591" />
+                <OrientationKey Time="0.229167" Orientation="0.045136, -0.014565, 0.256208, 0.965457" />
+                <OrientationKey Time="0.239583" Orientation="0.044788, -0.014343, 0.256214, 0.965475" />
+                <OrientationKey Time="0.270833" Orientation="0.042585, -0.012602, 0.255812, 0.965706" />
+                <OrientationKey Time="0.302083" Orientation="0.040597, -0.010364, 0.255783, 0.965826" />
+                <OrientationKey Time="0.333333" Orientation="0.038579, -0.008857, 0.254793, 0.966185" />
+                <OrientationKey Time="0.364583" Orientation="0.037383, -0.006915, 0.252926, 0.966738" />
+                <OrientationKey Time="0.406250" Orientation="0.036566, -0.005281, 0.250462, 0.967421" />
+                <OrientationKey Time="0.437500" Orientation="0.035746, -0.003272, 0.248481, 0.967971" />
+                <OrientationKey Time="0.500000" Orientation="0.035519, 0.000476, 0.246071, 0.968601" />
+                <OrientationKey Time="0.531250" Orientation="0.035117, 0.002920, 0.246341, 0.968542" />
+                <OrientationKey Time="0.562500" Orientation="0.035127, 0.005429, 0.245267, 0.968804" />
+                <OrientationKey Time="0.593750" Orientation="0.035197, 0.007384, 0.243990, 0.969111" />
+                <OrientationKey Time="0.604167" Orientation="0.035195, 0.007742, 0.243862, 0.969140" />
+                <OrientationKey Time="0.635417" Orientation="0.034977, 0.011450, 0.243902, 0.969101" />
+                <OrientationKey Time="0.666667" Orientation="0.035051, 0.013321, 0.245030, 0.968790" />
+                <OrientationKey Time="0.697917" Orientation="0.035802, 0.014537, 0.245999, 0.968500" />
+                <OrientationKey Time="0.729167" Orientation="0.036279, 0.017005, 0.246304, 0.968364" />
+                <OrientationKey Time="0.739584" Orientation="0.036511, 0.017315, 0.246324, 0.968345" />
+                <OrientationKey Time="0.760417" Orientation="0.038336, 0.019040, 0.246381, 0.968227" />
+                <OrientationKey Time="0.770834" Orientation="0.038651, 0.019296, 0.246334, 0.968222" />
+                <OrientationKey Time="0.802084" Orientation="0.041214, 0.020745, 0.245149, 0.968387" />
+                <OrientationKey Time="0.833334" Orientation="0.043572, 0.020777, 0.245036, 0.968311" />
+                <OrientationKey Time="0.864584" Orientation="0.045440, 0.020805, 0.247760, 0.967531" />
+                <OrientationKey Time="0.927084" Orientation="0.051044, 0.017682, 0.250800, 0.966531" />
+                <OrientationKey Time="0.937501" Orientation="0.051416, 0.017383, 0.251016, 0.966460" />
+                <OrientationKey Time="0.968751" Orientation="0.053872, 0.014213, 0.252374, 0.966024" />
+                <OrientationKey Time="1.000001" Orientation="0.055969, 0.011110, 0.252482, 0.965918" />
+                <OrientationKey Time="1.041667" Orientation="0.057694, 0.006877, 0.251296, 0.966165" />
+                <OrientationKey Time="1.072917" Orientation="0.058633, 0.003214, 0.250280, 0.966391" />
+                <OrientationKey Time="1.104167" Orientation="0.059416, -0.000176, 0.248789, 0.966734" />
+                <OrientationKey Time="1.135417" Orientation="0.060470, -0.002468, 0.248362, 0.966775" />
+                <OrientationKey Time="1.166667" Orientation="0.060941, -0.004877, 0.249157, 0.966532" />
+                <OrientationKey Time="1.229167" Orientation="0.061553, -0.009994, 0.249297, 0.966417" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="Head">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.039539, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="35">
+                <OrientationKey Time="0.000000" Orientation="0.015586, -0.002385, -0.152123, 0.988236" />
+                <OrientationKey Time="0.031250" Orientation="0.016298, -0.007380, -0.141484, 0.989779" />
+                <OrientationKey Time="0.062500" Orientation="0.015648, -0.014297, -0.133400, 0.990836" />
+                <OrientationKey Time="0.072917" Orientation="0.015275, -0.014983, -0.132504, 0.990951" />
+                <OrientationKey Time="0.093750" Orientation="0.012164, -0.018420, -0.127643, 0.991575" />
+                <OrientationKey Time="0.104167" Orientation="0.011582, -0.019105, -0.127019, 0.991649" />
+                <OrientationKey Time="0.135417" Orientation="0.006547, -0.025517, -0.125698, 0.991719" />
+                <OrientationKey Time="0.166667" Orientation="0.000385, -0.032570, -0.126952, 0.991374" />
+                <OrientationKey Time="0.197917" Orientation="-0.009777, -0.038138, -0.130492, 0.990667" />
+                <OrientationKey Time="0.229167" Orientation="-0.017740, -0.040397, -0.134073, 0.989989" />
+                <OrientationKey Time="0.260417" Orientation="-0.028421, -0.039867, -0.140006, 0.988940" />
+                <OrientationKey Time="0.270833" Orientation="-0.029921, -0.039759, -0.140600, 0.988815" />
+                <OrientationKey Time="0.302083" Orientation="-0.040670, -0.038845, -0.141120, 0.988394" />
+                <OrientationKey Time="0.406250" Orientation="-0.069363, -0.027681, -0.143372, 0.986847" />
+                <OrientationKey Time="0.437500" Orientation="-0.077184, -0.022135, -0.143837, 0.986339" />
+                <OrientationKey Time="0.468750" Orientation="-0.085531, -0.017995, -0.145796, 0.985446" />
+                <OrientationKey Time="0.500000" Orientation="-0.094166, -0.012015, -0.144929, 0.984878" />
+                <OrientationKey Time="0.531250" Orientation="-0.101958, -0.005587, -0.145257, 0.984111" />
+                <OrientationKey Time="0.562500" Orientation="-0.108080, 0.001656, -0.144680, 0.983557" />
+                <OrientationKey Time="0.604167" Orientation="-0.114131, 0.012251, -0.144800, 0.982780" />
+                <OrientationKey Time="0.635417" Orientation="-0.118953, 0.014983, -0.142041, 0.982573" />
+                <OrientationKey Time="0.666667" Orientation="-0.122029, 0.020631, -0.137373, 0.982757" />
+                <OrientationKey Time="0.697917" Orientation="-0.125180, 0.024971, -0.134841, 0.982611" />
+                <OrientationKey Time="0.729167" Orientation="-0.123219, 0.033169, -0.130447, 0.983209" />
+                <OrientationKey Time="0.739584" Orientation="-0.122651, 0.033959, -0.130316, 0.983271" />
+                <OrientationKey Time="0.770834" Orientation="-0.117835, 0.038143, -0.131055, 0.983608" />
+                <OrientationKey Time="0.802084" Orientation="-0.112975, 0.041261, -0.133418, 0.983735" />
+                <OrientationKey Time="0.833334" Orientation="-0.108242, 0.040681, -0.138612, 0.983573" />
+                <OrientationKey Time="0.895834" Orientation="-0.089575, 0.035579, -0.147825, 0.984306" />
+                <OrientationKey Time="1.000001" Orientation="-0.054611, 0.030693, -0.153458, 0.986167" />
+                <OrientationKey Time="1.104167" Orientation="-0.019521, 0.013785, -0.163868, 0.986193" />
+                <OrientationKey Time="1.135417" Orientation="-0.009151, 0.009173, -0.164425, 0.986305" />
+                <OrientationKey Time="1.166667" Orientation="0.000113, 0.007290, -0.164510, 0.986349" />
+                <OrientationKey Time="1.197917" Orientation="0.007135, 0.004837, -0.162625, 0.986650" />
+                <OrientationKey Time="1.229167" Orientation="0.012002, 0.002039, -0.158873, 0.987224" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_eye_joint1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.042905, 0.013872, -0.012752" />
+            </PositionKeys>
+            <OrientationKeys Count="3">
+                <OrientationKey Time="0.000000" Orientation="-0.039078, 0.707075, 0.006703, 0.706026" />
+                <OrientationKey Time="0.208333" Orientation="-0.084021, 0.705209, 0.051778, 0.702097" />
+                <OrientationKey Time="0.958334" Orientation="-0.028531, 0.707096, -0.003856, 0.706531" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_eye_joint">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.041908, 0.013397, 0.012053" />
+            </PositionKeys>
+            <OrientationKeys Count="3">
+                <OrientationKey Time="0.000000" Orientation="-0.039078, 0.707075, 0.006703, 0.706026" />
+                <OrientationKey Time="0.208333" Orientation="-0.084021, 0.705209, 0.051778, 0.702097" />
+                <OrientationKey Time="0.958334" Orientation="-0.028531, 0.707096, -0.003856, 0.706531" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_eyeBall_joint2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.044656, 0.030740, -0.015846" />
+            </PositionKeys>
+            <OrientationKeys Count="6">
+                <OrientationKey Time="0.000000" Orientation="-0.040425, -0.000012, 0.000300, 0.999183" />
+                <OrientationKey Time="0.083333" Orientation="-0.022549, 0.000000, 0.000000, 0.999746" />
+                <OrientationKey Time="0.166667" Orientation="-0.018992, -0.001140, 0.059895, 0.998023" />
+                <OrientationKey Time="0.416667" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+                <OrientationKey Time="0.750000" Orientation="-0.014258, 0.000000, 0.000000, 0.999898" />
+                <OrientationKey Time="0.927084" Orientation="0.030802, 0.000000, 0.000000, 0.999525" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_eyeBall">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.673894, 0.081001, 0.042424" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.547281, 0.474115, -0.542146, 0.426352" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_eyeBall_joint">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.045594, 0.029320, 0.009144" />
+            </PositionKeys>
+            <OrientationKeys Count="7">
+                <OrientationKey Time="0.000000" Orientation="-0.016249, -0.003853, 0.016778, 0.999720" />
+                <OrientationKey Time="0.083333" Orientation="-0.022549, 0.000000, 0.000000, 0.999746" />
+                <OrientationKey Time="0.166667" Orientation="-0.018992, -0.001140, 0.059895, 0.998023" />
+                <OrientationKey Time="0.416667" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+                <OrientationKey Time="0.750000" Orientation="-0.014258, 0.000000, 0.000000, 0.999898" />
+                <OrientationKey Time="0.927084" Orientation="0.030670, 0.000000, 0.000000, 0.999530" />
+                <OrientationKey Time="1.083334" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_eyeBall">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.674831, 0.082420, 0.017435" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.547281, 0.474115, -0.542146, 0.426352" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_UpperArm">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.067049, 0.008875, 0.001277" />
+            </PositionKeys>
+            <OrientationKeys Count="29">
+                <OrientationKey Time="0.000000" Orientation="0.096831, -0.467477, 0.345132, 0.808067" />
+                <OrientationKey Time="0.041667" Orientation="0.102736, -0.468464, 0.330317, 0.812944" />
+                <OrientationKey Time="0.072917" Orientation="0.110731, -0.473017, 0.307337, 0.818253" />
+                <OrientationKey Time="0.145833" Orientation="0.132360, -0.501675, 0.220549, 0.825930" />
+                <OrientationKey Time="0.166667" Orientation="0.137734, -0.511750, 0.186505, 0.827259" />
+                <OrientationKey Time="0.197917" Orientation="0.147703, -0.517743, 0.134368, 0.831908" />
+                <OrientationKey Time="0.270833" Orientation="0.163634, -0.507733, 0.015855, 0.845683" />
+                <OrientationKey Time="0.333333" Orientation="0.168907, -0.480611, -0.071615, 0.857528" />
+                <OrientationKey Time="0.364583" Orientation="0.169745, -0.461375, -0.109387, 0.863918" />
+                <OrientationKey Time="0.427083" Orientation="0.173394, -0.420006, -0.162231, 0.875906" />
+                <OrientationKey Time="0.437500" Orientation="0.174166, -0.417472, -0.164936, 0.876458" />
+                <OrientationKey Time="0.468750" Orientation="0.184659, -0.400273, -0.175932, 0.880188" />
+                <OrientationKey Time="0.500000" Orientation="0.199811, -0.393050, -0.174333, 0.880452" />
+                <OrientationKey Time="0.531250" Orientation="0.217786, -0.388687, -0.166196, 0.879699" />
+                <OrientationKey Time="0.562500" Orientation="0.233057, -0.388182, -0.152458, 0.878496" />
+                <OrientationKey Time="0.593750" Orientation="0.245602, -0.389227, -0.135271, 0.877430" />
+                <OrientationKey Time="0.604167" Orientation="0.247073, -0.389335, -0.132444, 0.877401" />
+                <OrientationKey Time="0.635417" Orientation="0.252217, -0.389711, -0.107771, 0.879146" />
+                <OrientationKey Time="0.666667" Orientation="0.249630, -0.397232, -0.084086, 0.879103" />
+                <OrientationKey Time="0.697917" Orientation="0.240734, -0.410216, -0.061098, 0.877518" />
+                <OrientationKey Time="0.729167" Orientation="0.224806, -0.425374, -0.038959, 0.875786" />
+                <OrientationKey Time="0.802084" Orientation="0.182761, -0.459642, -0.005682, 0.869077" />
+                <OrientationKey Time="0.833334" Orientation="0.164799, -0.472576, 0.012051, 0.865660" />
+                <OrientationKey Time="0.895834" Orientation="0.135969, -0.501305, 0.048686, 0.853133" />
+                <OrientationKey Time="0.937501" Orientation="0.124962, -0.511795, 0.079830, 0.846214" />
+                <OrientationKey Time="0.968751" Orientation="0.119433, -0.518226, 0.107979, 0.839951" />
+                <OrientationKey Time="1.031251" Orientation="0.116873, -0.515403, 0.173206, 0.831084" />
+                <OrientationKey Time="1.135417" Orientation="0.108447, -0.492837, 0.271562, 0.819515" />
+                <OrientationKey Time="1.239583" Orientation="0.097535, -0.471569, 0.337050, 0.809016" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Forearm">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.131422, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="75">
+                <OrientationKey Time="0.000000" Orientation="-0.294370, -0.103423, -0.136137, 0.940275" />
+                <OrientationKey Time="0.010417" Orientation="-0.292714, -0.102693, -0.133044, 0.941314" />
+                <OrientationKey Time="0.031250" Orientation="-0.287984, -0.098674, -0.128407, 0.943843" />
+                <OrientationKey Time="0.041667" Orientation="-0.286607, -0.098378, -0.126854, 0.944503" />
+                <OrientationKey Time="0.052083" Orientation="-0.283131, -0.097032, -0.124810, 0.945962" />
+                <OrientationKey Time="0.062500" Orientation="-0.280350, -0.095742, -0.123759, 0.947059" />
+                <OrientationKey Time="0.072917" Orientation="-0.279297, -0.095437, -0.123450, 0.947441" />
+                <OrientationKey Time="0.104167" Orientation="-0.271528, -0.093460, -0.122425, 0.950026" />
+                <OrientationKey Time="0.135417" Orientation="-0.258943, -0.089720, -0.118991, 0.954327" />
+                <OrientationKey Time="0.156250" Orientation="-0.251893, -0.088856, -0.118795, 0.956317" />
+                <OrientationKey Time="0.166667" Orientation="-0.249863, -0.088334, -0.119745, 0.956779" />
+                <OrientationKey Time="0.177083" Orientation="-0.248139, -0.088869, -0.121970, 0.956897" />
+                <OrientationKey Time="0.187500" Orientation="-0.244732, -0.090263, -0.124841, 0.957274" />
+                <OrientationKey Time="0.197917" Orientation="-0.242534, -0.090900, -0.128087, 0.957344" />
+                <OrientationKey Time="0.208333" Orientation="-0.244600, -0.091653, -0.131971, 0.956219" />
+                <OrientationKey Time="0.229167" Orientation="-0.254755, -0.097520, -0.142509, 0.951463" />
+                <OrientationKey Time="0.239583" Orientation="-0.256153, -0.097964, -0.147431, 0.950291" />
+                <OrientationKey Time="0.260417" Orientation="-0.261040, -0.105702, -0.160259, 0.946046" />
+                <OrientationKey Time="0.270833" Orientation="-0.262486, -0.106051, -0.166355, 0.944553" />
+                <OrientationKey Time="0.291667" Orientation="-0.271418, -0.116155, -0.183071, 0.937723" />
+                <OrientationKey Time="0.302083" Orientation="-0.273755, -0.117120, -0.190338, 0.935475" />
+                <OrientationKey Time="0.312500" Orientation="-0.276778, -0.120583, -0.198438, 0.932457" />
+                <OrientationKey Time="0.322917" Orientation="-0.280882, -0.126492, -0.207231, 0.928526" />
+                <OrientationKey Time="0.343750" Orientation="-0.285454, -0.130685, -0.222602, 0.922976" />
+                <OrientationKey Time="0.354167" Orientation="-0.288510, -0.136780, -0.231278, 0.919001" />
+                <OrientationKey Time="0.364583" Orientation="-0.290931, -0.140164, -0.239211, 0.915692" />
+                <OrientationKey Time="0.375000" Orientation="-0.292331, -0.140997, -0.246733, 0.913118" />
+                <OrientationKey Time="0.395833" Orientation="-0.296115, -0.150870, -0.263430, 0.905626" />
+                <OrientationKey Time="0.406250" Orientation="-0.297337, -0.150589, -0.270129, 0.903296" />
+                <OrientationKey Time="0.427083" Orientation="-0.300137, -0.155954, -0.283942, 0.897203" />
+                <OrientationKey Time="0.437500" Orientation="-0.302045, -0.155454, -0.289938, 0.894728" />
+                <OrientationKey Time="0.458333" Orientation="-0.319506, -0.157062, -0.304355, 0.883525" />
+                <OrientationKey Time="0.468750" Orientation="-0.323589, -0.156286, -0.310001, 0.880207" />
+                <OrientationKey Time="0.510416" Orientation="-0.349477, -0.147581, -0.332830, 0.863313" />
+                <OrientationKey Time="0.531250" Orientation="-0.364742, -0.141643, -0.342807, 0.854039" />
+                <OrientationKey Time="0.541667" Orientation="-0.368543, -0.139846, -0.346438, 0.851234" />
+                <OrientationKey Time="0.562500" Orientation="-0.385065, -0.135087, -0.354572, 0.841282" />
+                <OrientationKey Time="0.572917" Orientation="-0.387412, -0.133832, -0.357325, 0.839238" />
+                <OrientationKey Time="0.593750" Orientation="-0.398383, -0.131225, -0.364228, 0.831510" />
+                <OrientationKey Time="0.604167" Orientation="-0.400416, -0.130415, -0.366859, 0.829502" />
+                <OrientationKey Time="0.635417" Orientation="-0.412709, -0.134118, -0.376931, 0.818295" />
+                <OrientationKey Time="0.656250" Orientation="-0.419581, -0.138866, -0.380426, 0.812369" />
+                <OrientationKey Time="0.666667" Orientation="-0.421531, -0.140602, -0.380881, 0.810847" />
+                <OrientationKey Time="0.687500" Orientation="-0.424925, -0.144904, -0.380811, 0.808347" />
+                <OrientationKey Time="0.697917" Orientation="-0.426235, -0.147392, -0.379726, 0.807718" />
+                <OrientationKey Time="0.708333" Orientation="-0.426668, -0.149294, -0.377307, 0.808273" />
+                <OrientationKey Time="0.718750" Orientation="-0.428497, -0.152271, -0.374694, 0.807966" />
+                <OrientationKey Time="0.729167" Orientation="-0.429697, -0.155488, -0.371124, 0.808363" />
+                <OrientationKey Time="0.739584" Orientation="-0.429339, -0.158063, -0.365644, 0.810548" />
+                <OrientationKey Time="0.760417" Orientation="-0.430782, -0.161162, -0.351823, 0.815276" />
+                <OrientationKey Time="0.770834" Orientation="-0.429826, -0.164041, -0.344696, 0.818245" />
+                <OrientationKey Time="0.791667" Orientation="-0.426587, -0.164846, -0.328209, 0.826516" />
+                <OrientationKey Time="0.802084" Orientation="-0.425014, -0.167121, -0.320620, 0.829841" />
+                <OrientationKey Time="0.812500" Orientation="-0.421298, -0.168573, -0.312090, 0.834680" />
+                <OrientationKey Time="0.833334" Orientation="-0.413220, -0.166315, -0.294786, 0.845393" />
+                <OrientationKey Time="0.843750" Orientation="-0.409059, -0.162976, -0.285717, 0.851161" />
+                <OrientationKey Time="0.864584" Orientation="-0.390541, -0.157752, -0.266513, 0.866927" />
+                <OrientationKey Time="0.916667" Orientation="-0.329847, -0.146441, -0.220899, 0.906068" />
+                <OrientationKey Time="0.927084" Orientation="-0.323634, -0.143983, -0.213832, 0.910388" />
+                <OrientationKey Time="0.937501" Orientation="-0.321733, -0.141331, -0.208562, 0.912697" />
+                <OrientationKey Time="1.000001" Orientation="-0.314522, -0.124156, -0.187207, 0.922288" />
+                <OrientationKey Time="1.052084" Orientation="-0.307314, -0.113864, -0.171040, 0.929160" />
+                <OrientationKey Time="1.083334" Orientation="-0.303612, -0.110308, -0.162379, 0.932355" />
+                <OrientationKey Time="1.104167" Orientation="-0.301732, -0.109255, -0.157158, 0.933982" />
+                <OrientationKey Time="1.125000" Orientation="-0.300529, -0.109373, -0.152565, 0.935117" />
+                <OrientationKey Time="1.135417" Orientation="-0.300239, -0.109726, -0.150945, 0.935432" />
+                <OrientationKey Time="1.145833" Orientation="-0.299176, -0.109034, -0.149759, 0.936044" />
+                <OrientationKey Time="1.156250" Orientation="-0.297636, -0.107861, -0.148411, 0.936885" />
+                <OrientationKey Time="1.166667" Orientation="-0.296823, -0.107374, -0.147403, 0.937357" />
+                <OrientationKey Time="1.177083" Orientation="-0.296560, -0.107164, -0.146639, 0.937585" />
+                <OrientationKey Time="1.187500" Orientation="-0.296127, -0.106567, -0.145794, 0.937921" />
+                <OrientationKey Time="1.197917" Orientation="-0.295796, -0.106270, -0.144882, 0.938201" />
+                <OrientationKey Time="1.208333" Orientation="-0.295523, -0.106144, -0.143644, 0.938491" />
+                <OrientationKey Time="1.229167" Orientation="-0.294511, -0.104686, -0.140253, 0.939485" />
+                <OrientationKey Time="1.239583" Orientation="-0.294376, -0.104708, -0.139057, 0.939703" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Hand">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.108256, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="16">
+                <OrientationKey Time="0.000000" Orientation="0.602355, -0.053932, 0.074137, 0.792946" />
+                <OrientationKey Time="0.281250" Orientation="0.598719, -0.004159, -0.024402, 0.800577" />
+                <OrientationKey Time="0.479166" Orientation="0.595457, 0.047963, -0.124413, 0.792245" />
+                <OrientationKey Time="0.625000" Orientation="0.594564, 0.064571, -0.155385, 0.786244" />
+                <OrientationKey Time="0.843750" Orientation="0.689507, 0.096215, -0.098057, 0.711131" />
+                <OrientationKey Time="0.885417" Orientation="0.708326, 0.100839, -0.083553, 0.693632" />
+                <OrientationKey Time="0.906251" Orientation="0.715607, 0.101383, -0.076653, 0.686842" />
+                <OrientationKey Time="0.927084" Orientation="0.721108, 0.100323, -0.070079, 0.681929" />
+                <OrientationKey Time="0.937501" Orientation="0.723088, 0.099099, -0.066965, 0.680322" />
+                <OrientationKey Time="0.947917" Orientation="0.724539, 0.097321, -0.063919, 0.679328" />
+                <OrientationKey Time="0.958334" Orientation="0.725373, 0.095005, -0.061054, 0.679029" />
+                <OrientationKey Time="0.968751" Orientation="0.725488, 0.092067, -0.057813, 0.679595" />
+                <OrientationKey Time="0.989584" Orientation="0.723370, 0.084651, -0.049224, 0.683481" />
+                <OrientationKey Time="1.031251" Orientation="0.710942, 0.064272, -0.025734, 0.699834" />
+                <OrientationKey Time="1.104167" Orientation="0.670482, 0.016400, 0.022153, 0.741413" />
+                <OrientationKey Time="1.197917" Orientation="0.614489, -0.041855, 0.066570, 0.784997" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Thumb1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.016251, 0.006266, 0.016788" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="-0.800825, -0.258947, -0.131303, 0.523818" />
+                <OrientationKey Time="0.447917" Orientation="-0.777424, -0.323520, -0.173156, 0.510846" />
+                <OrientationKey Time="0.625000" Orientation="-0.772873, -0.333230, -0.180060, 0.509121" />
+                <OrientationKey Time="1.166667" Orientation="-0.797426, -0.270542, -0.138347, 0.521323" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Thumb2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.011404, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.155171, 0.987888" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Thumb3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.013825, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.135150, 0.990825" />
+                <OrientationKey Time="0.291667" Orientation="0.000000, 0.000000, -0.008435, 0.999964" />
+                <OrientationKey Time="0.625000" Orientation="0.000000, 0.000000, -0.111281, 0.993789" />
+                <OrientationKey Time="1.031251" Orientation="0.000000, 0.000000, 0.029454, 0.999566" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Thumb4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.012235, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Index1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.043487, 0.000163, 0.015613" />
+            </PositionKeys>
+            <OrientationKeys Count="2">
+                <OrientationKey Time="0.000000" Orientation="-0.104544, -0.010586, 0.039702, 0.993671" />
+                <OrientationKey Time="0.635417" Orientation="-0.101969, -0.042638, 0.008930, 0.993833" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Index2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.014737, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="2">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, 0.000000, 0.145058, 0.989423" />
+                <OrientationKey Time="0.635417" Orientation="-0.000000, 0.000000, 0.089488, 0.995988" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Index3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.010628, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Index4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.008782, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Middle1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.043600, -0.000003, 0.003669" />
+            </PositionKeys>
+            <OrientationKeys Count="6">
+                <OrientationKey Time="0.000000" Orientation="-0.016360, -0.010038, 0.142503, 0.989608" />
+                <OrientationKey Time="0.093750" Orientation="-0.016093, -0.010940, 0.128855, 0.991472" />
+                <OrientationKey Time="0.333333" Orientation="-0.013638, -0.019509, 0.088488, 0.995793" />
+                <OrientationKey Time="0.625000" Orientation="-0.011740, -0.027689, 0.061287, 0.997667" />
+                <OrientationKey Time="1.072917" Orientation="-0.015385, -0.013230, 0.114937, 0.993166" />
+                <OrientationKey Time="1.208333" Orientation="-0.016331, -0.010180, 0.136790, 0.990413" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Middle2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.015291, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="2">
+                <OrientationKey Time="0.000000" Orientation="0.000000, -0.000000, 0.149514, 0.988760" />
+                <OrientationKey Time="0.635417" Orientation="0.000000, -0.000000, 0.110507, 0.993875" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Middle3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.015291, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, 0.000000, 0.033209, 0.999448" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Middle4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.007842, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ring1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.042950, -0.000947, -0.008065" />
+            </PositionKeys>
+            <OrientationKeys Count="6">
+                <OrientationKey Time="0.000000" Orientation="0.074890, 0.025983, 0.177082, 0.980999" />
+                <OrientationKey Time="0.104167" Orientation="0.075271, 0.024519, 0.168198, 0.982569" />
+                <OrientationKey Time="0.416667" Orientation="0.077090, 0.015191, 0.139204, 0.987142" />
+                <OrientationKey Time="0.635417" Orientation="0.077630, 0.011768, 0.130665, 0.988313" />
+                <OrientationKey Time="1.093750" Orientation="0.075555, 0.023268, 0.163223, 0.983417" />
+                <OrientationKey Time="1.229167" Orientation="0.074939, 0.025825, 0.175464, 0.981290" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ring2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.014033, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.221260, 0.975215" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ring3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.013883, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.078643, 0.996903" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ring4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.009557, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Pinky1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.039727, 0.002235, -0.017428" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.174464, 0.041807, 0.190304, 0.965194" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Pinky2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.011318, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Pinky3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.008590, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, -0.000000, 0.033769, 0.999430" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Pinky4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.007260, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_UpperArm">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.068825, -0.011121, -0.000334" />
+            </PositionKeys>
+            <OrientationKeys Count="29">
+                <OrientationKey Time="0.000000" Orientation="-0.160423, 0.463096, -0.268064, 0.829427" />
+                <OrientationKey Time="0.072917" Orientation="-0.157018, 0.482954, -0.199962, 0.837923" />
+                <OrientationKey Time="0.187500" Orientation="-0.166018, 0.529508, -0.080762, 0.827972" />
+                <OrientationKey Time="0.229167" Orientation="-0.167875, 0.541388, -0.038945, 0.822922" />
+                <OrientationKey Time="0.260417" Orientation="-0.162155, 0.544963, -0.011344, 0.822552" />
+                <OrientationKey Time="0.270833" Orientation="-0.160915, 0.545110, -0.007915, 0.822739" />
+                <OrientationKey Time="0.302083" Orientation="-0.144704, 0.540767, 0.011815, 0.828548" />
+                <OrientationKey Time="0.385417" Orientation="-0.074520, 0.510215, 0.048481, 0.855439" />
+                <OrientationKey Time="0.395833" Orientation="-0.064948, 0.505994, 0.054911, 0.858333" />
+                <OrientationKey Time="0.406250" Orientation="-0.062650, 0.504416, 0.057908, 0.859236" />
+                <OrientationKey Time="0.427083" Orientation="-0.051425, 0.495094, 0.078755, 0.863733" />
+                <OrientationKey Time="0.437500" Orientation="-0.050069, 0.493606, 0.082702, 0.864295" />
+                <OrientationKey Time="0.562500" Orientation="-0.055276, 0.452340, 0.203190, 0.866630" />
+                <OrientationKey Time="0.604167" Orientation="-0.059034, 0.445181, 0.220261, 0.865918" />
+                <OrientationKey Time="0.635417" Orientation="-0.062857, 0.444046, 0.232940, 0.862908" />
+                <OrientationKey Time="0.666667" Orientation="-0.067898, 0.451436, 0.232495, 0.858802" />
+                <OrientationKey Time="0.697917" Orientation="-0.072600, 0.461648, 0.227537, 0.854305" />
+                <OrientationKey Time="0.729167" Orientation="-0.076561, 0.475619, 0.218826, 0.848552" />
+                <OrientationKey Time="0.770834" Orientation="-0.079382, 0.494535, 0.201123, 0.841833" />
+                <OrientationKey Time="0.802084" Orientation="-0.080246, 0.513393, 0.178450, 0.835550" />
+                <OrientationKey Time="0.833334" Orientation="-0.081153, 0.538582, 0.134434, 0.827811" />
+                <OrientationKey Time="0.895834" Orientation="-0.090348, 0.570188, 0.038295, 0.815632" />
+                <OrientationKey Time="0.937501" Orientation="-0.095345, 0.571446, -0.012123, 0.814992" />
+                <OrientationKey Time="0.968751" Orientation="-0.101548, 0.567707, -0.055337, 0.815067" />
+                <OrientationKey Time="1.031251" Orientation="-0.117667, 0.534004, -0.142484, 0.825041" />
+                <OrientationKey Time="1.125000" Orientation="-0.142328, 0.479861, -0.230434, 0.834492" />
+                <OrientationKey Time="1.197917" Orientation="-0.157651, 0.451389, -0.270301, 0.835662" />
+                <OrientationKey Time="1.229167" Orientation="-0.160528, 0.450675, -0.274671, 0.834073" />
+                <OrientationKey Time="1.239583" Orientation="-0.160641, 0.451778, -0.274261, 0.833590" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Forearm">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.131422, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="28">
+                <OrientationKey Time="0.000000" Orientation="0.299548, 0.089879, -0.444913, 0.839193" />
+                <OrientationKey Time="0.062500" Orientation="0.333771, 0.083454, -0.463116, 0.816796" />
+                <OrientationKey Time="0.072917" Orientation="0.337183, 0.082603, -0.462684, 0.815726" />
+                <OrientationKey Time="0.104167" Orientation="0.365599, 0.075568, -0.453577, 0.809255" />
+                <OrientationKey Time="0.166667" Orientation="0.436349, 0.062114, -0.416147, 0.795339" />
+                <OrientationKey Time="0.229167" Orientation="0.496949, 0.057733, -0.373590, 0.781114" />
+                <OrientationKey Time="0.239583" Orientation="0.499447, 0.057863, -0.370817, 0.780832" />
+                <OrientationKey Time="0.260417" Orientation="0.510857, 0.059327, -0.354568, 0.780889" />
+                <OrientationKey Time="0.270833" Orientation="0.511720, 0.059663, -0.352204, 0.781367" />
+                <OrientationKey Time="0.302083" Orientation="0.502519, 0.062739, -0.339403, 0.792682" />
+                <OrientationKey Time="0.343750" Orientation="0.467605, 0.067089, -0.328192, 0.818007" />
+                <OrientationKey Time="0.395833" Orientation="0.410585, 0.071622, -0.318412, 0.851413" />
+                <OrientationKey Time="0.437500" Orientation="0.384750, 0.072770, -0.318775, 0.863165" />
+                <OrientationKey Time="0.500000" Orientation="0.369335, 0.072193, -0.325752, 0.867332" />
+                <OrientationKey Time="0.531250" Orientation="0.365629, 0.071239, -0.326140, 0.868834" />
+                <OrientationKey Time="0.562500" Orientation="0.363569, 0.069675, -0.324474, 0.870448" />
+                <OrientationKey Time="0.635417" Orientation="0.354330, 0.058876, -0.307132, 0.881280" />
+                <OrientationKey Time="0.739584" Orientation="0.317971, 0.038735, -0.273540, 0.906956" />
+                <OrientationKey Time="0.802084" Orientation="0.302904, 0.030655, -0.260752, 0.916143" />
+                <OrientationKey Time="0.833334" Orientation="0.308496, 0.033137, -0.263593, 0.913373" />
+                <OrientationKey Time="0.864584" Orientation="0.320739, 0.039806, -0.274409, 0.905672" />
+                <OrientationKey Time="0.916667" Orientation="0.332289, 0.056220, -0.306782, 0.890117" />
+                <OrientationKey Time="0.937501" Orientation="0.338985, 0.064283, -0.321642, 0.881761" />
+                <OrientationKey Time="1.031251" Orientation="0.352500, 0.100794, -0.397082, 0.841374" />
+                <OrientationKey Time="1.062500" Orientation="0.349216, 0.108511, -0.418122, 0.831533" />
+                <OrientationKey Time="1.072917" Orientation="0.348248, 0.108969, -0.420337, 0.830762" />
+                <OrientationKey Time="1.135417" Orientation="0.336475, 0.110372, -0.439981, 0.825239" />
+                <OrientationKey Time="1.166667" Orientation="0.331636, 0.108372, -0.443337, 0.825666" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Hand">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.108256, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="12">
+                <OrientationKey Time="0.000000" Orientation="-0.579163, -0.010742, -0.188847, 0.792964" />
+                <OrientationKey Time="0.010417" Orientation="-0.579619, -0.010264, -0.188239, 0.792782" />
+                <OrientationKey Time="0.031250" Orientation="-0.580499, -0.008905, -0.185714, 0.792750" />
+                <OrientationKey Time="0.093750" Orientation="-0.582999, -0.001985, -0.168714, 0.794761" />
+                <OrientationKey Time="0.291667" Orientation="-0.591290, 0.036462, -0.051639, 0.803978" />
+                <OrientationKey Time="0.447917" Orientation="-0.598578, 0.067112, 0.054538, 0.796383" />
+                <OrientationKey Time="0.625000" Orientation="-0.602942, 0.082820, 0.112459, 0.785465" />
+                <OrientationKey Time="0.875000" Orientation="-0.595249, 0.054098, 0.007918, 0.801679" />
+                <OrientationKey Time="1.031251" Orientation="-0.588005, 0.020984, -0.101927, 0.802135" />
+                <OrientationKey Time="1.197917" Orientation="-0.581343, -0.006918, -0.181415, 0.793146" />
+                <OrientationKey Time="1.229167" Orientation="-0.580055, -0.009603, -0.187149, 0.792729" />
+                <OrientationKey Time="1.239583" Orientation="-0.579616, -0.010236, -0.188212, 0.792790" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Thumb1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.016251, 0.006266, -0.016788" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="0.734347, 0.411229, -0.231652, 0.487815" />
+                <OrientationKey Time="0.312500" Orientation="0.794095, 0.373723, -0.128415, 0.461793" />
+                <OrientationKey Time="0.625000" Orientation="0.828573, 0.346456, -0.050804, 0.436868" />
+                <OrientationKey Time="1.041667" Orientation="0.777819, 0.384837, -0.159690, 0.470528" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Thumb2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.011404, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, 0.000000, 0.276161, 0.961111" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Thumb3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.013825, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="2">
+                <OrientationKey Time="0.000000" Orientation="0.000000, -0.000000, -0.009797, 0.999952" />
+                <OrientationKey Time="0.625000" Orientation="0.000000, -0.000000, 0.108006, 0.994150" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Thumb4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.012235, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, -0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Index1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.043487, 0.000163, -0.015613" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="0.103764, 0.028222, -0.040363, 0.993382" />
+                <OrientationKey Time="0.322917" Orientation="0.104715, 0.006985, 0.067163, 0.992207" />
+                <OrientationKey Time="0.625000" Orientation="0.109340, -0.006482, 0.137837, 0.984380" />
+                <OrientationKey Time="1.062500" Orientation="0.103351, 0.015365, 0.024445, 0.994226" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Index2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.014737, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.159005, 0.987278" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Index3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.010628, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.115033, 0.993362" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Index4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.008782, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Middle1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.043600, -0.000003, -0.003669" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="0.009664, 0.018918, -0.009483, 0.999729" />
+                <OrientationKey Time="0.531250" Orientation="0.013528, -0.017580, 0.068923, 0.997375" />
+                <OrientationKey Time="0.625000" Orientation="0.013940, -0.019379, 0.072838, 0.997058" />
+                <OrientationKey Time="1.229167" Orientation="0.009612, 0.017591, -0.006650, 0.999777" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Middle2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.015291, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, 0.000000, 0.161319, 0.986902" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Middle3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.015291, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.031411, 0.999507" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Middle4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.007842, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ring1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.042950, -0.000947, 0.008065" />
+            </PositionKeys>
+            <OrientationKeys Count="4">
+                <OrientationKey Time="0.000000" Orientation="-0.078744, -0.074503, 0.089066, 0.990109" />
+                <OrientationKey Time="0.270833" Orientation="-0.081838, -0.055999, 0.119686, 0.987847" />
+                <OrientationKey Time="0.625000" Orientation="-0.088517, -0.037082, 0.151894, 0.983727" />
+                <OrientationKey Time="1.125000" Orientation="-0.079639, -0.065607, 0.103693, 0.989243" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ring2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.014033, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, 0.000000, 0.235890, 0.971780" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ring3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.013883, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.113593, 0.993527" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ring4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.009557, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Pinky1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.039727, 0.002235, 0.017428" />
+            </PositionKeys>
+            <OrientationKeys Count="2">
+                <OrientationKey Time="0.000000" Orientation="-0.193940, -0.100359, 0.195655, 0.956051" />
+                <OrientationKey Time="0.625000" Orientation="-0.206309, -0.037684, 0.182566, 0.960566" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Pinky2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.011318, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.189680, 0.981846" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Pinky3">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.008590, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.050235, 0.998737" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Pinky4">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.007260, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Thigh1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.037693, -0.003552, -0.034951" />
+            </PositionKeys>
+            <OrientationKeys Count="80">
+                <OrientationKey Time="0.000000" Orientation="0.269966, 0.950441, -0.137898, 0.069024" />
+                <OrientationKey Time="0.010417" Orientation="0.272369, 0.950284, -0.135363, 0.066730" />
+                <OrientationKey Time="0.020833" Orientation="0.269943, 0.951951, -0.130021, 0.063358" />
+                <OrientationKey Time="0.031250" Orientation="0.266961, 0.953433, -0.126291, 0.061219" />
+                <OrientationKey Time="0.062500" Orientation="0.251490, 0.959547, -0.118167, 0.045377" />
+                <OrientationKey Time="0.072917" Orientation="0.246704, 0.960937, -0.117466, 0.044024" />
+                <OrientationKey Time="0.093750" Orientation="0.236840, 0.964010, -0.115650, 0.034875" />
+                <OrientationKey Time="0.104167" Orientation="0.232485, 0.965168, -0.115212, 0.033577" />
+                <OrientationKey Time="0.125000" Orientation="0.223305, 0.967941, -0.112645, 0.023142" />
+                <OrientationKey Time="0.135417" Orientation="0.219803, 0.968852, -0.112103, 0.021126" />
+                <OrientationKey Time="0.145833" Orientation="0.216349, 0.969806, -0.111345, 0.016467" />
+                <OrientationKey Time="0.156250" Orientation="0.212730, 0.970822, -0.110284, 0.009358" />
+                <OrientationKey Time="0.166667" Orientation="0.208639, 0.971796, -0.109751, 0.006037" />
+                <OrientationKey Time="0.177083" Orientation="0.203529, 0.972988, -0.108865, 0.004251" />
+                <OrientationKey Time="0.187500" Orientation="0.197484, 0.974423, -0.107234, 0.000413" />
+                <OrientationKey Time="0.197917" Orientation="0.190398, 0.975949, -0.106153, -0.001897" />
+                <OrientationKey Time="0.239583" Orientation="0.153942, 0.982045, -0.108953, 0.004390" />
+                <OrientationKey Time="0.270833" Orientation="0.131573, 0.985331, -0.108586, 0.004553" />
+                <OrientationKey Time="0.291667" Orientation="0.113469, 0.987866, -0.106035, -0.001111" />
+                <OrientationKey Time="0.312500" Orientation="0.097112, 0.989724, -0.104922, -0.002595" />
+                <OrientationKey Time="0.322917" Orientation="0.090060, 0.990480, -0.104017, -0.004317" />
+                <OrientationKey Time="0.375000" Orientation="0.058067, 0.993069, -0.101983, -0.006522" />
+                <OrientationKey Time="0.395833" Orientation="0.047227, 0.993815, -0.100047, -0.009635" />
+                <OrientationKey Time="0.406250" Orientation="0.042050, 0.994083, -0.099643, -0.010071" />
+                <OrientationKey Time="0.427083" Orientation="0.031410, 0.994697, -0.096676, -0.015647" />
+                <OrientationKey Time="0.437500" Orientation="0.025848, 0.994892, -0.096209, -0.016328" />
+                <OrientationKey Time="0.458333" Orientation="0.013501, 0.995319, -0.092750, -0.023563" />
+                <OrientationKey Time="0.468750" Orientation="0.007079, 0.995413, -0.092149, -0.024734" />
+                <OrientationKey Time="0.479166" Orientation="0.000414, 0.995469, -0.090955, -0.027717" />
+                <OrientationKey Time="0.489583" Orientation="-0.006753, 0.995466, -0.089197, -0.032350" />
+                <OrientationKey Time="0.531250" Orientation="-0.050250, 0.994364, -0.083687, -0.041372" />
+                <OrientationKey Time="0.541667" Orientation="-0.061859, 0.993767, -0.083205, -0.040967" />
+                <OrientationKey Time="0.562500" Orientation="-0.083942, 0.992419, -0.079593, -0.041516" />
+                <OrientationKey Time="0.572917" Orientation="-0.091999, 0.991736, -0.079931, -0.040082" />
+                <OrientationKey Time="0.593750" Orientation="-0.102219, 0.990856, -0.082456, -0.030924" />
+                <OrientationKey Time="0.604167" Orientation="-0.108252, 0.990230, -0.083091, -0.028654" />
+                <OrientationKey Time="0.625000" Orientation="-0.120431, 0.988809, -0.087136, -0.012689" />
+                <OrientationKey Time="0.635417" Orientation="-0.125747, 0.988109, -0.088025, -0.008959" />
+                <OrientationKey Time="0.645833" Orientation="-0.129086, 0.987444, -0.091060, -0.000116" />
+                <OrientationKey Time="0.666667" Orientation="-0.131364, 0.986319, -0.097698, 0.019327" />
+                <OrientationKey Time="0.687500" Orientation="-0.127345, 0.985983, -0.102872, 0.032233" />
+                <OrientationKey Time="0.697917" Orientation="-0.122101, 0.986195, -0.105333, 0.037632" />
+                <OrientationKey Time="0.708333" Orientation="-0.114006, 0.986816, -0.106979, 0.041858" />
+                <OrientationKey Time="0.718750" Orientation="-0.101957, 0.987066, -0.111157, 0.054309" />
+                <OrientationKey Time="0.729167" Orientation="-0.088179, 0.987372, -0.115008, 0.063984" />
+                <OrientationKey Time="0.739584" Orientation="-0.072962, 0.988202, -0.116907, 0.066827" />
+                <OrientationKey Time="0.760417" Orientation="-0.033800, 0.987484, -0.124971, 0.090089" />
+                <OrientationKey Time="0.770834" Orientation="-0.015550, 0.987459, -0.127140, 0.092294" />
+                <OrientationKey Time="0.791667" Orientation="0.023704, 0.984678, -0.129492, 0.114361" />
+                <OrientationKey Time="0.812500" Orientation="0.064016, 0.981444, -0.132189, 0.123271" />
+                <OrientationKey Time="0.822917" Orientation="0.082130, 0.978737, -0.132028, 0.133781" />
+                <OrientationKey Time="0.833334" Orientation="0.098493, 0.976477, -0.133133, 0.138083" />
+                <OrientationKey Time="0.875000" Orientation="0.153485, 0.969065, -0.140427, 0.132797" />
+                <OrientationKey Time="0.906251" Orientation="0.194316, 0.960769, -0.144279, 0.135455" />
+                <OrientationKey Time="0.927084" Orientation="0.217270, 0.954078, -0.146707, 0.144935" />
+                <OrientationKey Time="0.937501" Orientation="0.225785, 0.951832, -0.148125, 0.145244" />
+                <OrientationKey Time="0.968751" Orientation="0.250416, 0.944239, -0.156464, 0.145686" />
+                <OrientationKey Time="0.979167" Orientation="0.257730, 0.941790, -0.157955, 0.147166" />
+                <OrientationKey Time="0.989584" Orientation="0.264742, 0.939111, -0.159622, 0.150010" />
+                <OrientationKey Time="1.000001" Orientation="0.270692, 0.937038, -0.160871, 0.151014" />
+                <OrientationKey Time="1.010417" Orientation="0.275788, 0.935992, -0.161899, 0.147133" />
+                <OrientationKey Time="1.031251" Orientation="0.283004, 0.935189, -0.163624, 0.136222" />
+                <OrientationKey Time="1.041667" Orientation="0.285832, 0.934720, -0.163837, 0.133250" />
+                <OrientationKey Time="1.052084" Orientation="0.284691, 0.936090, -0.163095, 0.126832" />
+                <OrientationKey Time="1.062500" Orientation="0.282811, 0.937460, -0.162374, 0.121745" />
+                <OrientationKey Time="1.072917" Orientation="0.280854, 0.938420, -0.161723, 0.119724" />
+                <OrientationKey Time="1.083334" Orientation="0.278034, 0.940419, -0.159911, 0.112858" />
+                <OrientationKey Time="1.093750" Orientation="0.272807, 0.943061, -0.157840, 0.106293" />
+                <OrientationKey Time="1.104167" Orientation="0.269335, 0.944350, -0.156954, 0.105006" />
+                <OrientationKey Time="1.114584" Orientation="0.267733, 0.945279, -0.155217, 0.103318" />
+                <OrientationKey Time="1.125000" Orientation="0.266599, 0.946149, -0.153253, 0.101198" />
+                <OrientationKey Time="1.135417" Orientation="0.265651, 0.946619, -0.152452, 0.100499" />
+                <OrientationKey Time="1.145833" Orientation="0.264457, 0.947152, -0.151419, 0.100185" />
+                <OrientationKey Time="1.156250" Orientation="0.263369, 0.947751, -0.149949, 0.099602" />
+                <OrientationKey Time="1.166667" Orientation="0.263113, 0.947969, -0.149241, 0.099261" />
+                <OrientationKey Time="1.197917" Orientation="0.266960, 0.947982, -0.145498, 0.094306" />
+                <OrientationKey Time="1.208333" Orientation="0.267423, 0.948133, -0.144925, 0.092330" />
+                <OrientationKey Time="1.229167" Orientation="0.266808, 0.949625, -0.141945, 0.082930" />
+                <OrientationKey Time="1.239583" Orientation="0.267422, 0.949675, -0.141471, 0.081165" />
+                <OrientationKey Time="1.250000" Orientation="0.268083, 0.950177, -0.139837, 0.075767" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Knee2">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.182572, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="71">
+                <OrientationKey Time="0.000000" Orientation="-0.017444, -0.005254, -0.223358, 0.974566" />
+                <OrientationKey Time="0.010417" Orientation="-0.032773, -0.001284, -0.236934, 0.970972" />
+                <OrientationKey Time="0.031250" Orientation="-0.051759, 0.002513, -0.249990, 0.966861" />
+                <OrientationKey Time="0.041667" Orientation="-0.054840, 0.002763, -0.255229, 0.965320" />
+                <OrientationKey Time="0.052083" Orientation="-0.051596, 0.000802, -0.250680, 0.966694" />
+                <OrientationKey Time="0.072917" Orientation="-0.047859, -0.003105, -0.265509, 0.962915" />
+                <OrientationKey Time="0.093750" Orientation="-0.044878, -0.008745, -0.296290, 0.954003" />
+                <OrientationKey Time="0.114583" Orientation="-0.038143, -0.015186, -0.318215, 0.947129" />
+                <OrientationKey Time="0.125000" Orientation="-0.034123, -0.018473, -0.327299, 0.944124" />
+                <OrientationKey Time="0.135417" Orientation="-0.030483, -0.021526, -0.332891, 0.942226" />
+                <OrientationKey Time="0.166667" Orientation="-0.021327, -0.028896, -0.353300, 0.934820" />
+                <OrientationKey Time="0.177083" Orientation="-0.019516, -0.031512, -0.355921, 0.933781" />
+                <OrientationKey Time="0.187500" Orientation="-0.017750, -0.032614, -0.356640, 0.933504" />
+                <OrientationKey Time="0.197917" Orientation="-0.016523, -0.033159, -0.356258, 0.933653" />
+                <OrientationKey Time="0.208333" Orientation="-0.016234, -0.033213, -0.355023, 0.934126" />
+                <OrientationKey Time="0.218750" Orientation="-0.016721, -0.032694, -0.352604, 0.935052" />
+                <OrientationKey Time="0.229167" Orientation="-0.016997, -0.030881, -0.349706, 0.936196" />
+                <OrientationKey Time="0.250000" Orientation="-0.018303, -0.029599, -0.343489, 0.938512" />
+                <OrientationKey Time="0.260417" Orientation="-0.018915, -0.029218, -0.339884, 0.939823" />
+                <OrientationKey Time="0.270833" Orientation="-0.018717, -0.028881, -0.335975, 0.941242" />
+                <OrientationKey Time="0.281250" Orientation="-0.017065, -0.028850, -0.331577, 0.942833" />
+                <OrientationKey Time="0.312500" Orientation="-0.014289, -0.027090, -0.316839, 0.947985" />
+                <OrientationKey Time="0.354167" Orientation="-0.013637, -0.022557, -0.298206, 0.954137" />
+                <OrientationKey Time="0.364583" Orientation="-0.014194, -0.021399, -0.294668, 0.955254" />
+                <OrientationKey Time="0.406250" Orientation="-0.014091, -0.019734, -0.282975, 0.958821" />
+                <OrientationKey Time="0.437500" Orientation="-0.015660, -0.018874, -0.274404, 0.961302" />
+                <OrientationKey Time="0.447917" Orientation="-0.016137, -0.018841, -0.272515, 0.961832" />
+                <OrientationKey Time="0.458333" Orientation="-0.016763, -0.019354, -0.270944, 0.962255" />
+                <OrientationKey Time="0.468750" Orientation="-0.017268, -0.019375, -0.269635, 0.962613" />
+                <OrientationKey Time="0.479166" Orientation="-0.017729, -0.019477, -0.269174, 0.962731" />
+                <OrientationKey Time="0.489583" Orientation="-0.018198, -0.019453, -0.268772, 0.962835" />
+                <OrientationKey Time="0.510416" Orientation="-0.019882, -0.018170, -0.263096, 0.964394" />
+                <OrientationKey Time="0.531250" Orientation="-0.022372, -0.015790, -0.251565, 0.967453" />
+                <OrientationKey Time="0.552083" Orientation="-0.023170, -0.012802, -0.233215, 0.972065" />
+                <OrientationKey Time="0.562500" Orientation="-0.024612, -0.010623, -0.224564, 0.974091" />
+                <OrientationKey Time="0.572917" Orientation="-0.026058, -0.007987, -0.220749, 0.974950" />
+                <OrientationKey Time="0.583333" Orientation="-0.024906, -0.005260, -0.220694, 0.975011" />
+                <OrientationKey Time="0.604167" Orientation="-0.034786, 0.002273, -0.224503, 0.973850" />
+                <OrientationKey Time="0.625000" Orientation="-0.047907, 0.008589, -0.230143, 0.971939" />
+                <OrientationKey Time="0.635417" Orientation="-0.059659, 0.012814, -0.235343, 0.969995" />
+                <OrientationKey Time="0.645833" Orientation="-0.069818, 0.018052, -0.241507, 0.967716" />
+                <OrientationKey Time="0.656250" Orientation="-0.081047, 0.021259, -0.249804, 0.964664" />
+                <OrientationKey Time="0.666667" Orientation="-0.090148, 0.023984, -0.261534, 0.960676" />
+                <OrientationKey Time="0.677083" Orientation="-0.096390, 0.026380, -0.277619, 0.955479" />
+                <OrientationKey Time="0.697917" Orientation="-0.104547, 0.028008, -0.319986, 0.941220" />
+                <OrientationKey Time="0.750000" Orientation="-0.113100, 0.030044, -0.449768, 0.885446" />
+                <OrientationKey Time="0.770834" Orientation="-0.114444, 0.027151, -0.495252, 0.860750" />
+                <OrientationKey Time="0.812500" Orientation="-0.087609, -0.000172, -0.564023, 0.821098" />
+                <OrientationKey Time="0.833334" Orientation="-0.087072, -0.006775, -0.594442, 0.799382" />
+                <OrientationKey Time="0.854167" Orientation="-0.084034, -0.006179, -0.617104, 0.782357" />
+                <OrientationKey Time="0.875000" Orientation="-0.089074, 0.003861, -0.631742, 0.770034" />
+                <OrientationKey Time="0.885417" Orientation="-0.092151, 0.009858, -0.635835, 0.766240" />
+                <OrientationKey Time="0.895834" Orientation="-0.095939, 0.016764, -0.637800, 0.764019" />
+                <OrientationKey Time="0.906251" Orientation="-0.100661, 0.024832, -0.637518, 0.763428" />
+                <OrientationKey Time="0.916667" Orientation="-0.106628, 0.034233, -0.634859, 0.764469" />
+                <OrientationKey Time="0.927084" Orientation="-0.112748, 0.043633, -0.630240, 0.766930" />
+                <OrientationKey Time="0.937501" Orientation="-0.117442, 0.051118, -0.624330, 0.770588" />
+                <OrientationKey Time="0.947917" Orientation="-0.120862, 0.057158, -0.616945, 0.775567" />
+                <OrientationKey Time="0.979167" Orientation="-0.132905, 0.071891, -0.584071, 0.797514" />
+                <OrientationKey Time="0.989584" Orientation="-0.138768, 0.075370, -0.568980, 0.807047" />
+                <OrientationKey Time="1.000001" Orientation="-0.141479, 0.075559, -0.551333, 0.818723" />
+                <OrientationKey Time="1.052084" Orientation="-0.125912, 0.051456, -0.423632, 0.895564" />
+                <OrientationKey Time="1.093750" Orientation="-0.100753, 0.029842, -0.279622, 0.954342" />
+                <OrientationKey Time="1.125000" Orientation="-0.078345, 0.021523, -0.207115, 0.974937" />
+                <OrientationKey Time="1.145833" Orientation="-0.063064, 0.017073, -0.172584, 0.982826" />
+                <OrientationKey Time="1.156250" Orientation="-0.055269, 0.015691, -0.175933, 0.982724" />
+                <OrientationKey Time="1.166667" Orientation="-0.048823, 0.014019, -0.176798, 0.982936" />
+                <OrientationKey Time="1.177083" Orientation="-0.044067, 0.012115, -0.175689, 0.983384" />
+                <OrientationKey Time="1.208333" Orientation="-0.034305, 0.006515, -0.191115, 0.980946" />
+                <OrientationKey Time="1.218750" Orientation="-0.031751, 0.004522, -0.196372, 0.980005" />
+                <OrientationKey Time="1.239583" Orientation="-0.026175, 0.000471, -0.210541, 0.977234" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ankle1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.154280, -0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="55">
+                <OrientationKey Time="0.000000" Orientation="0.037023, 0.038960, 0.016292, 0.998422" />
+                <OrientationKey Time="0.010417" Orientation="0.036708, 0.049090, 0.001771, 0.998118" />
+                <OrientationKey Time="0.020833" Orientation="0.036739, 0.054740, -0.011135, 0.997762" />
+                <OrientationKey Time="0.031250" Orientation="0.036927, 0.056107, -0.022867, 0.997480" />
+                <OrientationKey Time="0.041667" Orientation="0.036818, 0.051581, -0.034728, 0.997385" />
+                <OrientationKey Time="0.052083" Orientation="0.036999, 0.041202, -0.047029, 0.997357" />
+                <OrientationKey Time="0.062500" Orientation="0.036920, 0.030752, -0.052953, 0.997440" />
+                <OrientationKey Time="0.072917" Orientation="0.036651, 0.024380, -0.045940, 0.997974" />
+                <OrientationKey Time="0.093750" Orientation="0.036720, 0.017308, -0.002988, 0.999171" />
+                <OrientationKey Time="0.104167" Orientation="0.037031, 0.016287, 0.014735, 0.999073" />
+                <OrientationKey Time="0.208333" Orientation="0.035642, 0.029876, 0.111851, 0.992636" />
+                <OrientationKey Time="0.312500" Orientation="0.035131, 0.027737, 0.157495, 0.986505" />
+                <OrientationKey Time="0.427083" Orientation="0.034203, 0.021869, 0.198221, 0.979316" />
+                <OrientationKey Time="0.531250" Orientation="0.032773, 0.024119, 0.251671, 0.966957" />
+                <OrientationKey Time="0.541667" Orientation="0.033593, 0.024267, 0.257595, 0.965364" />
+                <OrientationKey Time="0.552083" Orientation="0.033431, 0.023804, 0.258790, 0.965061" />
+                <OrientationKey Time="0.562500" Orientation="0.032746, 0.022567, 0.258030, 0.965318" />
+                <OrientationKey Time="0.583333" Orientation="0.031608, 0.016324, 0.254834, 0.966330" />
+                <OrientationKey Time="0.593750" Orientation="0.029599, 0.012356, 0.249021, 0.967967" />
+                <OrientationKey Time="0.604167" Orientation="0.028399, 0.010538, 0.243621, 0.969397" />
+                <OrientationKey Time="0.614583" Orientation="0.028200, 0.011824, 0.241211, 0.969991" />
+                <OrientationKey Time="0.625000" Orientation="0.028309, 0.014138, 0.238952, 0.970516" />
+                <OrientationKey Time="0.666667" Orientation="0.028463, 0.024428, 0.224211, 0.973818" />
+                <OrientationKey Time="0.687500" Orientation="0.028226, 0.028941, 0.212181, 0.976394" />
+                <OrientationKey Time="0.718750" Orientation="0.028628, 0.032932, 0.168974, 0.984654" />
+                <OrientationKey Time="0.760417" Orientation="0.035121, 0.032409, 0.008024, 0.998825" />
+                <OrientationKey Time="0.791667" Orientation="0.037242, 0.044773, -0.122644, 0.990741" />
+                <OrientationKey Time="0.802084" Orientation="0.037694, 0.051128, -0.159787, 0.985106" />
+                <OrientationKey Time="0.812500" Orientation="0.038043, 0.064853, -0.176873, 0.981358" />
+                <OrientationKey Time="0.822917" Orientation="0.038189, 0.080425, -0.180990, 0.979447" />
+                <OrientationKey Time="0.833334" Orientation="0.038111, 0.088308, -0.178596, 0.979210" />
+                <OrientationKey Time="0.864584" Orientation="0.037671, 0.057543, -0.134373, 0.988541" />
+                <OrientationKey Time="0.875000" Orientation="0.037722, 0.052899, -0.121308, 0.990486" />
+                <OrientationKey Time="0.885417" Orientation="0.037604, 0.051305, -0.109078, 0.991996" />
+                <OrientationKey Time="0.895834" Orientation="0.037502, 0.052063, -0.098352, 0.993081" />
+                <OrientationKey Time="0.906251" Orientation="0.037924, 0.059507, -0.089709, 0.993465" />
+                <OrientationKey Time="0.916667" Orientation="0.038282, 0.070088, -0.083687, 0.993287" />
+                <OrientationKey Time="0.927084" Orientation="0.037886, 0.071944, -0.077391, 0.993680" />
+                <OrientationKey Time="0.947917" Orientation="0.037409, 0.069878, -0.055305, 0.995319" />
+                <OrientationKey Time="0.968751" Orientation="0.037220, 0.052173, -0.034338, 0.997353" />
+                <OrientationKey Time="0.979167" Orientation="0.037400, 0.059967, -0.025055, 0.997185" />
+                <OrientationKey Time="1.000001" Orientation="0.037395, 0.078734, -0.010695, 0.996137" />
+                <OrientationKey Time="1.010417" Orientation="0.037264, 0.078583, -0.002314, 0.996208" />
+                <OrientationKey Time="1.031251" Orientation="0.037206, 0.070734, 0.007667, 0.996772" />
+                <OrientationKey Time="1.041667" Orientation="0.037185, 0.069737, 0.011980, 0.996800" />
+                <OrientationKey Time="1.052084" Orientation="0.037185, 0.070061, 0.015759, 0.996725" />
+                <OrientationKey Time="1.062500" Orientation="0.037248, 0.068164, 0.016889, 0.996835" />
+                <OrientationKey Time="1.072917" Orientation="0.037022, 0.060526, 0.020015, 0.997279" />
+                <OrientationKey Time="1.093750" Orientation="0.036467, 0.033856, 0.027981, 0.998369" />
+                <OrientationKey Time="1.104167" Orientation="0.036122, 0.023618, 0.036761, 0.998392" />
+                <OrientationKey Time="1.114584" Orientation="0.035704, 0.016141, 0.051682, 0.997895" />
+                <OrientationKey Time="1.135417" Orientation="0.035037, 0.010629, 0.076358, 0.996408" />
+                <OrientationKey Time="1.145833" Orientation="0.035083, 0.008126, 0.078907, 0.996231" />
+                <OrientationKey Time="1.156250" Orientation="0.035178, 0.006698, 0.077682, 0.996335" />
+                <OrientationKey Time="1.166667" Orientation="0.034948, 0.010506, 0.074883, 0.996524" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Ball">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.052502, 0.062738, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.000000, -0.000000, 0.791195, 0.611564" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="L_Toe">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.025380, 0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 1.000000, 0.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Thigh">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.037693, -0.003552, 0.034951" />
+            </PositionKeys>
+            <OrientationKeys Count="34">
+                <OrientationKey Time="0.000000" Orientation="-0.182040, 0.980724, 0.069347, -0.015245" />
+                <OrientationKey Time="0.031250" Orientation="-0.179329, 0.979317, 0.085216, -0.038951" />
+                <OrientationKey Time="0.062500" Orientation="-0.169106, 0.978705, 0.101092, -0.057624" />
+                <OrientationKey Time="0.072917" Orientation="-0.164418, 0.979173, 0.103063, -0.059704" />
+                <OrientationKey Time="0.104167" Orientation="-0.118318, 0.983431, 0.116774, -0.072300" />
+                <OrientationKey Time="0.166667" Orientation="0.015387, 0.987859, 0.127754, -0.087043" />
+                <OrientationKey Time="0.197917" Orientation="0.064362, 0.986423, 0.131642, -0.074142" />
+                <OrientationKey Time="0.229167" Orientation="0.102008, 0.984470, 0.131415, -0.056057" />
+                <OrientationKey Time="0.260417" Orientation="0.140127, 0.980819, 0.126276, -0.049119" />
+                <OrientationKey Time="0.270833" Orientation="0.145137, 0.980201, 0.125611, -0.048619" />
+                <OrientationKey Time="0.333333" Orientation="0.205699, 0.969955, 0.119539, -0.050844" />
+                <OrientationKey Time="0.375000" Orientation="0.227733, 0.965832, 0.116545, -0.041523" />
+                <OrientationKey Time="0.406250" Orientation="0.238374, 0.963666, 0.114198, -0.038519" />
+                <OrientationKey Time="0.427083" Orientation="0.239535, 0.963442, 0.113516, -0.038951" />
+                <OrientationKey Time="0.437500" Orientation="0.239950, 0.963329, 0.113424, -0.039452" />
+                <OrientationKey Time="0.468750" Orientation="0.246297, 0.961282, 0.113199, -0.049604" />
+                <OrientationKey Time="0.500000" Orientation="0.259685, 0.957089, 0.113844, -0.059865" />
+                <OrientationKey Time="0.531250" Orientation="0.254137, 0.957971, 0.117205, -0.063005" />
+                <OrientationKey Time="0.562500" Orientation="0.273595, 0.953486, 0.114954, -0.052871" />
+                <OrientationKey Time="0.604167" Orientation="0.301620, 0.946955, 0.105472, -0.034317" />
+                <OrientationKey Time="0.635417" Orientation="0.305009, 0.946863, 0.099063, -0.024646" />
+                <OrientationKey Time="0.666667" Orientation="0.294611, 0.951318, 0.089902, -0.010776" />
+                <OrientationKey Time="0.697917" Orientation="0.286136, 0.954558, 0.083183, 0.005179" />
+                <OrientationKey Time="0.729167" Orientation="0.276421, 0.957266, 0.081445, 0.024477" />
+                <OrientationKey Time="0.770834" Orientation="0.260520, 0.961047, 0.080489, 0.045160" />
+                <OrientationKey Time="0.802084" Orientation="0.250735, 0.962279, 0.079830, 0.069126" />
+                <OrientationKey Time="0.833334" Orientation="0.234932, 0.965062, 0.080500, 0.083557" />
+                <OrientationKey Time="0.916667" Orientation="0.163328, 0.979857, 0.084762, 0.077592" />
+                <OrientationKey Time="0.968751" Orientation="0.117110, 0.987043, 0.081341, 0.073592" />
+                <OrientationKey Time="1.000001" Orientation="0.091849, 0.990195, 0.076641, 0.072133" />
+                <OrientationKey Time="1.062500" Orientation="0.052091, 0.994887, 0.069225, 0.051908" />
+                <OrientationKey Time="1.104167" Orientation="0.019879, 0.996553, 0.069023, 0.041518" />
+                <OrientationKey Time="1.166667" Orientation="-0.057167, 0.995085, 0.074098, 0.032361" />
+                <OrientationKey Time="1.208333" Orientation="-0.099263, 0.992074, 0.074710, 0.018831" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Knee">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.182572, -0.000000, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="83">
+                <OrientationKey Time="0.000000" Orientation="0.033530, -0.001259, -0.096747, 0.994743" />
+                <OrientationKey Time="0.020833" Orientation="0.043858, 0.000035, -0.123978, 0.991315" />
+                <OrientationKey Time="0.041667" Orientation="0.050367, 0.000445, -0.154543, 0.986701" />
+                <OrientationKey Time="0.062500" Orientation="0.053873, 0.003918, -0.189822, 0.980332" />
+                <OrientationKey Time="0.072917" Orientation="0.055351, 0.004350, -0.219257, 0.974086" />
+                <OrientationKey Time="0.093750" Orientation="0.061482, 0.017453, -0.288339, 0.955393" />
+                <OrientationKey Time="0.104167" Orientation="0.062239, 0.018837, -0.321791, 0.944575" />
+                <OrientationKey Time="0.125000" Orientation="0.067923, 0.039372, -0.388673, 0.918025" />
+                <OrientationKey Time="0.135417" Orientation="0.068012, 0.043263, -0.417953, 0.904886" />
+                <OrientationKey Time="0.145833" Orientation="0.068800, 0.049222, -0.436258, 0.895836" />
+                <OrientationKey Time="0.156250" Orientation="0.070204, 0.058845, -0.448398, 0.889128" />
+                <OrientationKey Time="0.166667" Orientation="0.067337, 0.065302, -0.460813, 0.882526" />
+                <OrientationKey Time="0.177083" Orientation="0.059522, 0.074098, -0.476198, 0.874187" />
+                <OrientationKey Time="0.197917" Orientation="0.045652, 0.098472, -0.504935, 0.856306" />
+                <OrientationKey Time="0.208333" Orientation="0.042404, 0.100691, -0.521781, 0.846054" />
+                <OrientationKey Time="0.239583" Orientation="0.051866, 0.092062, -0.548512, 0.829439" />
+                <OrientationKey Time="0.250000" Orientation="0.052697, 0.085594, -0.555441, 0.825459" />
+                <OrientationKey Time="0.260417" Orientation="0.055224, 0.077831, -0.558006, 0.824331" />
+                <OrientationKey Time="0.270833" Orientation="0.061001, 0.071998, -0.555986, 0.825817" />
+                <OrientationKey Time="0.281250" Orientation="0.066158, 0.063231, -0.554588, 0.827077" />
+                <OrientationKey Time="0.291667" Orientation="0.069804, 0.054637, -0.551212, 0.829643" />
+                <OrientationKey Time="0.302083" Orientation="0.074910, 0.049096, -0.546191, 0.832858" />
+                <OrientationKey Time="0.322917" Orientation="0.082643, 0.033725, -0.531533, 0.842321" />
+                <OrientationKey Time="0.333333" Orientation="0.085463, 0.029284, -0.520940, 0.848799" />
+                <OrientationKey Time="0.343750" Orientation="0.086275, 0.027937, -0.508082, 0.856521" />
+                <OrientationKey Time="0.395833" Orientation="0.080137, 0.021439, -0.412032, 0.907385" />
+                <OrientationKey Time="0.416667" Orientation="0.078326, 0.017026, -0.356236, 0.930952" />
+                <OrientationKey Time="0.427083" Orientation="0.076157, 0.012971, -0.325754, 0.942293" />
+                <OrientationKey Time="0.437500" Orientation="0.077343, 0.012074, -0.298171, 0.951297" />
+                <OrientationKey Time="0.458333" Orientation="0.081373, -0.002552, -0.245168, 0.966056" />
+                <OrientationKey Time="0.479166" Orientation="0.087487, -0.008385, -0.202444, 0.975342" />
+                <OrientationKey Time="0.489583" Orientation="0.090748, -0.014193, -0.185883, 0.978269" />
+                <OrientationKey Time="0.500000" Orientation="0.091918, -0.017724, -0.183784, 0.978499" />
+                <OrientationKey Time="0.510416" Orientation="0.089810, -0.017786, -0.170357, 0.981120" />
+                <OrientationKey Time="0.520833" Orientation="0.084996, -0.019188, -0.157006, 0.983746" />
+                <OrientationKey Time="0.531250" Orientation="0.079605, -0.019942, -0.148973, 0.985430" />
+                <OrientationKey Time="0.541667" Orientation="0.074409, -0.017744, -0.149617, 0.985781" />
+                <OrientationKey Time="0.552083" Orientation="0.068861, -0.013119, -0.156736, 0.985150" />
+                <OrientationKey Time="0.562500" Orientation="0.063435, -0.009369, -0.168199, 0.983665" />
+                <OrientationKey Time="0.572917" Orientation="0.058930, -0.007178, -0.183319, 0.981259" />
+                <OrientationKey Time="0.593750" Orientation="0.054801, 0.008675, -0.226428, 0.972447" />
+                <OrientationKey Time="0.604167" Orientation="0.055009, 0.010077, -0.241244, 0.968852" />
+                <OrientationKey Time="0.614583" Orientation="0.058051, 0.010604, -0.250362, 0.966352" />
+                <OrientationKey Time="0.625000" Orientation="0.062747, 0.011228, -0.256421, 0.964461" />
+                <OrientationKey Time="0.635417" Orientation="0.067429, 0.010497, -0.260325, 0.963107" />
+                <OrientationKey Time="0.645833" Orientation="0.080578, 0.007040, -0.254905, 0.963577" />
+                <OrientationKey Time="0.656250" Orientation="0.081769, 0.006072, -0.256426, 0.963080" />
+                <OrientationKey Time="0.666667" Orientation="0.080300, 0.005895, -0.260123, 0.962213" />
+                <OrientationKey Time="0.677083" Orientation="0.078545, 0.009938, -0.264893, 0.961022" />
+                <OrientationKey Time="0.687500" Orientation="0.074939, 0.018027, -0.270812, 0.959541" />
+                <OrientationKey Time="0.697917" Orientation="0.059194, 0.026825, -0.285028, 0.956314" />
+                <OrientationKey Time="0.708333" Orientation="0.053775, 0.030091, -0.299097, 0.952231" />
+                <OrientationKey Time="0.729167" Orientation="0.048601, 0.041499, -0.333115, 0.940718" />
+                <OrientationKey Time="0.739584" Orientation="0.044079, 0.044429, -0.346541, 0.935945" />
+                <OrientationKey Time="0.760417" Orientation="0.036300, 0.056731, -0.367462, 0.927597" />
+                <OrientationKey Time="0.770834" Orientation="0.031686, 0.059979, -0.376913, 0.923762" />
+                <OrientationKey Time="0.791667" Orientation="0.024764, 0.070655, -0.394420, 0.915875" />
+                <OrientationKey Time="0.802084" Orientation="0.020737, 0.074069, -0.400879, 0.912897" />
+                <OrientationKey Time="0.812500" Orientation="0.016451, 0.077779, -0.405267, 0.910735" />
+                <OrientationKey Time="0.833334" Orientation="0.010240, 0.084598, -0.409526, 0.908310" />
+                <OrientationKey Time="0.843750" Orientation="0.009753, 0.084695, -0.409833, 0.908168" />
+                <OrientationKey Time="0.864584" Orientation="0.011911, 0.083166, -0.405652, 0.910158" />
+                <OrientationKey Time="0.875000" Orientation="0.012230, 0.082365, -0.403573, 0.911151" />
+                <OrientationKey Time="0.885417" Orientation="0.012086, 0.080690, -0.401316, 0.912299" />
+                <OrientationKey Time="0.895834" Orientation="0.011985, 0.079275, -0.397787, 0.913968" />
+                <OrientationKey Time="0.906251" Orientation="0.012064, 0.078634, -0.394340, 0.915515" />
+                <OrientationKey Time="0.927084" Orientation="0.012322, 0.075271, -0.387332, 0.918780" />
+                <OrientationKey Time="0.937501" Orientation="0.013031, 0.074299, -0.382863, 0.920720" />
+                <OrientationKey Time="0.958334" Orientation="0.013772, 0.069323, -0.371685, 0.925665" />
+                <OrientationKey Time="0.968751" Orientation="0.014897, 0.067875, -0.366315, 0.927893" />
+                <OrientationKey Time="1.031251" Orientation="0.016819, 0.057793, -0.336102, 0.939900" />
+                <OrientationKey Time="1.041667" Orientation="0.017818, 0.056437, -0.329738, 0.942216" />
+                <OrientationKey Time="1.062500" Orientation="0.019174, 0.051214, -0.315607, 0.947313" />
+                <OrientationKey Time="1.072917" Orientation="0.020126, 0.050063, -0.308222, 0.949783" />
+                <OrientationKey Time="1.093750" Orientation="0.020693, 0.044764, -0.293048, 0.954825" />
+                <OrientationKey Time="1.104167" Orientation="0.021552, 0.043703, -0.285373, 0.957177" />
+                <OrientationKey Time="1.125000" Orientation="0.022492, 0.038195, -0.269721, 0.961918" />
+                <OrientationKey Time="1.145833" Orientation="0.024236, 0.034520, -0.253591, 0.966392" />
+                <OrientationKey Time="1.156250" Orientation="0.024803, 0.031123, -0.244151, 0.968920" />
+                <OrientationKey Time="1.177083" Orientation="0.027713, 0.026995, -0.224881, 0.973618" />
+                <OrientationKey Time="1.187500" Orientation="0.029265, 0.022879, -0.215189, 0.975866" />
+                <OrientationKey Time="1.229167" Orientation="0.034146, 0.010170, -0.162829, 0.986011" />
+                <OrientationKey Time="1.239583" Orientation="0.034748, 0.008953, -0.146590, 0.988546" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ankle">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.154280, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="37">
+                <OrientationKey Time="0.000000" Orientation="-0.031684, -0.033519, 0.208103, 0.977019" />
+                <OrientationKey Time="0.031250" Orientation="-0.032233, -0.035296, 0.203314, 0.977946" />
+                <OrientationKey Time="0.062500" Orientation="-0.030376, -0.035332, 0.186794, 0.981293" />
+                <OrientationKey Time="0.125000" Orientation="-0.035028, -0.021516, 0.039259, 0.998383" />
+                <OrientationKey Time="0.156250" Orientation="-0.037241, -0.015771, -0.093069, 0.994838" />
+                <OrientationKey Time="0.166667" Orientation="-0.037656, -0.014531, -0.126781, 0.991109" />
+                <OrientationKey Time="0.197917" Orientation="-0.036934, -0.016022, -0.113163, 0.992760" />
+                <OrientationKey Time="0.229167" Orientation="-0.038066, 0.015281, -0.064798, 0.997055" />
+                <OrientationKey Time="0.239583" Orientation="-0.038153, 0.015251, -0.060945, 0.997295" />
+                <OrientationKey Time="0.270833" Orientation="-0.037561, 0.001193, -0.044208, 0.998315" />
+                <OrientationKey Time="0.333333" Orientation="-0.036454, -0.020567, -0.001030, 0.999123" />
+                <OrientationKey Time="0.364583" Orientation="-0.036578, -0.014588, 0.021325, 0.998997" />
+                <OrientationKey Time="0.395833" Orientation="-0.036302, -0.020957, 0.035138, 0.998503" />
+                <OrientationKey Time="0.406250" Orientation="-0.036295, -0.020704, 0.036805, 0.998448" />
+                <OrientationKey Time="0.427083" Orientation="-0.036436, -0.015798, 0.046400, 0.998133" />
+                <OrientationKey Time="0.437500" Orientation="-0.036505, -0.015940, 0.047703, 0.998067" />
+                <OrientationKey Time="0.468750" Orientation="-0.037463, -0.031968, 0.052357, 0.997413" />
+                <OrientationKey Time="0.500000" Orientation="-0.037579, -0.049085, 0.096023, 0.993458" />
+                <OrientationKey Time="0.531250" Orientation="-0.032401, -0.060611, 0.161083, 0.984545" />
+                <OrientationKey Time="0.541667" Orientation="-0.031838, -0.059345, 0.164053, 0.984150" />
+                <OrientationKey Time="0.562500" Orientation="-0.029414, -0.052116, 0.175162, 0.982719" />
+                <OrientationKey Time="0.572917" Orientation="-0.029546, -0.050169, 0.172719, 0.983249" />
+                <OrientationKey Time="0.604167" Orientation="-0.031863, -0.033327, 0.137929, 0.989368" />
+                <OrientationKey Time="0.656250" Orientation="-0.036745, 0.004947, -0.011236, 0.999249" />
+                <OrientationKey Time="0.697917" Orientation="-0.037821, 0.016205, -0.049754, 0.997913" />
+                <OrientationKey Time="0.750000" Orientation="-0.037005, 0.004526, 0.030061, 0.998853" />
+                <OrientationKey Time="0.812500" Orientation="-0.035846, -0.014779, 0.096740, 0.994554" />
+                <OrientationKey Time="0.833334" Orientation="-0.035397, -0.021690, 0.115428, 0.992448" />
+                <OrientationKey Time="0.937501" Orientation="-0.034464, -0.021838, 0.170915, 0.984441" />
+                <OrientationKey Time="0.968751" Orientation="-0.034307, -0.019583, 0.181632, 0.982573" />
+                <OrientationKey Time="1.000001" Orientation="-0.034119, -0.018990, 0.192076, 0.980603" />
+                <OrientationKey Time="1.062500" Orientation="-0.033879, -0.016105, 0.202090, 0.978648" />
+                <OrientationKey Time="1.104167" Orientation="-0.033417, -0.016528, 0.209992, 0.976992" />
+                <OrientationKey Time="1.135417" Orientation="-0.032884, -0.018452, 0.218207, 0.975174" />
+                <OrientationKey Time="1.166667" Orientation="-0.032355, -0.021545, 0.224072, 0.973797" />
+                <OrientationKey Time="1.197917" Orientation="-0.031862, -0.024467, 0.225911, 0.973319" />
+                <OrientationKey Time="1.229167" Orientation="-0.031677, -0.029512, 0.221265, 0.974252" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Ball">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.052502, 0.062738, 0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="9">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.791195, 0.611564" />
+                <OrientationKey Time="0.656250" Orientation="0.000013, 0.000017, 0.791178, 0.611585" />
+                <OrientationKey Time="0.666667" Orientation="0.000000, 0.000000, 0.791195, 0.611564" />
+                <OrientationKey Time="0.677083" Orientation="0.000027, -0.000061, 0.791354, 0.611358" />
+                <OrientationKey Time="0.687500" Orientation="0.000047, -0.000217, 0.791411, 0.611284" />
+                <OrientationKey Time="0.697917" Orientation="0.000102, -0.000270, 0.791423, 0.611269" />
+                <OrientationKey Time="0.708333" Orientation="0.000075, -0.000246, 0.791418, 0.611276" />
+                <OrientationKey Time="0.718750" Orientation="0.000046, -0.000105, 0.791385, 0.611318" />
+                <OrientationKey Time="0.729167" Orientation="0.000002, -0.000015, 0.791225, 0.611525" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="R_Toe">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.025380, 0.000000, -0.000000" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.000000, 0.000000, 0.000000, 1.000000" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="soldier_bindPose:soldier_Walk_bk:pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="soldier_Walk3:pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="soldier_Walk3:soldier_Walk_bk:pCylinder1">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.237718, 0.428185, -0.027437" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="0.149426, -0.180080, -0.382614, 1.133890" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.651932, 1.341211, 1.910357" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="transform10">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="-0.010587, 0.678675, -0.027267" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.762849, -0.045470, -0.040243, 0.643720" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+        <AnimationTrack Name="transform11">
+            <PositionKeys Count="1">
+                <PositionKey Time="0.000000" Position="0.014186, 0.679824, -0.026042" />
+            </PositionKeys>
+            <OrientationKeys Count="1">
+                <OrientationKey Time="0.000000" Orientation="-0.762849, -0.045470, -0.040243, 0.643720" />
+            </OrientationKeys>
+            <ScaleKeys Count="1">
+                <ScaleKey Time="0.000000" Scale="1.000000, 1.000000, 1.000000" />
+            </ScaleKeys>
+            <AnnotationTrack />
+        </AnimationTrack>
+    </Animation>
+    <Frame Name="" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+        <Frame Name="ViewCompass" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="UniversalManip" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="UniversalManip1" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="persp" Matrix="-0.981627, 0.000000, 0.190809, 0.000000, 0.012851, 0.997730, 0.066111, 0.000000, -0.190376, 0.067348, -0.979398, 0.000000, 0.014464, 0.672763, 0.142036, 1.000000" />
+        <Frame Name="top" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, -1.000000, 0.000000, 0.000000, 0.034758, 1.722079, -0.028545, 1.000000" />
+        <Frame Name="front" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, -0.001503, 0.658100, -100.099998, 1.000000" />
+        <Frame Name="side" Matrix="0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, -1.000000, 0.000000, 0.000000, 0.000000, 1.113256, 0.651828, -0.028589, 1.000000" />
+        <Frame Name="teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk_bk:transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk_bk:pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk_bk:transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk_bk:polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk_bk:transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk_bk:polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk_bk:pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="soldier_Walk_bk:polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="soldier_bindPose:polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="Root" Matrix="0.000001, -0.000000, -1.000000, 0.000000, 1.000000, 0.000000, 0.000001, 0.000000, 0.000000, -1.000000, 0.000000, 0.000000, 0.000376, 0.374610, -0.022305, 1.000000">
+            <Frame Name="Pelvis" Matrix="0.000000, 0.000000, -1.000000, 0.000000, 1.000000, 0.000001, 0.000000, 0.000000, 0.000001, -1.000000, 0.000000, 0.000000, -0.009559, -0.000000, -0.000000, 1.000000">
+                <Frame Name="Spine" Matrix="0.995499, -0.094774, -0.000002, 0.000000, 0.094774, 0.995499, 0.000004, 0.000000, 0.000001, -0.000004, 1.000000, 0.000000, 0.037860, -0.000036, -0.000000, 1.000000">
+                    <Frame Name="Spine1" Matrix="0.994842, -0.101441, 0.000000, 0.000000, 0.101441, 0.994842, 0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.045433, -0.000036, 0.000000, 1.000000">
+                        <Frame Name="Spine2" Matrix="0.995060, 0.099279, -0.000000, 0.000000, -0.099279, 0.995060, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.045440, -0.000036, -0.000000, 1.000000">
+                            <Frame Name="Spine3" Matrix="0.998850, 0.045932, 0.013752, 0.000000, -0.044787, 0.996223, -0.074392, 0.000000, -0.017117, 0.073691, 0.997134, 0.000000, 0.045440, -0.000044, -0.000000, 1.000000">
+                                <Frame Name="Neck" Matrix="0.915403, 0.402538, -0.000001, 0.000000, -0.402538, 0.915403, 0.000000, 0.000000, 0.000001, 0.000000, 1.000000, 0.000000, 0.055363, -0.000029, -0.000000, 1.000000">
+                                    <Frame Name="Head" Matrix="0.981295, -0.192510, 0.000000, 0.000000, 0.192510, 0.981295, 0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.039539, 0.000000, -0.000000, 1.000000">
+                                        <Frame Name="Skull" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.087593, -0.000000, 0.000000, 1.000000" />
+                                        <Frame Name="L_eye_joint1" Matrix="-0.000000, -0.045798, -0.998951, 0.000000, -0.000000, 0.998951, -0.045798, 0.000000, 1.000000, 0.000000, -0.000000, 0.000000, 0.042905, 0.013872, -0.012752, 1.000000" />
+                                        <Frame Name="R_eye_joint" Matrix="-0.000000, -0.045798, -0.998951, 0.000000, -0.000000, 0.998951, -0.045798, 0.000000, 1.000000, 0.000000, -0.000000, 0.000000, 0.041908, 0.013397, 0.012053, 1.000000" />
+                                        <Frame Name="L_eyeBall_joint2" Matrix="1.000000, 0.000600, 0.000000, 0.000000, -0.000598, 0.996731, -0.080784, 0.000000, -0.000048, 0.080784, 0.996732, 0.000000, 0.044656, 0.030740, -0.015846, 1.000000">
+                                            <Frame Name="L_eyeBall" Matrix="-0.037414, 0.056657, -0.997692, 0.000000, 0.981238, -0.186878, -0.047410, 0.000000, -0.189133, -0.980748, -0.048603, 0.000000, -0.673894, 0.081001, 0.042424, 1.000000">
+                                                <Model Mesh="L_eyeBallShape">
+                                                    <AxisAlignedBoxBound Center="0.012524, 0.678399, -0.045952" Extents="0.005232, 0.005254, 0.002837" />
+                                                    <SubsetMaterialMapping SubsetName="subset0_eyeBallM" MaterialName="eyeBallM" />
+                                                </Model>
+                                            </Frame>
+                                        </Frame>
+                                        <Frame Name="R_eyeBall_joint" Matrix="0.999407, 0.033671, 0.007158, 0.000000, -0.033421, 0.998909, -0.032617, 0.000000, -0.008248, 0.032359, 0.999442, 0.000000, 0.045594, 0.029320, 0.009144, 1.000000">
+                                            <Frame Name="R_eyeBall" Matrix="-0.037414, 0.056657, -0.997692, 0.000000, 0.981238, -0.186878, -0.047410, 0.000000, -0.189133, -0.980748, -0.048603, 0.000000, -0.674831, 0.082420, 0.017435, 1.000000">
+                                                <Model Mesh="R_eyeBallShape">
+                                                    <AxisAlignedBoxBound Center="-0.012524, 0.678399, -0.045952" Extents="0.005232, 0.005254, 0.002837" />
+                                                    <SubsetMaterialMapping SubsetName="subset0_eyeBallM" MaterialName="eyeBallM" />
+                                                </Model>
+                                            </Frame>
+                                        </Frame>
+                                    </Frame>
+                                    <Frame Name="L_Clavicle" Matrix="-0.154162, 0.067935, -0.985707, 0.000000, -0.403267, -0.915083, 0.000003, 0.000000, -0.902003, 0.397503, 0.168467, 0.000000, -0.003080, -0.007706, -0.012233, 1.000000">
+                                        <Frame Name="L_UpperArm" Matrix="0.802371, -0.067145, 0.593037, 0.000000, 0.068980, 0.997425, 0.019602, 0.000000, -0.592826, 0.025180, 0.804937, 0.000000, 0.068439, 0.000000, 0.000000, 1.000000">
+                                            <Frame Name="L_Forearm" Matrix="0.980067, -0.198669, -0.000000, 0.000000, 0.198669, 0.980067, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.131422, -0.000000, 0.000000, 1.000000">
+                                                <Frame Name="L_Hand" Matrix="0.982791, 0.047794, 0.178432, 0.000000, -0.184722, 0.255051, 0.949119, 0.000000, -0.000147, -0.965746, 0.259490, 0.000000, 0.108256, 0.000000, -0.000000, 1.000000">
+                                                    <Frame Name="L_Thumb1" Matrix="0.554457, 0.377963, 0.741432, 0.000000, 0.829975, -0.185855, -0.525927, 0.000000, -0.060982, 0.906974, -0.416748, 0.000000, 0.016251, 0.006266, 0.016788, 1.000000">
+                                                        <Frame Name="L_Thumb2" Matrix="0.990309, 0.138883, 0.000000, 0.000000, -0.138883, 0.990309, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.011404, 0.000000, 0.000000, 1.000000">
+                                                            <Frame Name="L_Thumb3" Matrix="0.999808, -0.019593, -0.000000, 0.000000, 0.019593, 0.999808, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.013825, -0.000000, -0.000000, 1.000000">
+                                                                <Frame Name="L_Thumb4" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.012235, -0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="L_Index1" Matrix="0.996202, 0.026415, 0.082968, 0.000000, -0.009017, 0.979047, -0.203437, 0.000000, -0.086603, 0.201916, 0.975566, 0.000000, 0.043487, 0.000163, 0.015613, 1.000000">
+                                                        <Frame Name="L_Index2" Matrix="0.983995, 0.178196, -0.000000, 0.000000, -0.178196, 0.983995, -0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.014737, 0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="L_Index3" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.010628, 0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="L_Index4" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.008782, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="L_Middle1" Matrix="0.994922, -0.021102, -0.098414, 0.000000, 0.019326, 0.999633, -0.018963, 0.000000, 0.098778, 0.016965, 0.994965, 0.000000, 0.043600, -0.000003, 0.003669, 1.000000">
+                                                        <Frame Name="L_Middle2" Matrix="0.996094, 0.088304, 0.000000, 0.000000, -0.088304, 0.996094, 0.000000, 0.000000, -0.000000, -0.000000, 1.000000, 0.000000, 0.015291, -0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="L_Middle3" Matrix="0.997794, 0.066380, -0.000000, 0.000000, -0.066380, 0.997794, -0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.015291, -0.000000, -0.000000, 1.000000">
+                                                                <Frame Name="L_Middle4" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.007842, -0.000000, -0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="L_Ring1" Matrix="0.965164, 0.008365, -0.261511, 0.000000, 0.029287, 0.989754, 0.139750, 0.000000, 0.260001, -0.142540, 0.955030, 0.000000, 0.042950, -0.000947, -0.008065, 1.000000">
+                                                        <Frame Name="L_Ring2" Matrix="0.974783, 0.223155, 0.000000, 0.000000, -0.223155, 0.974783, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.014033, -0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="L_Ring3" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.013883, 0.000000, -0.000000, 1.000000">
+                                                                <Frame Name="L_Ring4" Matrix="1.000000, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.009557, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="L_Pinky1" Matrix="0.912954, 0.164791, -0.373309, 0.000000, -0.025581, 0.936144, 0.350685, 0.000000, 0.407261, -0.310610, 0.858871, 0.000000, 0.039727, 0.002235, -0.017428, 1.000000">
+                                                        <Frame Name="L_Pinky2" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.011318, 0.000000, 0.000000, 1.000000">
+                                                            <Frame Name="L_Pinky3" Matrix="0.997719, 0.067499, 0.000000, 0.000000, -0.067499, 0.997719, 0.000000, 0.000000, -0.000000, -0.000000, 1.000000, 0.000000, 0.008590, -0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="L_Pinky4" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.007260, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                </Frame>
+                                            </Frame>
+                                        </Frame>
+                                    </Frame>
+                                    <Frame Name="R_Clavicle" Matrix="-0.154162, 0.067940, 0.985707, 0.000000, -0.403267, -0.915083, 0.000003, 0.000000, 0.902003, -0.397502, 0.168469, 0.000000, -0.003080, -0.007706, 0.012233, 1.000000">
+                                        <Frame Name="R_UpperArm" Matrix="0.802371, -0.067145, -0.593037, 0.000000, 0.068980, 0.997426, -0.019602, 0.000000, 0.592826, -0.025180, 0.804937, 0.000000, 0.068439, -0.000000, -0.000000, 1.000000">
+                                            <Frame Name="R_Forearm" Matrix="0.980067, -0.198669, 0.000000, 0.000000, 0.198669, 0.980066, 0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.131422, -0.000000, -0.000000, 1.000000">
+                                                <Frame Name="R_Hand" Matrix="0.982791, 0.047794, -0.178432, 0.000000, -0.184722, 0.255051, -0.949119, 0.000000, 0.000147, 0.965746, 0.259490, 0.000000, 0.108256, 0.000000, 0.000000, 1.000000">
+                                                    <Frame Name="R_Thumb1" Matrix="0.554457, 0.377963, -0.741432, 0.000000, 0.829975, -0.185855, 0.525927, 0.000000, 0.060982, -0.906974, -0.416748, 0.000000, 0.016251, 0.006266, -0.016788, 1.000000">
+                                                        <Frame Name="R_Thumb2" Matrix="0.990309, 0.138883, -0.000000, 0.000000, -0.138883, 0.990309, -0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.011404, 0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="R_Thumb3" Matrix="0.999808, -0.019593, 0.000000, 0.000000, 0.019593, 0.999808, 0.000000, 0.000000, -0.000000, -0.000000, 1.000000, 0.000000, 0.013825, -0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="R_Thumb4" Matrix="-1.000000, 0.000001, 0.000000, 0.000000, -0.000001, -1.000000, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.012235, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="R_Index1" Matrix="0.996202, 0.026415, -0.082967, 0.000000, -0.009017, 0.979047, 0.203437, 0.000000, 0.086603, -0.201916, 0.975566, 0.000000, 0.043487, 0.000163, -0.015613, 1.000000">
+                                                        <Frame Name="R_Index2" Matrix="0.983995, 0.178196, 0.000000, 0.000000, -0.178196, 0.983995, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.014737, 0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="R_Index3" Matrix="1.000000, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.010628, -0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="R_Index4" Matrix="-1.000000, 0.000001, 0.000000, 0.000000, -0.000001, -1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.008782, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="R_Middle1" Matrix="0.994922, -0.021102, 0.098414, 0.000000, 0.019326, 0.999633, 0.018963, 0.000000, -0.098778, -0.016965, 0.994965, 0.000000, 0.043600, -0.000003, -0.003669, 1.000000">
+                                                        <Frame Name="R_Middle2" Matrix="0.996094, 0.088304, -0.000000, 0.000000, -0.088304, 0.996094, -0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.015291, -0.000000, 0.000000, 1.000000">
+                                                            <Frame Name="R_Middle3" Matrix="0.997794, 0.066381, -0.000000, 0.000000, -0.066381, 0.997794, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.015291, -0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="R_Middle4" Matrix="-1.000000, 0.000001, -0.000000, 0.000000, -0.000001, -1.000000, -0.000000, 0.000000, -0.000000, -0.000000, 1.000000, 0.000000, 0.007842, -0.000000, -0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="R_Ring1" Matrix="0.965164, 0.008365, 0.261511, 0.000000, 0.029287, 0.989754, -0.139750, 0.000000, -0.260001, 0.142540, 0.955030, 0.000000, 0.042950, -0.000947, 0.008065, 1.000000">
+                                                        <Frame Name="R_Ring2" Matrix="0.974783, 0.223155, -0.000000, 0.000000, -0.223155, 0.974783, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.014033, -0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="R_Ring3" Matrix="1.000000, -0.000000, -0.000000, 0.000000, 0.000000, 1.000000, -0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.013883, 0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="R_Ring4" Matrix="-1.000000, 0.000001, 0.000000, 0.000000, -0.000001, -1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.009557, 0.000000, 0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                    <Frame Name="R_Pinky1" Matrix="0.912953, 0.164791, 0.373309, 0.000000, -0.025581, 0.936144, -0.350685, 0.000000, -0.407261, 0.310610, 0.858871, 0.000000, 0.039727, 0.002235, 0.017428, 1.000000">
+                                                        <Frame Name="R_Pinky2" Matrix="1.000000, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.011318, 0.000000, -0.000000, 1.000000">
+                                                            <Frame Name="R_Pinky3" Matrix="0.997719, 0.067498, 0.000000, 0.000000, -0.067498, 0.997719, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.008590, 0.000000, 0.000000, 1.000000">
+                                                                <Frame Name="R_Pinky4" Matrix="-1.000000, 0.000001, 0.000000, 0.000000, -0.000001, -1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.007260, 0.000000, -0.000000, 1.000000" />
+                                                            </Frame>
+                                                        </Frame>
+                                                    </Frame>
+                                                </Frame>
+                                            </Frame>
+                                        </Frame>
+                                    </Frame>
+                                </Frame>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+                    <Frame Name="L_Thigh1" Matrix="-0.977126, -0.026654, -0.210986, 0.000000, 0.011593, 0.983963, -0.177995, 0.000000, 0.212347, -0.176369, -0.961146, 0.000000, -0.037693, -0.003552, -0.034951, 1.000000">
+                        <Frame Name="L_Knee2" Matrix="0.944667, -0.328032, -0.000000, 0.000000, 0.328032, 0.944667, 0.000000, 0.000000, 0.000000, -0.000000, 1.000000, 0.000000, 0.182572, -0.000000, -0.000000, 1.000000">
+                            <Frame Name="L_Ankle1" Matrix="0.968260, 0.160376, -0.191709, 0.000000, -0.153371, 0.986855, 0.050933, 0.000000, 0.197357, -0.019913, 0.980129, 0.000000, 0.154280, 0.000000, 0.000000, 1.000000">
+                                <Frame Name="L_Ball" Matrix="-0.251979, 0.967733, -0.000000, 0.000000, -0.967733, -0.251979, -0.000000, 0.000000, -0.000000, 0.000000, 1.000000, 0.000000, 0.052502, 0.062738, 0.000000, 1.000000">
+                                    <Frame Name="L_Toe" Matrix="-1.000000, 0.000001, 0.000000, 0.000000, -0.000001, -1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.025380, 0.000000, 0.000000, 1.000000" />
+                                </Frame>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+                    <Frame Name="R_Thigh" Matrix="-0.977126, -0.026653, 0.210986, 0.000000, 0.011593, 0.983964, 0.177989, 0.000000, -0.212347, 0.176364, -0.961148, 0.000000, -0.037693, -0.003552, 0.034951, 1.000000">
+                        <Frame Name="R_Knee" Matrix="0.944667, -0.328032, 0.000000, 0.000000, 0.328032, 0.944667, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.182572, -0.000000, -0.000000, 1.000000">
+                            <Frame Name="R_Ankle" Matrix="0.968260, 0.160376, 0.191709, 0.000000, -0.153371, 0.986855, -0.050933, 0.000000, -0.197357, 0.019914, 0.980129, 0.000000, 0.154280, 0.000000, 0.000000, 1.000000">
+                                <Frame Name="R_Ball" Matrix="-0.251979, 0.967733, 0.000000, 0.000000, -0.967733, -0.251979, -0.000000, 0.000000, -0.000000, -0.000000, 1.000000, 0.000000, 0.052502, 0.062738, 0.000000, 1.000000">
+                                    <Frame Name="R_Toe" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.025380, 0.000000, -0.000000, 1.000000" />
+                                </Frame>
+                            </Frame>
+                        </Frame>
+                    </Frame>
+                </Frame>
+            </Frame>
+        </Frame>
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:soldier_Walk_bk:transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:soldier_Walk_bk:transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_bindPose:soldier_Walk_bk:transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="soldier_bindPose:soldier_Walk_bk:polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="skin" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, -0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="Head" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+                <Model Mesh="headShape">
+                    <AxisAlignedBoxBound Center="0.003052, 0.660208, -0.009236" Extents="0.038692, 0.065427, 0.048776" />
+                    <SubsetMaterialMapping SubsetName="subset0_headM" MaterialName="headM" />
+                </Model>
+            </Frame>
+            <Frame Name="body" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+                <Model Mesh="bodyShape">
+                    <OrientedBoxBound Center="0.001467, 0.316442, -0.007142" Extents="0.339261, 0.080214, 0.290665" Orientation="-0.466045, 0.492248, -0.519418, 0.520287" />
+                    <SubsetMaterialMapping SubsetName="subset0_lambert1" MaterialName="lambert1" />
+                    <SubsetMaterialMapping SubsetName="subset1_pantsM" MaterialName="pantsM" />
+                    <SubsetMaterialMapping SubsetName="subset2_jacketM" MaterialName="jacketM" />
+                    <SubsetMaterialMapping SubsetName="subset3_upBodyM" MaterialName="upBodyM" />
+                </Model>
+            </Frame>
+        </Frame>
+        <Frame Name="soldier_Walk3:teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="soldier_Walk3:polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:teeth_normal:polySurface717" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface61" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface64" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface65" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:soldier_Walk_bk:transform6" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:pants:polySurface39" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface69" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:soldier_Walk_bk:transform8" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface70" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000">
+            <Frame Name="soldier_Walk3:soldier_Walk_bk:transform7" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        </Frame>
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface71" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:pCylinder1" Matrix="1.291228, -0.999612, 0.249769, 0.000000, 0.735758, 1.049264, 0.395668, 0.000000, -0.566995, -0.282062, 1.802338, 0.000000, -0.237718, 0.428185, -0.027437, 1.000000" />
+        <Frame Name="soldier_Walk3:soldier_Walk_bk:polySurface75" Matrix="1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="spotLight1" Matrix="-0.972870, -0.000000, -0.231351, 0.000000, 0.097370, 0.907119, -0.409455, 0.000000, 0.209863, -0.420874, -0.882509, 0.000000, -0.180786, 0.733298, 0.519080, 1.000000" />
+        <Frame Name="spotLight2" Matrix="0.102855, 0.000000, 0.994696, 0.000000, 0.691096, 0.719221, -0.071462, 0.000000, -0.715407, 0.694781, 0.073975, 0.000000, 0.483544, 0.000000, 0.000000, 1.000000" />
+        <Frame Name="spotLight3" Matrix="0.999802, 0.000000, 0.019906, 0.000000, -0.012192, 0.790505, 0.612334, 0.000000, -0.015736, -0.612455, 0.790349, 0.000000, -0.071141, 1.083659, -0.554702, 1.000000" />
+        <Frame Name="transform10" Matrix="0.992626, 0.017563, 0.119939, 0.000000, 0.121184, -0.167114, -0.978462, 0.000000, 0.002859, 0.985781, -0.168010, 0.000000, -0.010587, 0.678675, -0.027267, 1.000000" />
+        <Frame Name="transform11" Matrix="0.992626, 0.017563, 0.119939, 0.000000, 0.121184, -0.167114, -0.978462, 0.000000, 0.002859, 0.985781, -0.168010, 0.000000, 0.014186, 0.679824, -0.026042, 1.000000" />
+    </Frame>
+</XFileATG>
