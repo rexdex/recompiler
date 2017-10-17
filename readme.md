@@ -54,15 +54,19 @@ Stuff currently implemented:
 
 ## How to run it ?
 
-- You will need Visual Studio 2015 (sorry, Windows only)
-- Get the wxWidgets in 3.1.0 and compile the x64 DLL libs, place them in dev\external\wxWidgets-3.1.0\
-- Compile the whole solution from dev\src\recompile.sln 
-- Run the "framework\frontend" project
-- Open the project "projects\xenon\doplhin\dolphin.px"
-- Select the "Final" configuration
-- Click the "Build button"
-- Assumming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\doplhin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\doplhin\data -devkit=C:\recompiler\projects\xenon\doplhin\data"
-- To exit the app close the GPU output window
+(NOTE: You require Visual Studio 2015 to build and use this project - at present it is entirely Windows-specific with regards to the code and the build process.)
+- Get `wxWidgets 3.1.0` and compile it to obtain the x64 DLLs. Place them in `dev\external\wxWidgets-3.1.0\`.
+- Open the solution `recompile.sln` under `dev\src` with Visual Studio. This is the top-level VS solution that we will use to build the project.
+- Compile the whole solution. You should now have binaries and their associated symbols under `_bin\Debug` in your project root directory.
+
+Now you have two ways to use a binary XEX file and obtain x86-64 code from it. The first way is to use the GUI, which can be launched using `recompiler_tools`. This way is straightforward - create a new project (or open an existing `.rep` project), add an image to it (this is your XEX file), and then use the toolbar to build the imported image. You will see a log window pop up and at the end of the process, you should be able to click on the *Run* button to run your newly recompiled binary.
+
+The second way is to use the command-line APIs as follows:
+- Run `recompiler_api -command=decompile -in=imagePath -out=outputPath` to decompile your image. `imagePath` should point to your XEX file, and `outputPath` should point to the folder where you want the output (uncompressed XEX, with the filename `output.pdi`) to go to.
+- Run `recompiler_api -command=recompile -in=pdiPath -out=outputPath -generator=cpp_msvc` to recompile the PDI output from the previous step into native code. At the end of the process you should have the recompiled binary, `code.bin` in `outputPath`.
+- Run `xenon_launcher -fsroot=dataPath -image=binPath` to launch the recompiled binary. `dataPath` refers to the folder where the assets of the binary can be found (example: `projects\xenon\dolphin` for the file `dolphin.xex`), and `binPath` is the location of the `.bin` file from the previous step.
+
+To exit the app (or end the `xenon_launcher` process), simply close the GPU output window.
 
 ## References
 

@@ -78,7 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dx11AbstarctLayer.cpp" />
+    <ClCompile Include="dx11AbstractLayer.cpp" />
     <ClCompile Include="dx11FetchLayout.cpp" />
     <ClCompile Include="dx11GeometryBuffer.cpp" />
     <ClCompile Include="dx11GeometryDrawer.cpp" />

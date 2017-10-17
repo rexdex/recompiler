@@ -52,7 +52,7 @@ const int RunRecompiler(const Commandline& cmdLine, ILogOutput& log)
 	const auto codeGeneratorName = cmdLine.GetOptionValueA("generator");
 	if (codeGeneratorName.empty())
 	{
-		log.Error("Recompiler: Output path to directory with compiled stuff (-out) not specified");
+		log.Error("Recompiler: Generator name (-generator) not specified");
 		return -2;
 	}
 
@@ -91,6 +91,51 @@ const int RunRecompiler(const Commandline& cmdLine, ILogOutput& log)
 
 	// done
 	return 0;
+}
+
+///--
+
+const int RunDecompiler(const Commandline& cmdLine, ILogOutput& log)
+{
+    // get the input image name
+    const auto imagePath = cmdLine.GetOptionValueW("in");
+    if (imagePath.empty())
+    {
+        log.Error("Decompiler: Input path to source XEX image (-in) not specified");
+        return -2;
+    }
+
+    // get the output directory name where we will output data
+    const auto outputDirPath = cmdLine.GetOptionValueW("out");
+    if (outputDirPath.empty())
+    {
+        log.Error("Decompiler: Output path to directory with compiled data (-out) not specified");
+        return -2;
+    }
+
+    // get a platform definition to load the binary image; for the current command-line API, we
+    // only have one platform (Xbox360, index 0), so we can hardcode it here for now
+    const auto* platformDefinition = platform::Library::GetInstance().GetPlatform(0);
+
+    // get a data loader
+    const auto bin = platformDefinition->LoadImageFromFile(log, imagePath);
+    if (!bin)
+    {
+        log.Error("Decompiler: Unable to import file '%ls' because the image could not be loaded");
+        return -2;
+    }
+
+    // if we got here then the image was loaded successfully; let's try to decode it and save the .pdi file
+    const auto outPath = outputDirPath + L"\\output.pdi";
+    const auto env = decoding::Environment::Create(log, platformDefinition, bin, outPath);
+    if (!env)
+    {
+        log.Error("Decompiler: Unable to import file '%ls' because the image could not be decoded");
+        return -2;
+    }
+
+    // done
+    return 0;
 }
 
 ///--
@@ -136,7 +181,7 @@ int main(int argc, const char** argv)
 		fprintf(stdout, "\n");
 		fprintf(stdout, "Commands:\n");
 		fprintf(stdout, "  decompile -platform=<platform> -in=<image> -out=<path> [options]\n");
-		fprintf(stdout, "  recompile -in=<image> -out=<path> [options]\n");
+		fprintf(stdout, "  recompile -in=<image> -out=<path> -generator=<generatorName> [options]\n");
 		return -1;
 	}
 
@@ -171,6 +216,10 @@ int main(int argc, const char** argv)
 	{
 		return RunRecompiler(cmdLine, log);
 	}
+    else if (commandName == "decompile")
+    {
+        return RunDecompiler(cmdLine, log);
+    }
 	else
 	{
 		log.Error("Command '%hs' was not recognized", commandName.c_str());
