@@ -63,9 +63,9 @@ namespace xenon
 		Link("devkit:", "\\Device\\Harddisk1\\Partition1");
 
 		// base path
-		if (commandline.HasOption("root"))
+		if (commandline.HasOption("fsroot"))
 		{
-			const auto nativePath = commandline.GetOptionValueW("root");
+			const auto nativePath = commandline.GetOptionValueW("fsroot");
 			GLog.Log("IO: Root for file system set to '%ls'", nativePath.c_str());
 
 			Mount(new FileSystemDevice_PathRedirection(kernel, nativeFileSystem, "\\Device\\Cdrom0", "DVD", nativePath));
