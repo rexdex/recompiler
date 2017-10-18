@@ -6,6 +6,10 @@
 
 //-------------------------------------
 
+//#define DUMP_COMMAND_BUFFER
+
+//-------------------------------------
+
 CXenonGPUCommandBufferReader::CXenonGPUCommandBufferReader()
 	: m_bufferBase(nullptr)
 	, m_bufferSize(0)
@@ -109,12 +113,14 @@ void CXenonGPUCommandBuffer::AdvanceWriteIndex(const uint32 newIndex)
 	std::atomic_thread_fence(std::memory_order_acq_rel);
 	uint32 oldIndex = m_writeIndex.exchange(newIndex);
 
+#ifdef DUMP_COMMAND_BUFFER
 	GLog.Log( "GPU: Command buffer writeIndex=%d (delta: %d)", newIndex, newIndex - oldIndex );
 	for ( uint32 i=oldIndex; i<newIndex; ++i )
 	{
 		const auto memAddr = m_commandBufferPtr + i;
 		GLog.Log( "GPU: Mem[+%d, @%d]: 0x%08X", i-oldIndex, i, cpu::mem::load<uint32>( memAddr) );
 	}
+#endif
 }
 
 void CXenonGPUCommandBuffer::SetWriteBackPointer(const uint32 addr)
@@ -129,20 +135,23 @@ bool CXenonGPUCommandBuffer::BeginRead(CXenonGPUCommandBufferReader& outReader)
 	auto curWriteIndex = m_writeIndex.load();
 	if (m_readIndex == curWriteIndex)
 	{
+#ifdef DUMP_COMMAND_BUFFER
 		GLog.Log("GPU: No new data @%d", curWriteIndex);
+#endif
 		return false;
 	}
 
 	// setup actual write index
 	const uint32 readStartIndex = m_readIndex; // prev position
 	const uint32 readEndIndex = curWriteIndex; // current position
+#ifdef DUMP_COMMAND_BUFFER
 	GLog.Log("GPU: Read started at %d, end %d", readStartIndex, readEndIndex);
 	for (uint32 i = readStartIndex; i < readEndIndex; ++i)
 	{
 		auto data = cpu::mem::load<uint32>(m_commandBufferPtr + i);
 		GLog.Log("GPU: RMem[+%d, @%d]: 0x%08X", i - readStartIndex, i, data);
 	}
-
+#endif
 	// copy data out
 	memcpy(&outReader, &CXenonGPUCommandBufferReader(m_commandBufferPtr, m_numWords, readStartIndex, readEndIndex), sizeof(CXenonGPUCommandBufferReader));
 	m_readIndex = curWriteIndex;
@@ -157,7 +166,9 @@ void CXenonGPUCommandBuffer::EndRead()
 	{
 		const uint32 cpuAddr = GPlatform.GetMemory().TranslatePhysicalAddress(m_writeBackPtr);
 		cpu::mem::storeAddr< uint32 >(cpuAddr, m_readIndex);
+#ifdef DUMP_COMMAND_BUFFER
 		GLog.Log("GPU STORE at %08Xh, val %d (%08Xh)", cpuAddr, m_readIndex, m_readIndex);
+#endif
 	}
 }
 
