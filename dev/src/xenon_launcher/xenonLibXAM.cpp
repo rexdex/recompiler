@@ -9,7 +9,8 @@
 
 uint64 __fastcall XboxXam_XamEnumerate(uint64 ip, cpu::CpuRegs& regs)
 {
-	RETURN_DEFAULT();
+	RETURN_ARG(xnative::X_STATUS_UNSUCCESSFUL);
+//	RETURN_DEFAULT();
 }
 
 uint64 __fastcall XboxXam_XamContentCreateEx(uint64 ip, cpu::CpuRegs& regs)
@@ -29,7 +30,8 @@ uint64 __fastcall XboxXam_XamContentClose(uint64 ip, cpu::CpuRegs& regs)
 
 uint64 __fastcall XboxXam_XamContentCreateEnumerator(uint64 ip, cpu::CpuRegs& regs)
 {
-	RETURN_DEFAULT();
+	RETURN_ARG(xnative::X_STATUS_UNSUCCESSFUL);
+	//	RETURN_DEFAULT();
 }
 
 uint64 __fastcall XboxXam_XamShowSigninUI(uint64 ip, cpu::CpuRegs& regs)

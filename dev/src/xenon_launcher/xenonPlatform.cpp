@@ -6,10 +6,11 @@
 #include "xenonCPUDevice.h"
 #include "xenonInput.h"
 #include "xenonMemory.h"
+#include "xenonUserManager.h"
+#include "xenonAudio.h"
 
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
-#include "xenonUserManager.h"
 
 //-----------------------------------------------------------------------------
 
@@ -159,6 +160,10 @@ namespace xenon
 		GLog.Log("Runtime: Initializing Xenon user profile manager");
 		m_users = new UserProfileManager();
 
+		// create the audio system
+		GLog.Log("Runtime: Initializing Audio system");
+		m_audio = new Audio(symbols, commandline);
+
 		// initialize config data
 		extern void InitializeXboxConfig();
 		InitializeXboxConfig();
@@ -257,6 +262,9 @@ namespace xenon
 
 		delete m_graphics;
 		m_graphics = nullptr;
+
+		delete m_audio;
+		m_audio = nullptr;
 
 		delete m_fileSys;
 		m_fileSys = nullptr;

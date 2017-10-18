@@ -12,6 +12,7 @@ namespace xenon
 	class InputSystem;
 	class Memory;
 	class UserProfileManager;
+	class Audio;
 
 	/// Top level wrapper
 	class Platform : public runtime::IPlatform
@@ -32,6 +33,8 @@ namespace xenon
 		inline cpu::GeneralIO& GetIOTable() const { return *m_ioTable; }
 
 		inline UserProfileManager& GetUserProfileManager() const { return *m_users; }
+
+		inline Audio& GetAudio() const { return *m_audio; }
 
 	public:
 		Platform();
@@ -65,6 +68,7 @@ namespace xenon
 		InputSystem*			m_inputSys;		// input system
 		Memory*					m_memory;		// memory system
 		UserProfileManager*		m_users;		// user profiles
+		Audio*					m_audio;		// audio system
 
 		// some runtime data
 		xnative::XenonNativeData	m_nativeXexExecutableModuleHandle;

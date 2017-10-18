@@ -173,6 +173,9 @@
     <ClCompile Include="xenonLibAudio.cpp">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="xenonAudio.cpp">
+      <Filter>devices\audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibUtils.h">
@@ -352,6 +355,9 @@
     <ClInclude Include="xenonMemory.h">
       <Filter>devices\memory</Filter>
     </ClInclude>
+    <ClInclude Include="xenonAudio.h">
+      <Filter>devices\audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">
@@ -416,6 +422,9 @@
     </Filter>
     <Filter Include="devices\memory">
       <UniqueIdentifier>{113a4d31-c20b-46e2-862c-9eea86eb3475}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\audio">
+      <UniqueIdentifier>{130a265a-a7d5-49cf-a346-9cc43d7617c4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

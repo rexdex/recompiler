@@ -102,6 +102,7 @@
     <ClCompile Include="dx11TextureManager.cpp" />
     <ClCompile Include="dx11Utils.cpp" />
     <ClInclude Include="build.h" />
+    <ClCompile Include="xenonAudio.cpp" />
     <ClCompile Include="xenonCPU.cpp" />
     <ClCompile Include="xenonCPUDevice.cpp" />
     <ClCompile Include="xenonInplaceExecution.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="dx11TextureManager.h" />
     <ClInclude Include="dx11Utils.h" />
     <ClInclude Include="shaders\edramCommon.h" />
+    <ClInclude Include="xenonAudio.h" />
     <ClInclude Include="xenonCPUDevice.h" />
     <ClInclude Include="xenonInplaceExecution.h" />
     <ClInclude Include="xenonGPUAbstractLayer.h" />
