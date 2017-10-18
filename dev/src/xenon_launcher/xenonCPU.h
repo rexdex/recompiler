@@ -3724,7 +3724,7 @@ namespace cpu
 			return temp;
 		}
 
-		template <uint8 CTRL, uint8 SEL>
+		template <uint8 CTRL, uint8 VAL>
 		static inline void vspltisb(CpuRegs& regs, TVReg* out)
 		{
 			ASM_CHECK(CTRL == 0);
@@ -3747,7 +3747,7 @@ namespace cpu
 			out->AsUint8<15>() = vspltisw_helper<VAL>();
 		}
 
-		template <uint8 CTRL, uint16 SEL>
+		template <uint8 CTRL, uint16 VAL>
 		static inline void vspltish(CpuRegs& regs, TVReg* out)
 		{
 			ASM_CHECK(CTRL == 0);
@@ -4426,6 +4426,16 @@ namespace cpu
 				const uint8 ri = (i&~3) | (3 - (i & 3));
 				out->u8[ri] = (16 - ptr) + i;
 			}
+		}
+
+		template <uint8 CTRL, uint8 IMM>
+		static inline void vcfux(CpuRegs& regs, TVReg* out, const TVReg& a)
+		{
+			const float div = 1 << IMM;
+			out->AsFloat<0>() = a.AsUint32<0>() / div;
+			out->AsFloat<1>() = a.AsUint32<1>() / div;
+			out->AsFloat<2>() = a.AsUint32<2>() / div;
+			out->AsFloat<3>() = a.AsUint32<3>() / div;
 		}
 
 		//---------------------------------------------------------------------------------
