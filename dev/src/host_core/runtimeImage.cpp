@@ -167,7 +167,7 @@ namespace runtime
 				if (!importCode)
 				{
 					numUnknownFunctions += 1;
-					GLog.Warn("Image: Unimplemented import function '%s'. Crash possible.", importInfo.m_name);
+					GLog.Warn("Image: Unimplemented import function '%s' at 0x%08X. Crash possible.", importInfo.m_name, importInfo.m_address);
 
 					// mount unimplemented functio0n
 					m_codeTable->MountBlock(importInfo.m_address, 4, &UnimplementedFunctionBlock, true);
