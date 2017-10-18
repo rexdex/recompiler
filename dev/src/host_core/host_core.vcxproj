@@ -83,6 +83,8 @@
     <ClCompile Include="networkAddress.cpp" />
     <ClCompile Include="networkManagerImpl.cpp" />
     <ClCompile Include="networkSocket.cpp" />
+    <ClInclude Include="bitMask.h" />
+    <ClInclude Include="blockAllocator.h" />
     <ClInclude Include="debugPacket.h" />
     <ClCompile Include="runtimeCodeExecutor.cpp" />
     <ClCompile Include="runtimeCodeTable.cpp" />

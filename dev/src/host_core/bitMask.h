@@ -1,6 +1,6 @@
 #pragma once
 
-namespace win
+namespace utils
 {
 	template< uint32 MAX_ENTRIES >
 	struct BitMask

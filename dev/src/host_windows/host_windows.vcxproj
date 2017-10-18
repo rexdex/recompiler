@@ -94,8 +94,6 @@
     <ClInclude Include="build.h" />
     <ClInclude Include="winFileSystem.h" />
     <ClInclude Include="winKernel.h" />
-    <ClInclude Include="winMemoryBitMask.h" />
-    <ClInclude Include="winMemoryBlockAllocator.h" />
     <ClInclude Include="winMemory.h" />
   </ItemGroup>
   <ItemGroup>

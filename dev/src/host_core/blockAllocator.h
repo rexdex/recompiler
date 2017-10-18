@@ -1,8 +1,8 @@
 #pragma once
 
-#include "winMemoryBitMask.h"
+#include "bitMask.h"
 
-namespace win
+namespace utils
 {
 	template< uint32 MAX_PAGES >
 	class BlockAllocator

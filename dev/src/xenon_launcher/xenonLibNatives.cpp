@@ -1,6 +1,8 @@
 #include "build.h"
 #include "xenonLibNatives.h" 
 #include "xenonLibUtils.h" 
+#include "xenonPlatform.h"
+#include "xenonMemory.h"
 
 //---------------------------------------------------------------------------
 
@@ -37,9 +39,9 @@ namespace xnative
 	{
 	}
 
-	void XenonNativeData::Alloc(native::IMemory& memory, const uint32 size)
+	void XenonNativeData::Alloc(const uint32 size)
 	{
-		m_data = (uint8*) memory.VirtualAlloc(nullptr, size, native::IMemory::eAlloc_Commit | native::IMemory::eAlloc_Reserve, native::IMemory::eFlags_ReadWrite);
+		m_data = (uint8*) GPlatform.GetMemory().VirtualAlloc(nullptr, size, xnative::XMEM_COMMIT | xnative::XMEM_RESERVE, xnative::XPAGE_READWRITE);
 		memset(m_data, 0, size);
 	}
 

@@ -21,7 +21,7 @@ namespace xenon
 		inline KernelThreadMemory& GetMemoryBlock() { return m_memory; }
 
 	public:
-		KernelThread(Kernel* kernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params);
+		KernelThread(Kernel* kernel, native::IKernel* nativeKernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params);
 		virtual ~KernelThread();
 
 		// returns true if the thread has crashed (an uncontinuable exception was thrown)
@@ -95,8 +95,8 @@ namespace xenon
 		volatile bool				m_isCrashed;		// Thead state - crashed (uncontinuable exception was thrown)
 		volatile bool				m_requestExit;		// External exit was requested
 
-		native::ICriticalSection*	m_apcLock;
-		KernelList*					m_apcList;
+		std::mutex m_apcLock;
+		KernelList* m_apcList;
 	};
 
 	//---------------------------------------------------------------------------

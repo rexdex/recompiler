@@ -41,7 +41,7 @@ namespace xnative
 		XenonNativeData();
 		~XenonNativeData();
 
-		void Alloc(native::IMemory& memory, const uint32 size);
+		void Alloc(const uint32 size);
 
 		inline const uint8* Data() const
 		{
@@ -715,6 +715,39 @@ namespace xnative
 		Field<uint16_t> flags;
 		Field<uint8_t> user_index;
 		Field<uint8_t> hid_code;
+	};
+
+	enum class X_USER_DATA_TYPE : uint8
+	{
+		XUSER_DATA_TYPE_INT32=1, //32-bit integer
+		XUSER_DATA_TYPE_INT64=2, //64-bit integer
+		XUSER_DATA_TYPE_DOUBLE=3, //A double floating - point value.
+		XUSER_DATA_TYPE_UNICODE=4, //Unicode string.
+		XUSER_DATA_TYPE_FLOAT=5, //A float floating - point value.
+		XUSER_DATA_TYPE_BINARY=6, //Binary data
+		XUSER_DATA_TYPE_DATETIME=7, //Date and time value
+		XUSER_DATA_TYPE_CONTEXT
+	};
+
+	struct X_USER_DATA
+	{
+		X_USER_DATA_TYPE type;
+		union
+		{
+			Field<uint32_t> nData;
+			Field<uint64_t> i64Data;
+			Field<double> dblData;
+			struct {
+				Field<uint32_t> cbData;
+				Field<uint32_t> pwszData;
+			} string;
+			Field<float> fData;
+			struct {
+				Field<uint32_t> cbData;
+				Field<uint32_t> pbData;
+			} binary;
+			Field<uint64_t> ftData;
+		} data;
 	};
 
 } // xnative

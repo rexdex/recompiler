@@ -1,4 +1,3 @@
-MEM_READ
 #include "build.h"
 #include "xenonPlatform.h"
 #include "xenonKernel.h"
@@ -6,9 +5,11 @@ MEM_READ
 #include "xenonGraphics.h"
 #include "xenonCPUDevice.h"
 #include "xenonInput.h"
+#include "xenonMemory.h"
 
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
+#include "xenonUserManager.h"
 
 //-----------------------------------------------------------------------------
 
@@ -123,17 +124,17 @@ namespace xenon
 		// stats
 		GLog.Log("Runtime: Initializing Xenon runtime");
 
-		// setup memory
-		m_memory = nativeSystems.m_memory;
+		// create memory system
+		m_memory = new Memory(*nativeSystems.m_memory);
 
 		// initialize virtual memory
 		const uint32 virtualMemorySize = 512 << 20;
-		if (!nativeSystems.m_memory->InitializeVirtualMemory(virtualMemorySize))
+		if (!m_memory->InitializeVirtualMemory(virtualMemorySize))
 			return false;
 
 		// initialize physical memory
 		const uint32 physicalMemorySize = 256 << 20;
-		if (!nativeSystems.m_memory->InitializePhysicalMemory(physicalMemorySize))
+		if (!m_memory->InitializePhysicalMemory(physicalMemorySize))
 			return false;
 
 		// create kernel
@@ -146,11 +147,15 @@ namespace xenon
 
 		// create graphics system
 		GLog.Log("Runtime: Initializing Xenon graphics");
-		m_graphics = new Graphics(*nativeSystems.m_memory, symbols, commandline);
+		m_graphics = new Graphics(symbols, commandline);
 
 		// create input system
 		GLog.Log("Runtime: Initializing Xenon input system");
 		m_inputSys = new InputSystem(m_kernel, commandline);
+
+		// create the user profile manager
+		GLog.Log("Runtime: Initializing Xenon user profile manager");
+		m_users = new UserProfileManager();
 
 		// initialize config data
 		extern void InitializeXboxConfig();
@@ -176,33 +181,33 @@ namespace xenon
 
 		// register the process native data
 
-		m_nativeKeDebugMonitorData.Alloc(*m_memory, 256);
+		m_nativeKeDebugMonitorData.Alloc(256);
 		symbols.RegisterSymbol("KeDebugMonitorData", m_nativeKeDebugMonitorData.Data());
 
-		m_nativeKeCertMonitorData.Alloc(*m_memory, 4);
+		m_nativeKeCertMonitorData.Alloc(4);
 		symbols.RegisterSymbol("KeCertMonitorData", m_nativeKeCertMonitorData.Data());
 
 		// setup basics - XexExecutableModuleHandle
-		m_nativeXexExecutableModuleHandle.Alloc(*m_memory, 2048);
-		m_nativeXexExecutableModuleHandlePtr.Alloc(*m_memory, 4);
+		m_nativeXexExecutableModuleHandle.Alloc(2048);
+		m_nativeXexExecutableModuleHandlePtr.Alloc(4);
 		symbols.RegisterSymbol("XexExecutableModuleHandle", m_nativeXexExecutableModuleHandlePtr.Data());
 		m_nativeXexExecutableModuleHandlePtr.Write<uint32>(0, (uint32)m_nativeXexExecutableModuleHandle.Data());
 		m_nativeXexExecutableModuleHandle.Write<uint32>(0, 0x4000000);
 		m_nativeXexExecutableModuleHandle.Write<uint32>(0x58, 0x80101100); // from actual memory
 
 		// setup basics - XboxHardwareInfo
-		m_nativeXboxHardwareInfo.Alloc(*m_memory, 16);
+		m_nativeXboxHardwareInfo.Alloc(16);
 		symbols.RegisterSymbol("XboxHardwareInfo", m_nativeXboxHardwareInfo.Data());
 		m_nativeXboxHardwareInfo.Write<uint32>(0, 0x00000000); // flags
 		m_nativeXboxHardwareInfo.Write<uint8>(4, 0x6); // num cpus
 
 		// setup basics - ExLoadedCommandLine
-		m_nativeExLoadedCommandLine.Alloc(*m_memory, 1024);
+		m_nativeExLoadedCommandLine.Alloc(1024);
 		symbols.RegisterSymbol("ExLoadedCommandLine", m_nativeExLoadedCommandLine.Data());
 		memcpy((void*)m_nativeExLoadedCommandLine.Data(), "default.xex", strlen("default.xex") + 1);
 
 		// setup basics - XboxKrnlVersion
-		m_nativeXboxKrnlVersion.Alloc(*m_memory, 8);
+		m_nativeXboxKrnlVersion.Alloc(8);
 		symbols.RegisterSymbol("XboxKrnlVersion", m_nativeXboxKrnlVersion.Data());
 		m_nativeXboxKrnlVersion.Write<uint16>(0, 2);
 		m_nativeXboxKrnlVersion.Write<uint16>(2, 0xFFFF);
@@ -210,11 +215,11 @@ namespace xenon
 		m_nativeXboxKrnlVersion.Write<uint16>(6, 0xFFFF);
 
 		// setup basics - KeTimeStampBundle
-		m_nativeKeTimeStampBundle.Alloc(*m_memory, 24);
+		m_nativeKeTimeStampBundle.Alloc(24);
 		symbols.RegisterSymbol("KeTimeStampBundle", m_nativeKeTimeStampBundle.Data());
 
 		// process object
-		m_nativeExThreadObjectType.Alloc(*m_memory, 4);
+		m_nativeExThreadObjectType.Alloc(4);
 		m_nativeExThreadObjectType.Write<uint32>(0, 0xD01BBEEF);
 		symbols.RegisterSymbol("ExThreadObjectType", m_nativeExThreadObjectType.Data());
 
@@ -243,6 +248,9 @@ namespace xenon
 
 	void Platform::Shutdown()
 	{
+		delete m_users;
+		m_users = nullptr;
+
 		delete m_graphics;
 		m_graphics = nullptr;
 
@@ -260,6 +268,9 @@ namespace xenon
 
 		delete m_ioTable;
 		m_ioTable = nullptr;
+
+		delete m_memory;
+		m_memory = nullptr;
 	}
 
 	void Platform::RequestUserExit()
@@ -291,6 +302,7 @@ namespace xenon
 				break;
 			}
 
+#ifdef PLATFORM_WINDOWS
 			// exit
 			if ((GetAsyncKeyState(VK_F10) & 0x8000) && (GetAsyncKeyState(VK_F12) & 0x8000))
 			{
@@ -304,13 +316,13 @@ namespace xenon
 				GLog.Err("Runtime: Requesting trace dump");
 				m_graphics->RequestTraceDump();
 			}
+#endif
 
-			// TODO: update GPU
-			Sleep(5);
+			// wait before iterations so we don't consume to much CPU
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		}
 
 		// exit
-		Sleep(1000);
 		return 0;
 	}
 

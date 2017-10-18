@@ -18,12 +18,6 @@
     <ClInclude Include="winMemory.h">
       <Filter>native\memory</Filter>
     </ClInclude>
-    <ClInclude Include="winMemoryBitMask.h">
-      <Filter>native\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="winMemoryBlockAllocator.h">
-      <Filter>native\memory</Filter>
-    </ClInclude>
     <ClInclude Include="winKernel.h">
       <Filter>native\kernel</Filter>
     </ClInclude>

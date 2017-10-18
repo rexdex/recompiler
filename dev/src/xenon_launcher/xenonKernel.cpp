@@ -5,6 +5,7 @@
 #include "xenonCPU.h"
 #include "xenonCPUDevice.h"
 #include "xenonInplaceExecution.h"
+#include "xenonMemory.h"
 
 #include "../host_core/nativeMemory.h"
 #include "../host_core/nativeKernel.h"
@@ -12,7 +13,6 @@
 #include "../host_core/runtimeCodeExecutor.h"
 #include "../host_core/launcherCommandline.h"
 #include "../host_core/runtimeTraceWriter.h"
-#include <mutex>
 
 namespace xenon
 {
@@ -222,11 +222,10 @@ namespace xenon
 		: IKernelObject(kernel, KernelObjectType::Stack, "Stack")
 		, m_base(nullptr)
 		, m_top(nullptr)
-		, m_memory(&kernel->GetNativeMemory())
 		, m_size(size)
 	{
 		// alloc stack
-		m_base = m_memory->VirtualAlloc(NULL, m_size, native::IMemory::eAlloc_Top | native::IMemory::eAlloc_Reserve | native::IMemory::eAlloc_Commit, native::IMemory::eFlags_ReadWrite);
+		m_base = GPlatform.GetMemory().VirtualAlloc(NULL, m_size, xnative::XMEM_TOP_DOWN | xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
 		DEBUG_CHECK(m_base != nullptr);
 
 		// setup
@@ -240,10 +239,9 @@ namespace xenon
 	KernelStackMemory::~KernelStackMemory()
 	{
 		uint32 freedSize = 0;
-		m_memory->VirtualFree(m_base, m_size, native::IMemory::eAlloc_Decomit | native::IMemory::eAlloc_Release, freedSize);
+		GPlatform.GetMemory().VirtualFree(m_base, m_size, xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE, freedSize);
 
 		m_base = nullptr;
-		m_memory = nullptr;
 		m_top = nullptr;
 		m_size = 0;
 	}
@@ -258,7 +256,7 @@ namespace xenon
 		const uint32 totalThreaDataSize = (THREAD_DATA_SIZE + PRC_DATA_SIZE + TLS_COUNT + SCRATCH_SIZE) * sizeof(uint32);
 
 		// alloc stack
-		m_block = kernel->GetNativeMemory().VirtualAlloc(NULL, totalThreaDataSize, native::IMemory::eAlloc_Top | native::IMemory::eAlloc_Reserve | native::IMemory::eAlloc_Commit, native::IMemory::eFlags_ReadWrite);
+		m_block = GPlatform.GetMemory().VirtualAlloc(NULL, totalThreaDataSize, xnative::XMEM_TOP_DOWN | xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
 		memset(m_block, 0, totalThreaDataSize);
 		DEBUG_CHECK(m_block != nullptr);
 
@@ -321,7 +319,7 @@ namespace xenon
 	KernelThreadMemory::~KernelThreadMemory()
 	{
 		uint32 freedSize = 0;
-		GetOwner()->GetNativeMemory().VirtualFree(m_block, 0, native::IMemory::eAlloc_Decomit | native::IMemory::eAlloc_Release, freedSize);
+		GPlatform.GetMemory().VirtualFree(m_block, 0, xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE, freedSize);
 
 		m_block = nullptr;
 		m_prcAddr = 0;
@@ -481,7 +479,6 @@ namespace xenon
 
 	Kernel::Kernel(const native::Systems& system, const launcher::Commandline& cmdline)
 		: m_nativeKernel(system.m_kernel)
-		, m_nativeMemory(system.m_memory)
 		, m_maxObjectIndex(1)
 		, m_numFreeIndices(0)
 		, m_exitRequested(false)
@@ -892,7 +889,7 @@ namespace xenon
 	KernelThread* Kernel::CreateThread(const KernelThreadParams& params)
 	{
 		auto* traceFile = CreateThreadTraceWriter();
-		auto* thread = new KernelThread(this, traceFile, params);
+		auto* thread = new KernelThread(this, m_nativeKernel, traceFile, params);
 
 		m_threadLock->Acquire();
 		m_threads.push_back(thread);

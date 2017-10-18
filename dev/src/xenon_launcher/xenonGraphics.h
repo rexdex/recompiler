@@ -10,7 +10,7 @@ namespace xenon
 	class Graphics
 	{
 	public:
-		Graphics(native::IMemory& memory, runtime::Symbols& symbols, const launcher::Commandline& commandline);
+		Graphics(runtime::Symbols& symbols, const launcher::Commandline& commandline);
 		~Graphics();
 
 		// setup the ring buffer, this initializes the internal GPU processor

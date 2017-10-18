@@ -135,8 +135,10 @@
     <ClCompile Include="xenonLibKernel.cpp" />
     <ClCompile Include="xenonKernel.cpp" />
     <ClCompile Include="xenonLibXAM.cpp" />
+    <ClCompile Include="xenonMemory.cpp" />
     <ClCompile Include="xenonPlatform.cpp" />
     <ClCompile Include="xenonThread.cpp" />
+    <ClCompile Include="xenonUserManager.cpp" />
     <ClCompile Include="xenonUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -195,8 +197,10 @@
     <ClInclude Include="xenonLibNatives.h" />
     <ClInclude Include="xenonLibUtils.h" />
     <ClInclude Include="xenonKernel.h" />
+    <ClInclude Include="xenonMemory.h" />
     <ClInclude Include="xenonPlatform.h" />
     <ClInclude Include="xenonThread.h" />
+    <ClInclude Include="xenonUserManager.h" />
     <ClInclude Include="xenonUtils.h" />
   </ItemGroup>
   <ItemGroup>

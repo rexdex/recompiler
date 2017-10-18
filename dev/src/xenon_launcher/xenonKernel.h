@@ -229,7 +229,6 @@ namespace xenon
 		void*				m_base;		// base address (stack bottom)
 		void*				m_top;		// stack top
 		uint32				m_size;		// size of the stack buffer
-		native::IMemory*	m_memory;	// memory subsystem
 	};
 
 	//---------------------------------------------------------------------------
@@ -408,12 +407,6 @@ namespace xenon
 		// get DPC dispatcher
 		inline KernelDispatcher& GetDPCDispatcher() const { return *m_dpcDispatcher; }
 
-		// get memory allocator
-		inline native::IMemory& GetNativeMemory() const { return *m_nativeMemory;  }
-
-		// get the native kernel
-		inline native::IKernel& GetNativeKernel() const { return *m_nativeKernel; }
-
 		// get master code table
 		inline const runtime::CodeTable& GetCode() const { return *m_codeTable; }
 
@@ -472,7 +465,6 @@ namespace xenon
 		static const uint32			MAX_TLS = 64;
 
 		native::IKernel*			m_nativeKernel;
-		native::IMemory*			m_nativeMemory;
 
 		const runtime::CodeTable*	m_codeTable;
 

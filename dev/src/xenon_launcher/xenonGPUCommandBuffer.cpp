@@ -2,7 +2,7 @@
 #include "xenonLibNatives.h"
 #include "xenonGPUCommandBuffer.h"
 #include "xenonCPU.h"
-#include <atomic>
+#include "xenonMemory.h"
 
 //-------------------------------------
 

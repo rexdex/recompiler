@@ -29,7 +29,7 @@ namespace xenon
 
 	__declspec(thread) KernelThread* GCurrentThread = NULL;
 
-	KernelThread::KernelThread(Kernel* kernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params)
+	KernelThread::KernelThread(Kernel* kernel, native::IKernel* nativeKernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params)
 		: IKernelWaitObject(kernel, KernelObjectType::Thread, "Thread")
 		, m_code(&m_regs, &kernel->GetCode(), params.m_entryPoint)
 		, m_memory( kernel, params.m_stackSize, GetIndex(), params.m_entryPoint, 1 )
@@ -44,10 +44,6 @@ namespace xenon
 		, m_affinity(0xFF)
 		, m_irql(0)
 	{
-		// create APC list
-		m_apcList = new KernelList();
-		m_apcLock = kernel->GetNativeKernel().CreateCriticalSection();
-
 		// register descriptor in kernel linked lists
 		SetNativePointer((void*)m_memory.GetThreadDataAddr()); // NOTE: we are not binding it to the thread
 
@@ -65,7 +61,7 @@ namespace xenon
 		GReservation.UNLOCK = &ReservationUnlock;
 
 		// create the native thread
-		m_nativeThread = kernel->GetNativeKernel().CreateThread(this);
+		m_nativeThread = nativeKernel->CreateThread(this);
 	}
 
 	KernelThread::~KernelThread()
@@ -81,10 +77,6 @@ namespace xenon
 		// delete APC list
 		delete m_apcList;
 		m_apcList = nullptr;
-
-		// delete APC lock
-		delete m_apcLock;
-		m_apcLock = nullptr;
 
 		// if we still have trace file close it now (should be closed on the thread)
 		delete m_traceFile;
@@ -227,13 +219,13 @@ namespace xenon
 
 	void KernelThread::LockAPC()
 	{
-		m_apcLock->Acquire();
+		m_apcLock.lock();
 	}
 
 	void KernelThread::UnlockAPC()
 	{
 		const bool needsAPC = m_apcList->HasPending();
-		m_apcLock->Release();
+		m_apcLock.unlock();
 
 		if (needsAPC)
 			m_nativeThread->ScheduleAPC();

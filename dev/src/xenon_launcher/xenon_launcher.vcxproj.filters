@@ -164,6 +164,12 @@
     <ClCompile Include="xenonLibXAM.cpp">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="xenonUserManager.cpp">
+      <Filter>devices\user</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonMemory.cpp">
+      <Filter>devices\memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibUtils.h">
@@ -337,6 +343,12 @@
     <ClInclude Include="xenonInput.h">
       <Filter>devices\input</Filter>
     </ClInclude>
+    <ClInclude Include="xenonUserManager.h">
+      <Filter>devices\user</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonMemory.h">
+      <Filter>devices\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">
@@ -395,6 +407,12 @@
     </Filter>
     <Filter Include="devices\input">
       <UniqueIdentifier>{334c6e1d-aebe-4eaf-93d2-b5b7e6e7b929}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\user">
+      <UniqueIdentifier>{3adb062f-fc6b-4ac3-9856-ba7cf749d59f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\memory">
+      <UniqueIdentifier>{113a4d31-c20b-46e2-862c-9eea86eb3475}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,7 @@
 
 #include "xenonGPUConstants.h"
 #include "xenonPlatform.h"
-#include "../host_core/nativeMemory.h"
+#include "xenonMemory.h"
 
 #define XENON_GPU_MAKE_SWIZZLE(x, y, z, w)								\
 	(((eXenonGPUSwizzle_##x) << 0) | ((eXenonGPUSwizzle_##y) << 3) |	\

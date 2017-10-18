@@ -3,6 +3,7 @@
 #include "xenonLibNatives.h"
 #include "xenonPlatform.h"
 #include "xenonGraphics.h"
+#include "xenonMemory.h"
 
 //---------------------------------------------------------------------------
 
@@ -39,15 +40,6 @@ uint64 __fastcall XboxVideo_MmAllocatePhysicalMemoryEx(uint64 ip, cpu::CpuRegs& 
 		GLog.Err("Invalid XPhysicalAlloc format!");
 		RETURN_ARG(0);
 	}
-
-	// flags
-	uint32 newFlags = 0;
-	if (protect & xnative::XPAGE_READONLY) { GLog.Log("Flag: PAGE_READONLY"); newFlags |= native::IMemory::eFlags_ReadOnly; }
-	if (protect & xnative::XPAGE_READWRITE) { GLog.Log("Flag: XPAGE_READWRITE"); newFlags |= native::IMemory::eFlags_ReadWrite; }
-	if (protect & xnative::XPAGE_NOCACHE) { GLog.Log("Flag: XPAGE_NOCACHE"); newFlags |= native::IMemory::eFlags_NotCached; }
-	if (protect & xnative::XPAGE_WRITECOMBINE) { GLog.Log("Flag: XPAGE_WRITECOMBINE"); newFlags |= native::IMemory::eFlags_WriteCombine; }
-	if (protect & xnative::XMEM_LARGE_PAGES) { GLog.Log("Flag: XMEM_LARGE_PAGES"); }
-	if (protect & xnative::XMEM_16MB_PAGES) { GLog.Log("Flag: XMEM_16MB_PAGES"); }
 
 	// Calculate page size.
 	// Default            = 4KB

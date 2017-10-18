@@ -2,8 +2,8 @@
 #include "xenonLibUtils.h" 
 #include "xenonLibNatives.h"
 #include "xenonThread.h"
-#include <mutex>
 #include "xenonPlatform.h"
+#include "xenonMemory.h"
 
 //---------------------------------------------------------------------------
 
@@ -262,40 +262,9 @@ uint64 __fastcall XboxKernel_NtAllocateVirtualMemory(uint64 ip, cpu::CpuRegs& re
 	uint64 allocType = regs.R5;
 	uint64 protect = regs.R6;
 
-	char* commitFlag = (allocType & xnative::XMEM_COMMIT) ? "COMIT " : "";
+	/*char* commitFlag = (allocType & xnative::XMEM_COMMIT) ? "COMIT " : "";
 	char* reserveFlag = (allocType & xnative::XMEM_RESERVE) ? "RESERVE " : "";
-	GLog.Log("NtAllocateVirtualMemory(size=%d, base=0x%08X) %s%s", (uint32)size, (uint32)base, reserveFlag, commitFlag);
-	/*GLog.Log( "  *BasePtr = 0x%08X", (uint32)basePtr);
-	GLog.Log( "  *Base = 0x%08X", (uint32)base);
-	GLog.Log( "  *SizePtr = 0x%08X", (uint32)sizePtr);
-	GLog.Log( "  *Size = 0x%08X", (uint32)size);
-	GLog.Log( "  *AllocFlag = %08X", allocType);
-	if ( allocType & xnative::XMEM_COMMIT ) GLog.Log( "  *AllocFlag = MEM_COMMIT" );
-	if ( allocType & xnative::XMEM_RESERVE ) GLog.Log( "  *AllocFlag = MEM_RESERVE" );
-	if ( allocType & xnative::XMEM_DECOMMIT ) GLog.Log( "  *AllocFlag = MEM_DECOMMIT" );
-	if ( allocType & xnative::XMEM_RELEASE ) GLog.Log( "  *AllocFlag = MEM_RELEASE" );
-	if ( allocType & xnative::XMEM_FREE ) GLog.Log( "  *AllocFlag = MEM_FREE" );
-	if ( allocType & xnative::XMEM_PRIVATE ) GLog.Log( "  *AllocFlag = MEM_PRIVATE" );
-	if ( allocType & xnative::XMEM_RESET ) GLog.Log( "  *AllocFlag = MEM_RESET" );
-	if ( allocType & xnative::XMEM_TOP_DOWN ) GLog.Log( "  *AllocFlag = MEM_TOP_DOWN" );
-	if ( allocType & xnative::XMEM_NOZERO ) GLog.Log( "  *AllocFlag = MEM_NOZERO" );
-	if ( allocType & xnative::XMEM_LARGE_PAGES ) GLog.Log( "  *AllocFlag = MEM_LARGE_PAGES" );
-	if ( allocType & xnative::XMEM_HEAP ) GLog.Log( "  *AllocFlag = MEM_HEAP" );
-	if ( allocType & xnative::XMEM_16MB_PAGES ) GLog.Log( "  *AllocFlag = MEM_16MB_PAGES" );
-	GLog.Log( "  *Protect = %08X", protect);
-	if ( protect & xnative::XPAGE_NOACCESS ) GLog.Log( "  *Protect = PAGE_NOACCESS" );
-	if ( protect & xnative::XPAGE_READONLY ) GLog.Log( "  *Protect = PAGE_READONLY" );
-	if ( protect & xnative::XPAGE_READWRITE ) GLog.Log( "  *Protect = PAGE_READWRITE" );
-	if ( protect & xnative::XPAGE_WRITECOPY ) GLog.Log( "  *Protect = PAGE_WRITECOPY" );
-	if ( protect & xnative::XPAGE_EXECUTE ) GLog.Log( "  *Protect = PAGE_EXECUTE" );
-	if ( protect & xnative::XPAGE_EXECUTE_READ ) GLog.Log( "  *Protect = PAGE_EXECUTE_READ" );
-	if ( protect & xnative::XPAGE_EXECUTE_READWRITE ) GLog.Log( "  *Protect = PAGE_EXECUTE_READWRITE" );
-	if ( protect & xnative::XPAGE_EXECUTE_WRITECOPY ) GLog.Log( "  *Protect = PAGE_EXECUTE_WRITECOPY" );
-	if ( protect & xnative::XPAGE_GUARD ) GLog.Log( "  *Protect = PAGE_GUARD" );
-	if ( protect & xnative::XPAGE_NOCACHE ) GLog.Log( "  *Protect = PAGE_NOCACHE" );
-	if ( protect & xnative::XPAGE_WRITECOMBINE ) GLog.Log( "  *Protect = PAGE_WRITECOMBINE" );
-	if ( protect & xnative::XPAGE_USER_READONLY ) GLog.Log( "  *Protect = PAGE_USER_READONLY" );
-	if ( protect & xnative::XPAGE_USER_READWRITE ) GLog.Log( "  *Protect = PAGE_USER_READWRITE" );*/
+	GLog.Log("NtAllocateVirtualMemory(size=%d, base=0x%08X) %s%s", (uint32)size, (uint32)base, reserveFlag, commitFlag);*/
 
 	// invalid type
 	if (allocType & xnative::XMEM_RESERVE && (base != NULL))
@@ -305,22 +274,6 @@ uint64 __fastcall XboxKernel_NtAllocateVirtualMemory(uint64 ip, cpu::CpuRegs& re
 		*basePtr = NULL;
 		RETURN();
 	}
-
-	// translate allocation flags
-	uint32 realAllocFlags = 0;
-	if (allocType & xnative::XMEM_COMMIT) realAllocFlags |= native::IMemory::eAlloc_Commit;
-	if (allocType & xnative::XMEM_RESERVE)  realAllocFlags |= native::IMemory::eAlloc_Reserve;
-	if (allocType & xnative::XMEM_DECOMMIT) realAllocFlags |= native::IMemory::eAlloc_Decomit;
-	if (allocType & xnative::XMEM_RELEASE)  realAllocFlags |= native::IMemory::eAlloc_Release;
-	if (allocType & xnative::XMEM_LARGE_PAGES)  realAllocFlags |= native::IMemory::eAlloc_Page64K;
-	if (allocType & xnative::XMEM_16MB_PAGES)  realAllocFlags |= native::IMemory::eAlloc_Page16MB;
-
-	// access flags
-	uint32 realAccessFlags = 0;
-	if (protect & xnative::XPAGE_READONLY) realAccessFlags |= native::IMemory::eFlags_ReadOnly;
-	if (protect & xnative::XPAGE_READWRITE) realAccessFlags |= native::IMemory::eFlags_ReadWrite;
-	if (protect & xnative::XPAGE_NOCACHE) realAccessFlags |= native::IMemory::eFlags_NotCached;
-	if (protect & xnative::XPAGE_WRITECOMBINE) realAccessFlags |= native::IMemory::eFlags_WriteCombine;
 
 	// determine aligned size
 	uint32 pageAlignment = 4096;
@@ -335,7 +288,7 @@ uint64 __fastcall XboxKernel_NtAllocateVirtualMemory(uint64 ip, cpu::CpuRegs& re
 	}
 
 	// allocate memory from system
-	void* allocated = GPlatform.GetMemory().VirtualAlloc(base, alignedSize, realAllocFlags, realAccessFlags);
+	void* allocated = GPlatform.GetMemory().VirtualAlloc(base, alignedSize, (uint32)allocType, (uint16_t)protect);
 	if (!allocated)
 	{
 		GLog.Err("VMEM: Allocation failed.");
@@ -384,22 +337,15 @@ uint64 __fastcall XboxKernel_NtFreeVirtualMemory(uint64 ip, cpu::CpuRegs& regs)
 	uint64 freeType = regs.R5;
 	uint64 protect = regs.R6;
 
-	char* decoimtFlag = (freeType & xnative::XMEM_DECOMMIT) ? "DECOMIT " : "";
+	/*char* decoimtFlag = (freeType & xnative::XMEM_DECOMMIT) ? "DECOMIT " : "";
 	char* releaseFlag = (freeType & xnative::XMEM_RELEASE) ? "RELEASE " : "";
-	GLog.Log("NtFreeVirtualMemory(size=%d, base=0x%08X, %s%s)", (uint32)size, (uint32)base, decoimtFlag, releaseFlag);
+	GLog.Log("NtFreeVirtualMemory(size=%d, base=0x%08X, %s%s)", (uint32)size, (uint32)base, decoimtFlag, releaseFlag);*/
 
 	if (!base)
 		return xnative::X_STATUS_MEMORY_NOT_ALLOCATED;
 
-	// translate allocation flags
-	uint32 realFreeFlags = 0;
-	if (freeType & xnative::XMEM_COMMIT) realFreeFlags |= native::IMemory::eAlloc_Commit;
-	if (freeType & xnative::XMEM_RESERVE)  realFreeFlags |= native::IMemory::eAlloc_Reserve;
-	if (freeType & xnative::XMEM_DECOMMIT) realFreeFlags |= native::IMemory::eAlloc_Decomit;
-	if (freeType & xnative::XMEM_RELEASE)  realFreeFlags |= native::IMemory::eAlloc_Release;
-
 	uint32 freedSize = 0;
-	if (!GPlatform.GetMemory().VirtualFree(base, size, realFreeFlags, freedSize))
+	if (!GPlatform.GetMemory().VirtualFree(base, size, freeType, freedSize))
 		return xnative::X_STATUS_UNSUCCESSFUL;
 
 	if (sizePtr)
@@ -1716,7 +1662,7 @@ uint64 __fastcall XboxKernel_MmQueryAddressProtect(uint64 ip, cpu::CpuRegs& regs
 {
 	uint32 address = (uint32)(regs.R3);
 
-	uint32 protectFlags = GPlatform.GetMemory().GetVirtualMemoryProtectFlags((void*)address);
+	const auto protectFlags = GPlatform.GetMemory().GetVirtualMemoryFlags((void*)address, 0);
 	RETURN_ARG(protectFlags);
 }
 
@@ -1726,7 +1672,7 @@ uint64 __fastcall XboxKernel_MmSetAddressProtect(uint64 ip, cpu::CpuRegs& regs)
 	uint32 size = (uint32)(regs.R4);
 	uint32 protectFlags = (uint32)(regs.R5) & 0xF;
 
-	GPlatform.GetMemory().VirtualProtect((void*)address, size, protectFlags);
+	GPlatform.GetMemory().SetVirtualMemoryFlags((void*)address, size, protectFlags);
 	RETURN_ARG(0);
 }
 

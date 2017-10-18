@@ -10,6 +10,8 @@ namespace xenon
 	class FileSystem;
 	class Graphics;
 	class InputSystem;
+	class Memory;
+	class UserProfileManager;
 
 	/// Top level wrapper
 	class Platform : public runtime::IPlatform
@@ -21,13 +23,15 @@ namespace xenon
 
 		inline Graphics& GetGraphics() { return *m_graphics; }
 
-		inline native::IMemory& GetMemory() { return *m_memory;  }
+		inline Memory& GetMemory() { return *m_memory;  }
 
 		inline InputSystem& GetInputSystem() const { return *m_inputSys; }
 
 		inline cpu::Interrupts& GetInterruptTable() const { return *m_interruptTable; }
 
 		inline cpu::GeneralIO& GetIOTable() const { return *m_ioTable; }
+
+		inline UserProfileManager& GetUserProfileManager() const { *m_users; }
 
 	public:
 		Platform();
@@ -59,9 +63,8 @@ namespace xenon
 		FileSystem*				m_fileSys;		// file system
 		Graphics*				m_graphics;		// graphics subsystem
 		InputSystem*			m_inputSys;		// input system
-
-		// native
-		native::IMemory*		m_memory;		// native memory system
+		Memory*					m_memory;		// memory system
+		UserProfileManager*		m_users;		// user profiles
 
 		// some runtime data
 		xnative::XenonNativeData	m_nativeXexExecutableModuleHandle;
