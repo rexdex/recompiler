@@ -171,6 +171,8 @@ namespace xenon
 		RegisterXboxDebug(symbols);
 		extern void RegisterXboxInput(runtime::Symbols& symbols);
 		RegisterXboxInput(symbols);
+		extern void RegisterXboxXAM(runtime::Symbols& symbols);
+		RegisterXboxXAM(symbols);
 
 		// register the process native data
 

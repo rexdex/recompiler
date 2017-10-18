@@ -52,6 +52,7 @@ namespace xenon
 		FileHandle = 110,
 		FileSysEntry = 120,
 		ThreadBlock = 130,
+		EventNotifier = 140,
 	};
 
 	enum class NativeKernelObjectType : int32
@@ -343,6 +344,39 @@ namespace xenon
 
 	//---------------------------------------------------------------------------
 
+	/// Notifier
+	class KernelEventNotifier : public IKernelObject
+	{
+	public:
+		KernelEventNotifier(Kernel* kernel);
+		virtual ~KernelEventNotifier();
+
+		// checks if the queue is empty
+		const bool Empty() const;
+
+		// push the notification into the queue
+		void PushNotification(const uint32 id, const uint32 data);
+
+		// pop notification from the queue, returns false if the queue is empty
+		// gets first from the list 
+		const bool PopNotification(uint32& outId, uint32& outData);
+
+		// pop notification with specific ID
+		const bool PopSpecificNotification(const uint32 id, uint32& outData);
+
+	private:
+		struct Notifcation
+		{
+			uint32 m_id;
+			uint32 m_data;
+		};
+
+		std::vector<Notifcation> m_notifications;
+		mutable std::mutex m_notificationLock;
+	};
+
+	//---------------------------------------------------------------------------
+
 	class KernelThreadParams
 	{
 	public:
@@ -424,6 +458,9 @@ namespace xenon
 
 		/// create a critical section
 		KernelCriticalSection* CreateCriticalSection();
+
+		/// create an event notifier
+		KernelEventNotifier* CreateEventNotifier();
 
 		//----
 

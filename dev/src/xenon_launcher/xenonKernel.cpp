@@ -12,6 +12,7 @@
 #include "../host_core/runtimeCodeExecutor.h"
 #include "../host_core/launcherCommandline.h"
 #include "../host_core/runtimeTraceWriter.h"
+#include <mutex>
 
 namespace xenon
 {
@@ -421,6 +422,59 @@ namespace xenon
 		const auto result = m_event->Wait(timeoutValue, alertable);
 		//GLog.Log("****WAIT: %d, %d", GetIndex(), result);
 		return ConvWaitResult(result);
+	}
+
+	//-----------------------------------------------------------------------------
+
+	KernelEventNotifier::KernelEventNotifier(Kernel* kernel)
+		: IKernelObject(kernel, KernelObjectType::EventNotifier, "EventNotifier")
+	{}
+
+	KernelEventNotifier::~KernelEventNotifier()
+	{}
+
+	const bool KernelEventNotifier::Empty() const
+	{
+		std::lock_guard<std::mutex> lock(m_notificationLock);
+		return m_notifications.empty();
+	}
+
+	void KernelEventNotifier::PushNotification(const uint32 id, const uint32 data)
+	{
+		std::lock_guard<std::mutex> lock(m_notificationLock);
+		m_notifications.push_back({ id, data });
+	}
+
+	const bool KernelEventNotifier::PopNotification(uint32& outId, uint32& outData)
+	{
+		std::lock_guard<std::mutex> lock(m_notificationLock);
+		if (m_notifications.empty())
+			return false;
+
+		const auto data = m_notifications[0];
+		m_notifications.erase(m_notifications.begin());
+
+		outId = data.m_id;
+		outData = data.m_data;
+		return true;
+	}
+
+	const bool KernelEventNotifier::PopSpecificNotification(const uint32 id, uint32& outData)
+	{
+		std::lock_guard<std::mutex> lock(m_notificationLock);
+		if (m_notifications.empty())
+			return false;
+
+		for (auto it = m_notifications.begin(); it != m_notifications.end(); ++it)
+		{
+			if ((*it).m_id == id)
+			{
+				outData = (*it).m_data;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -861,6 +915,11 @@ namespace xenon
 	{
 		auto* nativeCriticalSection = m_nativeKernel->CreateCriticalSection();
 		return new KernelCriticalSection(this, nativeCriticalSection);
+	}
+
+	KernelEventNotifier* Kernel::CreateEventNotifier()
+	{
+		return new KernelEventNotifier(this);
 	}
 
 	//----

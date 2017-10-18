@@ -15,6 +15,7 @@
 #include <map>
 #include <set>
 #include <atomic>
+#include <unordered_map>
 
 #include "../host_core/build.h"
 #include "../host_core/runtimeSymbols.h"

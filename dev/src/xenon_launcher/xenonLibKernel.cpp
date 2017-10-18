@@ -5,8 +5,6 @@
 #include <mutex>
 #include "xenonPlatform.h"
 
-
-
 //---------------------------------------------------------------------------
 
 uint64 __fastcall XboxKernel_KeEnableFpuExceptions(uint64 ip, cpu::CpuRegs& regs)
@@ -1438,96 +1436,6 @@ uint64 __fastcall XboxKernel_RtlNtStatusToDosError(uint64 ip, cpu::CpuRegs& regs
 	RETURN_ARG(317);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 uint64 __fastcall XboxKernel_KeBugCheck(uint64 ip, cpu::CpuRegs& regs)
 {
 	GLog.Err("BugCheck: Encountered unrecoverable system exception: %d",
@@ -1804,21 +1712,6 @@ uint64 __fastcall XboxKernel_KeUnlockL2(uint64 ip, cpu::CpuRegs& regs)
 	RETURN_DEFAULT();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 uint64 __fastcall XboxKernel_MmQueryAddressProtect(uint64 ip, cpu::CpuRegs& regs)
 {
 	uint32 address = (uint32)(regs.R3);
@@ -1844,6 +1737,46 @@ uint64 __fastcall XboxKernel_MmQueryAllocationSize(uint64 ip, cpu::CpuRegs& regs
 	RETURN_ARG(size);
 }
 
+uint64 __fastcall XboxKernel_XNotifyGetNext(uint64 ip, cpu::CpuRegs& regs)
+{
+	const auto handle = (const uint32)regs.R3;
+	const auto id = (const uint32)regs.R4;
+	auto outEventId = utils::MemPtr32<uint32>(regs.R5);
+	auto outEventData = utils::MemPtr32<uint32>(regs.R6);
+
+	// resolve handle to object
+	const auto eventListener = static_cast<xenon::KernelEventNotifier*>(GPlatform.GetKernel().ResolveHandle(handle, xenon::KernelObjectType::EventNotifier));
+	if (!eventListener)
+	{
+		RETURN_ARG(0);
+	}
+
+	// asked for specific notification ?
+	if (id != 0)
+	{
+		uint32 data = 0;
+		if (eventListener->PopSpecificNotification(id, data))
+		{
+			outEventId.Set(id);
+			outEventData.Set(data);
+			RETURN_ARG(1);
+		}
+	}
+	else
+	{
+		uint32 id = 0;
+		uint32 data = 0;
+		if (eventListener->PopNotification(id, data))
+		{
+			outEventId.Set(id);
+			outEventData.Set(data);
+			RETURN_ARG(1);
+		}
+	}
+
+	RETURN_ARG(0);
+}
+
 void XboxKernel_Interrupt20(uint64 ip, cpu::CpuRegs& regs)
 {
 
@@ -1859,6 +1792,7 @@ void RegisterXboxKernel(runtime::Symbols& symbols)
 #define REGISTER(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &XboxKernel_##x);
 	REGISTER(XGetLanguage);
 	REGISTER(XGetAVPack);
+	REGISTER(XNotifyGetNext);
 
 	REGISTER(DbgPrint);
 	REGISTER(KeBugCheckEx);

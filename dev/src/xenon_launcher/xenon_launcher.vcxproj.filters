@@ -44,9 +44,6 @@
     <ClCompile Include="xenonGPU.cpp">
       <Filter>devices\graphics\gpu</Filter>
     </ClCompile>
-    <ClCompile Include="dx11AbstarctLayer.cpp">
-      <Filter>devices\graphics\gpu\dx11</Filter>
-    </ClCompile>
     <ClCompile Include="dx11RenderingWindow.cpp">
       <Filter>devices\graphics\gpu\dx11</Filter>
     </ClCompile>
@@ -161,6 +158,10 @@
       <Filter>devices\input</Filter>
     </ClCompile>
     <ClCompile Include="xenonLibInput.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11AbstractLayer.cpp" />
+    <ClCompile Include="xenonLibXAM.cpp">
       <Filter>libs</Filter>
     </ClCompile>
   </ItemGroup>
