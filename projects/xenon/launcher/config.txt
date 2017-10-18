@@ -1,0 +1,7 @@
+main :
+{
+  skin_path = "HoaxHD";
+  auto_scale = 1;
+  extract_title = 0;
+  discover_default_only = 1;
+};
