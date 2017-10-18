@@ -1598,7 +1598,7 @@ public:
 		char branchCode[128];
 		if (L)
 		{
-			sprintf_s(branchCode, sizeof(branchCode), "TReg tempLR = regs.LR; regs.LR = 0x%08X; return (uint32)tempLR;",
+			sprintf_s(branchCode, sizeof(branchCode), "auto tempLR = regs.LR; regs.LR = 0x%08X; return (uint32)tempLR;",
 				address+4 );
 		}
 		else
