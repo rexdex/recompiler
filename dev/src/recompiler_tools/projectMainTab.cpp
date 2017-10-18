@@ -293,7 +293,7 @@ namespace tools
 
 		// bind file system
 		const auto projectDirectory = GetProjectWindow()->GetProject()->GetProjectDirectory();
-		commandLine += "-root=\"" + EscapePath(projectDirectory) += "\" ";
+		commandLine += "-fsroot=\"" + EscapePath(projectDirectory) += "\" ";
 
 		// add the images to run
 		bool hasAppImages = false;
