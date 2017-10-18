@@ -128,13 +128,15 @@ namespace xenon
 		m_memory = new Memory(*nativeSystems.m_memory);
 
 		// initialize virtual memory
+		const uint32 prefferedVirtualBase = 0x40000000;
 		const uint32 virtualMemorySize = 512 << 20;
-		if (!m_memory->InitializeVirtualMemory(virtualMemorySize))
+		if (!m_memory->InitializeVirtualMemory(prefferedVirtualBase, virtualMemorySize))
 			return false;
 
 		// initialize physical memory
+		const uint32 prefferedPhysicalBase = 0xC0000000;
 		const uint32 physicalMemorySize = 256 << 20;
-		if (!m_memory->InitializePhysicalMemory(physicalMemorySize))
+		if (!m_memory->InitializePhysicalMemory(prefferedPhysicalBase, physicalMemorySize))
 			return false;
 
 		// create kernel

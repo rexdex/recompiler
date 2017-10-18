@@ -225,7 +225,7 @@ namespace xenon
 		, m_size(size)
 	{
 		// alloc stack
-		m_base = GPlatform.GetMemory().VirtualAlloc(NULL, m_size, xnative::XMEM_TOP_DOWN | xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
+		m_base = GPlatform.GetMemory().VirtualAlloc(NULL, m_size, /*xnative::XMEM_TOP_DOWN | */xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
 		DEBUG_CHECK(m_base != nullptr);
 
 		// setup

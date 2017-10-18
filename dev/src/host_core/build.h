@@ -1,11 +1,13 @@
 #pragma once
 
+#define NO_MINMAX
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
 #include <winsock2.h>
-#include <Windows.h>
+//#include <Windows.h>
 
 #include <vector>
 #include <string>

@@ -28,6 +28,7 @@ namespace runtime
 	uint64 __fastcall UnimplementedFunctionBlock(uint64 ip, RegisterBank& regs)
 	{
 		GLog.Err("Code: Unimplemented function at IP=%06Xh reached", ip);
+		DEBUG_CHECK(!"Please write the stub :)");
 		return 0;
 	}
 

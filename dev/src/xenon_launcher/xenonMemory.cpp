@@ -4,128 +4,101 @@
 namespace xenon
 {
 	Memory::Memory(native::IMemory& nativeMemory)
-		: m_virtualMemoryBase(NULL)
-		, m_virtualMemorySize(0)
-		, m_virtualMemoryPagesTotal(0)
-		, m_virtualMemoryPagesAllocated(0)
-		, m_virtualMemoryPagesComitted(0)
-		, m_physicalMemoryBase(NULL)
-		, m_physicalMemorySize(0)
-		, m_physicalMemoryPagesTotal(0)
-		, m_physicalMemoryPagesAllocated(0)
-		, m_tempShitPhysical(0)
-		, m_nativeMemory(nativeMemory)
+		: m_nativeMemory(nativeMemory)
 	{}
 
-	const bool Memory::InitializeVirtualMemory(const uint32 totalVirtualMemoryAvaiable)
+	//--
+
+	const bool Memory::MemoryClass::Initialize(native::IMemory& memory, const uint32 prefferedBase, const uint32 totalVirtualMemoryAvaiable)
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
-
-		// already initialized
-		if (NULL != m_virtualMemoryBase)
-		{
-			GLog.Err("Mem: Virtual memory already initialized");
-			return false;
-		}
-
 		// allocate the virtual address space range that will be used as virtual memory
-		m_virtualMemoryBase = m_nativeMemory.AllocVirtualMemory(VIRTUAL_MEMORY_BASE, totalVirtualMemoryAvaiable);
-		if (NULL == m_virtualMemoryBase)
+		m_base = memory.AllocVirtualMemory(prefferedBase, totalVirtualMemoryAvaiable);
+		if (NULL == m_base)
 		{
-			GLog.Warn("Mem: Failed to initialize virtual memory range at preferred address %06Xh", VIRTUAL_MEMORY_BASE);
+			GLog.Warn("Mem: Failed to initialize memory range at preferred address %06Xh", prefferedBase);
 
 			// try any address
-			m_virtualMemoryBase = m_nativeMemory.AllocVirtualMemory(0, totalVirtualMemoryAvaiable);
-			if (NULL == m_virtualMemoryBase)
+			m_base = memory.AllocVirtualMemory(0, totalVirtualMemoryAvaiable);
+			if (NULL == m_base)
 			{
-				GLog.Err("Mem: Failed to initialize virtual of size %d (%1.2f MB). Error = %08Xh",
+				GLog.Err("Mem: Failed to initialize memory of size %d (%1.2f MB)",
 					totalVirtualMemoryAvaiable,
-					(float)totalVirtualMemoryAvaiable / (1024.0f*1024.0f),
-					GetLastError());
-
+					(float)totalVirtualMemoryAvaiable / (1024.0f*1024.0f));
 				return false;
 			}
 		}
 
 		// setup virtual memory data
-		m_virtualMemorySize = totalVirtualMemoryAvaiable;
-		m_virtualMemoryPagesTotal = totalVirtualMemoryAvaiable / VIRTUAL_PAGE_SIZE;
-		m_virtualMemoryPagesAllocated = 0;
-		m_virtualMemoryPagesComitted = 0;
-
-		// clear memory flags
-		memset(&m_virtualMemoryFlags, 0, sizeof(m_virtualMemoryFlags));
+		m_totalSize = totalVirtualMemoryAvaiable;
+		m_totalPages = totalVirtualMemoryAvaiable / PAGE_SIZE;
+		m_allocatedPages  = 0;
 
 		// setup block allocator
-		m_virtualMemoryAllocator.Initialize(m_virtualMemoryPagesTotal);
+		m_allocator.Initialize(m_totalPages);
 
 		// stats
-		GLog.Log("Mem: Initialized virtual memory range at %06Xh, size %1.2f MB (%d pages)",
-			(uint32)m_virtualMemoryBase,
+		GLog.Log("Mem: Initialized memory range at %06Xh, size %1.2f MB (%d pages)",
+			(uint32)m_base,
 			(float)totalVirtualMemoryAvaiable / (1024.0f*1024.0f),
-			m_virtualMemoryPagesTotal);
+			m_totalPages);
 
 		return true;
 	}
 
-	const bool Memory::InitializePhysicalMemory(const uint32 totalPhysicalMemoryAvaiable)
+	void* Memory::MemoryClass::Allocate(const uint32 size, const bool top, const uint32 flags)
 	{
 		std::lock_guard<std::mutex> lock(m_lock);
 
-		// already initialized
-		if (NULL != m_physicalMemoryBase)
+		// page count
+		uint32 firstPageIndex = 0;
+		const uint32 numPages = PagesFromSize(size);
+		if (!m_allocator.AllocateBlock(numPages, top, flags, firstPageIndex))
 		{
-			GLog.Err("Mem: Physical memory already initialized");
-			return false;
+			GLog.Err("VMEM: Memory allocation of %d (%1.2fKB) failed", size, (float)size / 1024.0f);
+			return nullptr;
 		}
 
-		// allocate the virtual address space range that will be used as virtual memory
-		m_physicalMemoryBase = m_nativeMemory.AllocVirtualMemory(PHYSICAL_MEMORY_LOW, totalPhysicalMemoryAvaiable);
-		if (NULL == m_physicalMemoryBase)
-		{
-			GLog.Warn("Mem: Failed to initialize physical memory range at preferred address %06Xh", PHYSICAL_MEMORY_LOW);
+		// setup the base pointer
+		auto* base = AddressFromPage(firstPageIndex);
+		GLog.Spam("VMEM: Memory allocated (%1.2fKB, %d pages) at %06Xh", size / 1024.0f, numPages, (uint32)base);
+		m_allocatedPages += numPages;
 
-			// try any address
-			m_physicalMemoryBase = m_nativeMemory.AllocVirtualMemory(0, totalPhysicalMemoryAvaiable);
-			if (NULL == m_virtualMemoryBase)
-			{
-				GLog.Err("Mem: Failed to initialize physical memory of size %d (%1.2f MB)",
-					totalPhysicalMemoryAvaiable,
-					(float)totalPhysicalMemoryAvaiable / (1024.0f*1024.0f));
+		// return base
+		return base;
+	}
 
-				return false;
-			}
-		}
+	void Memory::MemoryClass::Free(void* memory, uint32& outNumPages)
+	{
+		std::lock_guard<std::mutex> lock(m_lock);
 
-		// cleanup
-		memset(m_physicalMemoryBase, 0xCC, totalPhysicalMemoryAvaiable);
+		const uint32 page = PageFromAddress(memory);
 
-		// setup physical memory data
-		m_physicalMemorySize = totalPhysicalMemoryAvaiable;
-		m_physicalMemoryPagesTotal = totalPhysicalMemoryAvaiable / PHYSICAL_PAGE_SIZE;
-		m_physicalMemoryPagesAllocated = 0;
+		// get size of freed memory
+		uint32 numAllocatedPages = 0;
+		if (!m_allocator.GetNumAllocatedPages(page, numAllocatedPages))
+			return;
 
-		// initialize page allocator
-		m_physicalMemoryAllocator.Initialize(m_physicalMemoryPagesTotal);
+		// free block
+		m_allocator.FreeBlock(page);
+		m_allocatedPages -= numAllocatedPages;
+		outNumPages = numAllocatedPages;
+	}
 
-		// stats
-		GLog.Log("Mem: Initialized physical memory range at %06Xh, size %1.2f MB (%d pages)",
-			(uint32)m_physicalMemoryBase,
-			(float)totalPhysicalMemoryAvaiable / (1024.0f*1024.0f),
-			m_physicalMemoryPagesTotal);
+	//--
 
-		return true;
+	const bool Memory::InitializeVirtualMemory(const uint32 prefferedBase, const uint32 totalPhysicalMemoryAvaiable)
+	{
+		return m_virtual.Initialize(m_nativeMemory, prefferedBase, totalPhysicalMemoryAvaiable);
+	}
+
+	const bool Memory::InitializePhysicalMemory(const uint32 prefferedBase, const uint32 totalPhysicalMemoryAvaiable)
+	{
+		return m_physical.Initialize(m_nativeMemory, prefferedBase, totalPhysicalMemoryAvaiable);
 	}
 
 	const bool Memory::IsVirtualMemory(void* base, const uint32 size) const
 	{
-		if (((uint8*)base < (uint8*)m_virtualMemoryBase) ||
-			(((uint8*)base + size) > ((uint8*)m_virtualMemoryBase + m_virtualMemorySize)))
-		{
-			return false;
-		}
-
-		return true;
+		return m_virtual.Contains(base, size);
 	}
 
 	const bool Memory::IsVirtualMemoryReserved(void* base, const uint32 size) const
@@ -133,9 +106,9 @@ namespace xenon
 		if (!IsVirtualMemory(base, size))
 			return false;
 
-		const uint32 firstPage = (uint32)(((uint8*)base - (uint8*)m_virtualMemoryBase) / VIRTUAL_PAGE_SIZE);
-		const uint32 numPages = (size + (VIRTUAL_PAGE_SIZE - 1)) / VIRTUAL_PAGE_SIZE;
-		return m_virtualMemoryAllocator.IsAllocated(firstPage, numPages);
+		const uint32 firstPage = m_virtual.PageFromAddress(base);
+		const uint32 numPages = m_virtual.PagesFromSize(size);
+		return m_virtual.m_allocator.IsAllocated(firstPage, numPages);
 	}
 
 	const uint64 Memory::GetVirtualMemoryFlags(void* base, const uint32 size) const
@@ -143,19 +116,22 @@ namespace xenon
 		if (!IsVirtualMemory(base, size))
 			return false;
 
-		const uint32 firstPage = PageFromAddress(base);
-		return m_virtualMemoryFlags[firstPage];
+		const uint32 firstPage = m_virtual.PageFromAddress(base);
+
+		uint32 flags = 0;
+		m_virtual.m_allocator.GetPageFlags(firstPage, flags);
+		return flags;
 	}
 
 	const void Memory::SetVirtualMemoryFlags(void* base, const uint32 size, const uint64 flags)
 	{
-		DEBUG_CHECK(flags <= 0xFFFF);
+		DEBUG_CHECK(flags <= 0xFFFFFFFF);
 
 		if (!IsVirtualMemory(base, size))
 			return;
 
-		const uint32 firstPage = PageFromAddress(base);
-		m_virtualMemoryFlags[firstPage] = (uint16)flags;
+		const uint32 firstPage = m_virtual.PageFromAddress(base);
+		m_virtual.m_allocator.SetPageFlags(firstPage, (uint16)flags);
 	}
 
 	const uint32 Memory::GetVirtualMemoryAllocationSize(void* base) const
@@ -163,111 +139,26 @@ namespace xenon
 		if (!IsVirtualMemory(base, 1))
 			return 0;
 
-		const uint32 firstPage = PageFromAddress(base);
-		if (!m_virtualMemoryAllocator.IsAllocated(firstPage, 1))
+		const uint32 firstPage = m_virtual.PageFromAddress(base);
+		if (!m_virtual.m_allocator.IsAllocated(firstPage, 1))
 			return 0;
 
 		uint32 numPages = 0;
-		m_virtualMemoryAllocator.GetNumAllocatedBlocks(firstPage, numPages);
-		return (VIRTUAL_PAGE_SIZE * numPages);
+		m_virtual.m_allocator.GetNumAllocatedPages(firstPage, numPages);
+		return PAGE_SIZE * numPages;
 	}
 
 	void* Memory::VirtualAlloc(void* base, const uint32 size, const uint64 allocFlags, const uint64 protectFlags)
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
-
 		// allocation
-		if (allocFlags & xnative::XMEM_RESERVE || (base == NULL))
+		if ((allocFlags & xnative::XMEM_RESERVE) || (base == nullptr))
 		{
-			// auto alloc
-			if (!(allocFlags & xnative::XMEM_RESERVE))
-			{
-				GLog.Spam("VMEM: Auto allocating (size=%d)", size);
-			}
+			DEBUG_CHECK(base == nullptr);
+			DEBUG_CHECK(protectFlags <= 0xFFFF);
 
-			// try direct allocation
-			if (base != NULL)
-			{
-				GLog.Spam("VMEM: Trying to allocate at non-zero base %06Xh (size=%d). Not supported.", (uint32)base, size);
-				return NULL;
-			}
-
-			// page count
-			uint32 firstPageIndex = 0;
-			const bool top = 0 != (allocFlags & xnative::XMEM_TOP_DOWN);
-			const uint32 numPages = PagesFromSize(size);
-			if (!m_virtualMemoryAllocator.AllocateBlock(numPages, top, firstPageIndex))
-			{
-				GLog.Err("VMEM: Virtual memory allocation of %d (%1.2fKB) failed",
-					size, (float)size / 1024.0f);
-
-				return NULL;
-			}
-
-			// setup the base pointer
-			base = AddressFromPage(firstPageIndex);
-			GLog.Spam("VMEM: Virtual memory allocated (%1.2fKB, %d pages) at %06Xh",
-				size / 1024.0f, numPages, (uint32)base);
-
-			// stats
-			m_virtualMemoryPagesAllocated += numPages;
+			const bool topDown = (allocFlags & xnative::XMEM_TOP_DOWN) != 0;
+			base = m_virtual.Allocate(size, topDown, (uint16)protectFlags);
 		}
-
-		// should we commit the memory ?
-		if (allocFlags & xnative::XMEM_COMMIT)
-		{
-			// invalid memory
-			if (!base)
-			{
-				GLog.Err("VMEM: Virtual memory commit called with NULL base");
-				return NULL;
-			}
-
-			// check the range
-			if (!IsVirtualMemory(base, size))
-			{
-				GLog.Err("VMEM: Trying to commit memory range %06Xh, size %d which is not valid virtual memory range", (uint32)base, size);
-				return NULL;
-			}
-
-			// commit only the uncommitted pages
-			uint32 numPagesComitted = 0;
-			const uint32 firstPage = PageFromAddress(base);
-			const uint32 numPages = PagesFromSize(size);
-			for (uint32 i = 0; i < numPages; ++i)
-			{
-				const uint32 pageIndex = firstPage + i;
-				if (!m_virtualMemoryCommitted.IsSet(pageIndex))
-				{
-					// do the work
-					uint8* pageBase = (uint8*)m_virtualMemoryBase + pageIndex * VIRTUAL_PAGE_SIZE;
-					if (NULL == ::VirtualAlloc(pageBase, VIRTUAL_PAGE_SIZE, MEM_COMMIT, PAGE_READWRITE))
-					{
-						GLog.Err("VMEM: OS commit of page %d failed", pageIndex);
-						return NULL;
-					}
-
-					// fill with pattern
-					//memset( pageBase, 0xFE, VIRTUAL_PAGE_SIZE );
-
-					// mark as committed
-					m_virtualMemoryCommitted.Set(pageIndex);
-					numPagesComitted += 1;
-				}
-			}
-
-			// new pages committed ?
-			if (numPagesComitted > 0)
-			{
-				GLog.Spam("VMEM: Virtual memory committed (%1.2fKB, %d pages, %d new) at %06Xh",
-					size / 1024.0f, numPages, numPagesComitted, (uint32)base);
-
-				m_virtualMemoryPagesComitted += numPagesComitted;
-			}
-		}
-
-		// set default protection flags
-		SetVirtualMemoryFlags(base, size, protectFlags);
 
 		// return base
 		return base;
@@ -275,91 +166,12 @@ namespace xenon
 
 	const bool Memory::VirtualFree(void* base, const uint32 initSize, const uint64 allocFlags, uint32& outFreedSize)
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
-
-		// invalid memory
-		if (!base)
-		{
-			GLog.Err("VMEM: Virtual memory free called with NULL base");
-			return false;
-		}
-
-		// size not specified
-		uint32 size = initSize;
-		if (!size)
-		{
-			// get size of the allocated memory block
-			const uint32 firstPage = PageFromAddress(base);
-			uint32 numBlocks = 0;
-			if (!m_virtualMemoryAllocator.GetNumAllocatedBlocks(firstPage, numBlocks))
-			{
-				GLog.Err("VMEM: Unable to determine number of pages allocated for address %08Xh (page %d)", (uint32)base, firstPage);
-			}
-
-			// update the allocation size
-			size = numBlocks * VIRTUAL_PAGE_SIZE;
-			GLog.Spam("VMEM: Determined size of allocation at %08Xh to be %d bytes (%d pages)", (uint32)base, size, numBlocks);
-		}
-
-		// should we decommit the memory ? always decommit on release
-		if (allocFlags & (xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE))
-		{
-			// check the range
-			if (!IsVirtualMemory(base, size))
-			{
-				GLog.Err("VMEM: Trying to decommit memory range %06Xh, size %d which is not valid virtual memory range", (uint32)base, size);
-				return false;
-			}
-
-			// decommit only the committed pages
-			uint32 numPagesDecomitted = 0;
-			const uint32 firstPage = PageFromAddress(base);
-			const uint32 numPages = PagesFromSize(size);
-			for (uint32 i = 0; i < numPages; ++i)
-			{
-				const uint32 pageIndex = firstPage + i;
-				if (m_virtualMemoryCommitted.IsSet(pageIndex))
-				{
-					// do the work
-					uint8* pageBase = (uint8*)m_virtualMemoryBase + pageIndex * VIRTUAL_PAGE_SIZE;
-					if (!::VirtualFree(pageBase, VIRTUAL_PAGE_SIZE, MEM_DECOMMIT))
-					{
-						GLog.Err("VMEM: OS decommit of page %d failed", pageIndex);
-						return NULL;
-					}
-
-					// mark as committed
-					m_virtualMemoryCommitted.Clear(pageIndex);
-					numPagesDecomitted += 1;
-				}
-			}
-
-			// new pages committed ?
-			if (numPagesDecomitted > 0)
-			{
-				GLog.Spam("VMEM: Virtual memory decommitted (%1.2fKB, %d pages, %d new) at %06Xh",
-					size / 1024.0f, numPages, numPagesDecomitted, (uint32)base);
-
-				m_virtualMemoryPagesComitted -= numPagesDecomitted;
-			}
-
-			outFreedSize = size;
-		}
-
-		// release
 		if (allocFlags & xnative::XMEM_RELEASE)
 		{
-			const uint32 firstPage = PageFromAddress(base);
-			const uint32 numPages = PagesFromSize(size);
-			if (!m_virtualMemoryAllocator.FreeBlock(firstPage, numPages))
-			{
-				GLog.Err("VMEM: Failed to release memory at %06Xh", (uint32)base);
-				return false;
-			}
+			uint32 numAllocatedPages = 0;
 
-			// stats
-			m_virtualMemoryPagesAllocated -= numPages;
-			outFreedSize = size;
+			m_virtual.Free(base, numAllocatedPages);
+			outFreedSize = numAllocatedPages * PAGE_SIZE;
 		}
 
 		// done
@@ -368,26 +180,22 @@ namespace xenon
 
 	void* Memory::PhysicalAlloc(const uint32 size, const uint32 alignment, const uint32 protectFlags)
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
+		//DEBUG_CHECK(alignment <= 4096);
+		auto* base = m_physical.Allocate(size, false, (uint16)protectFlags);
 
-		GLog.Log("PMEM: Allocating physical memory (size=%d, alignment=%d,flags=%d)", size, alignment, protectFlags);
-
-		// tempshit allocation
-		const uint32 addr = (m_tempShitPhysical + (alignment - 1)) & (~(alignment - 1));
-		m_tempShitPhysical += size;
-		void* ptr = (char*)m_physicalMemoryBase + addr;//m_physicalMemorySize - addr - size;
-		return ptr;
+		return base;
 	}
 
 	void Memory::PhysicalFree(void* base, const uint32 size)
 	{
-		// TODO!
+		uint32 numFreedPages = 0;
+		m_physical.Free(base, numFreedPages);
 	}
 
 	const uint32 Memory::TranslatePhysicalAddress(const uint32 localAddress) const
 	{
 		const uint32 physicalMemoryAddrMask = 0x1FFFFFFF;
-		return (const uint32)m_physicalMemoryBase + (localAddress & physicalMemoryAddrMask);
+		return (const uint32)m_physical.m_base + (localAddress & physicalMemoryAddrMask);
 	}
 
 	//--

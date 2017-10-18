@@ -77,13 +77,15 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bitset.cpp" />
+    <ClCompile Include="blockAllocator.cpp" />
     <ClCompile Include="launcherCommandline.cpp" />
     <ClCompile Include="launcherUtils.cpp" />
     <ClCompile Include="native.cpp" />
     <ClCompile Include="networkAddress.cpp" />
     <ClCompile Include="networkManagerImpl.cpp" />
     <ClCompile Include="networkSocket.cpp" />
-    <ClInclude Include="bitMask.h" />
+    <ClInclude Include="bitset.h" />
     <ClInclude Include="blockAllocator.h" />
     <ClInclude Include="debugPacket.h" />
     <ClCompile Include="runtimeCodeExecutor.cpp" />

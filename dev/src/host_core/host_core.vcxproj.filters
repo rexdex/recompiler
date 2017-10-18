@@ -89,6 +89,12 @@
     <ClCompile Include="runtimeException.cpp">
       <Filter>runtime</Filter>
     </ClCompile>
+    <ClCompile Include="bitset.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="blockAllocator.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zlib\crc32.h">
@@ -197,7 +203,7 @@
     <ClInclude Include="runtimeExceptions.h">
       <Filter>runtime</Filter>
     </ClInclude>
-    <ClInclude Include="bitMask.h">
+    <ClInclude Include="bitset.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="blockAllocator.h">

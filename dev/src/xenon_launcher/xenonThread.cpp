@@ -42,6 +42,7 @@ namespace xenon
 		, m_criticalRegion(false)
 		, m_requestExit(false)
 		, m_affinity(0xFF)
+		, m_apcList(nullptr)
 		, m_irql(0)
 	{
 		// register descriptor in kernel linked lists
@@ -321,6 +322,9 @@ namespace xenon
 
 	void KernelThread::CleanupAPCs()
 	{
+		if (!m_apcList)
+			return;
+
 		LockAPC();
 
 		while (m_apcList->HasPending())

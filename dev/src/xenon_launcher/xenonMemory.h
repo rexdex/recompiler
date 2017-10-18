@@ -1,10 +1,10 @@
 #pragma once
+
 #include "../host_core/blockAllocator.h"
-#include "../host_core/bitMask.h"
+#include "../host_core/bitset.h"
 
 namespace xenon
 {
-
 	/// xenon memory allocator
 	class Memory
 	{
@@ -12,10 +12,10 @@ namespace xenon
 		Memory(native::IMemory& nativeMemory);
 
 		// initialize virtual memory range
-		const bool InitializeVirtualMemory(const uint32 totalVirtualMemoryAvaiable);
+		const bool InitializeVirtualMemory(const uint32 prefferedBase, const uint32 totalVirtualMemoryAvaiable);
 
 		// initialize physical memory range
-		const bool InitializePhysicalMemory(const uint32 totalPhysicalMemoryAvaiable);
+		const bool InitializePhysicalMemory(const uint32 prefferedBase, const uint32 totalPhysicalMemoryAvaiable);
 
 		//---
 
@@ -60,58 +60,60 @@ namespace xenon
 		void FreeSmallBlock(void* memory);
 
 	private:
-		static const uint32 VIRTUAL_PAGE_SIZE = 4096;
-		static const uint32 VIRTUAL_MEMORY_BASE = 0x40000000;
-		static const uint32 VIRTUAL_MEMORY_MAX = 512 << 20;
-		static const uint32 VIRTUAL_PAGES_MAX = VIRTUAL_MEMORY_MAX / VIRTUAL_PAGE_SIZE;
-
-		static const uint32 PHYSICAL_PAGE_SIZE = 4096;
-		static const uint32 PHYSICAL_MEMORY_LOW = 0xC0000000;
-		static const uint32 PHYSICAL_MEMORY_HIGH = 0xE0000000;
-		static const uint32 PHYSICAL_PAGES_MAX = (PHYSICAL_MEMORY_HIGH - PHYSICAL_MEMORY_LOW) / PHYSICAL_PAGE_SIZE;
+		static const uint32 PAGE_SIZE = 4096;
+		static const uint32 MAX_MEMORY_SIZE = 0x40000000;
+		static const uint32 MAX_PAGES = MAX_MEMORY_SIZE / PAGE_SIZE;
 
 		// native memory system
 		native::IMemory& m_nativeMemory;
 
-		// get memory page from memory address	
-		const uint32 PageFromAddress(const void* base) const
+		struct MemoryClass
 		{
-			return  (uint32)(((uint8*)base - (uint8*)m_virtualMemoryBase) / VIRTUAL_PAGE_SIZE);
-		}
+			std::mutex m_lock;
 
-		// get base address for memory page
-		void* AddressFromPage(const uint32 page) const
-		{
-			return (uint8*)m_virtualMemoryBase + (page * VIRTUAL_PAGE_SIZE);
-		}
+			void*					m_base;				// allocated base of the memory range
+			uint32					m_totalSize;		// size of the allocated memory range
+			uint32					m_totalPages;		// total number of memory pages
+			uint32					m_allocatedPages;	// allocated number of memory pages
+			utils::BlockAllocator	m_allocator;		// page allocator
 
-		// get number of required pages for given size
-		const uint32 PagesFromSize(const uint32 size) const
-		{
-			return (size + (VIRTUAL_PAGE_SIZE - 1)) / VIRTUAL_PAGE_SIZE;
-		}
+			// get memory page from memory address	
+			inline const uint32 PageFromAddress(const void* base) const
+			{
+				return  (uint32)(((uint8*)base - (uint8*)m_base) / PAGE_SIZE);
+			}
 
-		typedef utils::BlockAllocator< VIRTUAL_PAGES_MAX >	TVirtualBlocks;
-		typedef utils::BitMask< VIRTUAL_PAGES_MAX >	TVirtualCommit;
-		typedef utils::BlockAllocator< PHYSICAL_PAGES_MAX >	TPhysicalBlocks;
+			// get base address for memory page
+			inline void* AddressFromPage(const uint32 page) const
+			{
+				return (uint8*)m_base + (page * PAGE_SIZE);
+			}
 
-		void*			m_virtualMemoryBase;			// allocated base of the memory range
-		uint32			m_virtualMemorySize;			// size of the allocated memory range
-		uint32			m_virtualMemoryPagesTotal;		// total number of memory pages
-		uint32			m_virtualMemoryPagesAllocated;	// allocated number of memory pages
-		uint32			m_virtualMemoryPagesComitted;	// number of committed virtual memory pages
-		TVirtualBlocks	m_virtualMemoryAllocator;		// page allocator
-		uint16			m_virtualMemoryFlags[VIRTUAL_PAGES_MAX]; // page flags
-		TVirtualCommit	m_virtualMemoryCommitted;		// commit flags for page
+			// get number of required pages for given size
+			inline const uint32 PagesFromSize(const uint32 size) const
+			{
+				return (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
+			}
 
-		void*			m_physicalMemoryBase;			// allocated base of the physical memory range
-		uint32			m_physicalMemorySize;			// size of the allocated physical memory range
-		uint32			m_physicalMemoryPagesTotal;		// total number of physical memory pages
-		uint32			m_physicalMemoryPagesAllocated;	// allocated number of physical memory pages
-		TPhysicalBlocks	m_physicalMemoryAllocator;		// page allocator	
+			// check if the pointer is contained in this memory class range
+			inline const bool Contains(void* base, const uint32 size) const
+			{
+				if (((uint8*)base < (uint8*)m_base) || (((uint8*)base + size) > ((uint8*)m_base + m_totalSize)))
+					return false;
+				return true;
+			}
 
-		uint32			m_tempShitPhysical;
+			// initialize the memory range
+			const bool Initialize(native::IMemory& memory, const uint32 prefferedBase, const uint32 totalVirtualMemoryAvaiable);
 
-		std::mutex		m_lock;						// lock for memory allocator
+			// allocate memory
+			void* Allocate(const uint32 size, const bool top, const uint32 flags);
+
+			// free memory
+			void Free(void* memory, uint32& outNumPages);
+		};
+
+		MemoryClass m_virtual;
+		MemoryClass m_physical;
 	};
 } // xenon
