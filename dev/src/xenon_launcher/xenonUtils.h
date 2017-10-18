@@ -126,6 +126,18 @@ namespace utils
 		data.clear();
 	}
 
+	template< typename V >
+	static inline bool RemoveFromVector(std::vector< V >& data, const V& elem)
+	{
+		auto it = std::find(data.begin(), data.end(), elem);
+		if (it != data.end())
+		{
+			data.erase(it);
+			return true;
+		}
+		return false;
+	}
+
 	// name thread
 	extern void SetThreadName( const uint32 threadID, const char* name );
 

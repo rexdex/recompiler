@@ -483,11 +483,6 @@ namespace xenon
 		, m_numFreeIndices(0)
 		, m_exitRequested(false)
 	{
-		m_lock = m_nativeKernel->CreateCriticalSection();
-		m_interruptLock = m_nativeKernel->CreateCriticalSection();
-		m_tlsLock = m_nativeKernel->CreateCriticalSection();
-		m_threadLock = m_nativeKernel->CreateCriticalSection();
-
 		memset(&m_objects, 0, sizeof(m_objects));
 		memset(&m_freeIndices, 0, sizeof(m_freeIndices));
 
@@ -514,11 +509,6 @@ namespace xenon
 			for (auto* ptr : m_threads)
 				delete ptr;
 		}
-
-		delete m_lock;
-		delete m_interruptLock;
-		delete m_threadLock;
-		delete m_tlsLock;
 	}
 
 	void Kernel::AllocIndex(IKernelObject* object, uint32& outIndex)
@@ -526,7 +516,7 @@ namespace xenon
 		DEBUG_CHECK(object != nullptr);
 		DEBUG_CHECK(outIndex == 0);
 
-		m_lock->Acquire();
+		std::lock_guard<std::mutex> lock(m_lock);
 
 		// get from list
 		if (m_maxObjectIndex < MAX_OBJECT)
@@ -541,8 +531,6 @@ namespace xenon
 
 		DEBUG_CHECK(m_objects[outIndex] == NULL);
 		m_objects[outIndex] = object;
-
-		m_lock->Release();
 	}
 
 	void Kernel::ReleaseIndex(IKernelObject* object, uint32& outIndex)
@@ -550,7 +538,14 @@ namespace xenon
 		DEBUG_CHECK(object != nullptr);
 		DEBUG_CHECK(outIndex != 0);
 
-		m_lock->Acquire();
+		// HACK: keep track of the event notifier table
+		if (object->GetType() == KernelObjectType::EventNotifier)
+		{
+			std::lock_guard<std::mutex> lock(m_eventNotifiersLock);
+			utils::RemoveFromVector(m_eventNotifiers, (KernelEventNotifier*)object);
+		}
+
+		std::lock_guard<std::mutex> lock(m_lock);
 
 		DEBUG_CHECK(m_objects[outIndex] == object);
 		m_objects[outIndex] = nullptr;
@@ -559,8 +554,6 @@ namespace xenon
 		outIndex = 0;
 
 		m_numFreeIndices += 1;
-
-		m_lock->Release();
 	}
 
 	IKernelObject* Kernel::ResolveAny(const uint32 handle)
@@ -750,9 +743,19 @@ namespace xenon
 		return object;
 	}
 
+	void Kernel::PostEventNotification(const uint32 eventId, const uint32 eventData)
+	{
+		GLog.Log("Kernel: Posting global event 0x%08X, data 0x%08X", eventId, eventData);
+
+		std::lock_guard<std::mutex> lock(m_eventNotifiersLock);
+
+		for (auto* notifier : m_eventNotifiers)
+			notifier->PushNotification(eventId, eventData);
+	}
+
 	void Kernel::ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const bool trace)
 	{
-		m_interruptLock->Acquire();
+		std::lock_guard<std::mutex> lock(m_interruptLock);
 
 		static uint32 s_nextThreadID = 10000;
 
@@ -768,13 +771,11 @@ namespace xenon
 		// execute code
 		InplaceExecution cpuExecution(this, cpuExecutionParams);
 		cpuExecution.Execute(trace);
-
-		m_interruptLock->Release();
 	}
 
 	uint32 Kernel::AllocTLSIndex()
 	{
-		m_tlsLock->Acquire();
+		std::lock_guard<std::mutex> lock(m_tlsLock);
 
 		int32 freeIndex = -1;
 		for (uint32 i = 0; i < MAX_TLS; ++i)
@@ -790,19 +791,15 @@ namespace xenon
 
 		m_tlsFreeEntries[freeIndex] = false;
 
-		m_tlsLock->Release();
-
 		return freeIndex;
 	}
 
 	void Kernel::FreeTLSIndex(const uint32 index)
 	{
-		m_tlsLock->Acquire();
+		std::lock_guard<std::mutex> lock(m_interruptLock);
 
 		DEBUG_CHECK(m_tlsFreeEntries[index] == false);
 		m_tlsFreeEntries[index] = true;
-
-		m_tlsLock->Release();
 	}
 
 	void Kernel::SetCode(const runtime::CodeTable* code)
@@ -817,7 +814,7 @@ namespace xenon
 
 		// locked access
 		{
-			m_threadLock->Acquire();
+			std::lock_guard<std::mutex> lock(m_interruptLock);
 
 			// process the thread update
 			for (auto it = m_threads.begin(); it != m_threads.end(); )
@@ -843,8 +840,6 @@ namespace xenon
 					++it;
 				}
 			}
-
-			m_threadLock->Release();
 		}
 
 		// all threads exited
@@ -891,10 +886,11 @@ namespace xenon
 		auto* traceFile = CreateThreadTraceWriter();
 		auto* thread = new KernelThread(this, m_nativeKernel, traceFile, params);
 
-		m_threadLock->Acquire();
-		m_threads.push_back(thread);
-		m_threadLock->Release();
-
+		{
+			std::lock_guard<std::mutex> lock(m_threadLock);
+			m_threads.push_back(thread);
+		}
+	
 		// resume execution
 		if (!params.m_suspended)
 			thread->Resume();
@@ -916,7 +912,14 @@ namespace xenon
 
 	KernelEventNotifier* Kernel::CreateEventNotifier()
 	{
-		return new KernelEventNotifier(this);
+		auto* ret = new KernelEventNotifier(this);
+
+		{
+			std::lock_guard<std::mutex> lock(m_eventNotifiersLock);
+			m_eventNotifiers.push_back(ret);
+		}
+
+		return ret;
 	}
 
 	//----

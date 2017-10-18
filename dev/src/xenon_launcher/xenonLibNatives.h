@@ -750,6 +750,119 @@ namespace xnative
 		} data;
 	};
 
+	enum class X_NOTIFY_FLAGS : uint8_t
+	{
+		XNOTIFY_SYSTEM = 1,
+		XNOTIFY_LIVE = 2,
+		XNOTIFY_FRIENDS = 4,
+		XNOTIFY_CUSTOM = 8,
+		XNOTIFY_XMP = 0x20,
+		XNOTIFY_MSGR = 0x40,
+		XNOTIFY_PARTY = 0x80,
+		XNOTIFY_ALL = XNOTIFY_SYSTEM | XNOTIFY_LIVE | XNOTIFY_FRIENDS | XNOTIFY_CUSTOM | XNOTIFY_XMP | XNOTIFY_MSGR | XNOTIFY_PARTY
+	};
+
+	enum class X_NOTIFY_AREA : uint8_t
+	{
+		SYSTEM = 0,
+		LIVE = 1,
+		FRIENDS = 2,
+		CUSTOM = 3,
+		XMP = 5,
+		MSGR = 6,
+		PARTY = 7,
+	};
+
+	//   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+	//   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+	//  +-+-----------+-----------------+-------------------------------+
+	//  |R|    Area   |    Version      |            Index              |
+	//  +-+-----+-----+-----------------+-------------------------------+
+	class NotificationID
+	{
+	public:
+		inline NotificationID()
+		{
+			m_code = 0;
+		}
+
+		inline NotificationID(const uint32_t version, const X_NOTIFY_AREA area, const uint32_t index)
+		{
+			m_reserved = 0;
+			m_area = (uint32_t)area;
+			m_index = index;
+			m_version = version;
+		}
+
+		inline const uint32_t GetCode() const
+		{
+			return m_code;
+		}
+
+		inline const uint32_t GetVersion() const
+		{
+			return m_version;
+		}
+
+		inline const X_NOTIFY_AREA GetArea() const
+		{
+			return (X_NOTIFY_AREA)m_area;
+		}
+
+		inline const uint32_t GetIndex() const
+		{
+			return m_index;
+		}
+
+	private:
+		union
+		{
+			struct
+			{
+				uint32_t m_index : 16;
+				uint32_t m_version : 9;
+				uint32_t m_area : 6;
+				uint32_t m_reserved : 1;
+			};
+
+			uint32_t m_code;
+		};
+	};
+
+	extern const NotificationID XN_SYS_UI;
+	extern const NotificationID XN_SYS_SIGNINCHANGED;
+	extern const NotificationID XN_SYS_STORAGEDEVICESCHANGED;
+	extern const NotificationID XN_SYS_PROFILESETTINGCHANGED;
+	extern const NotificationID XN_SYS_MUTELISTCHANGED;
+	extern const NotificationID XN_SYS_INPUTDEVICESCHANGED;
+	extern const NotificationID XN_SYS_INPUTDEVICECONFIGCHANGED;
+	extern const NotificationID XN_SYS_PLAYTIMERNOTICE;
+	extern const NotificationID XN_SYS_AVATARCHANGED;
+	extern const NotificationID XN_SYS_NUIHARDWARESTATUSCHANGED;
+	extern const NotificationID XN_SYS_NUIPAUSE;
+	extern const NotificationID XN_SYS_NUIUIAPPROACH;
+	extern const NotificationID XN_SYS_DEVICEREMAP;
+	extern const NotificationID XN_SYS_NUIBINDINGCHANGED;
+	extern const NotificationID XN_SYS_AUDIOLATENCYCHANGED;
+	extern const NotificationID XN_SYS_NUICHATBINDINGCHANGED;
+	extern const NotificationID XN_SYS_INPUTACTIVITYCHANGED;
+	extern const NotificationID XN_LIVE_CONNECTIONCHANGED;
+	extern const NotificationID XN_LIVE_INVITE_ACCEPTED;
+	extern const NotificationID XN_LIVE_LINK_STATE_CHANGED;
+	extern const NotificationID XN_LIVE_CONTENT_INSTALLED;
+	extern const NotificationID XN_LIVE_MEMBERSHIP_PURCHASED;
+	extern const NotificationID XN_LIVE_VOICECHAT_AWAY;
+	extern const NotificationID XN_LIVE_PRESENCE_CHANGED;
+	extern const NotificationID XN_FRIENDS_PRESENCE_CHANGED;
+	extern const NotificationID XN_FRIENDS_FRIEND_ADDED;
+	extern const NotificationID XN_FRIENDS_FRIEND_REMOVED;
+	extern const NotificationID XN_CUSTOM_ACTIONPRESSED;
+	extern const NotificationID XN_CUSTOM_GAMERCARD;
+	extern const NotificationID XN_XMP_STATECHANGED;
+	extern const NotificationID XN_XMP_PLAYBACKBEHAVIORCHANGED;
+	extern const NotificationID XN_XMP_PLAYBACKCONTROLLERCHANGED;
+	extern const NotificationID XN_PARTY_MEMBERS_CHANGED;	
+
 } // xnative
 
   //---------------------------------------------------------------------------

@@ -31,7 +31,7 @@ namespace xenon
 
 		inline cpu::GeneralIO& GetIOTable() const { return *m_ioTable; }
 
-		inline UserProfileManager& GetUserProfileManager() const { *m_users; }
+		inline UserProfileManager& GetUserProfileManager() const { return *m_users; }
 
 	public:
 		Platform();

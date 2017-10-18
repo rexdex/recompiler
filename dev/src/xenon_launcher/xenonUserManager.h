@@ -115,6 +115,8 @@ namespace xenon
 		TAllUsers m_allUsers;
 
 		UserProfile* m_currentUser[MAX_USERS];
+
+		uint32_t GetValidUserMask() const;
 	};
 
 	//---

@@ -232,9 +232,26 @@ namespace xenon
 		m_currentUser[userIndex] = user;
 		GLog.Log("XAM: User '%hs' signed in as user %u", user->GetName().c_str(), userIndex);
 
-		// TODO: send system-wide notification
+		// send system-wide notification
+		const auto validUserMask = GetValidUserMask();
+		GPlatform.GetKernel().PostEventNotification(xnative::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
 
 		return true;
+	}
+
+	uint32_t UserProfileManager::GetValidUserMask() const
+	{
+		uint32_t ret = 0;
+
+		for (uint32_t i = 0; i < MAX_USERS; ++i)
+		{
+			if (m_currentUser[i] != nullptr)
+			{
+				ret |= 1 << i;
+			}
+		}
+
+		return ret;
 	}
 
 	const bool UserProfileManager::SignOutUser(const uint32_t userIndex)
@@ -245,10 +262,12 @@ namespace xenon
 		if (user != nullptr)
 		{
 			GLog.Log("XAM: User '%hs' signed out from slot %u", user->GetName().c_str(), userIndex);
-
 			m_currentUser[userIndex] = 0;
 
-			// TODO: send system-wide notification
+			// send system-wide notification
+			const auto validUserMask = GetValidUserMask();
+			GPlatform.GetKernel().PostEventNotification(xnative::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
+
 			return true;
 		}
 

@@ -68,6 +68,7 @@ namespace xenon
 		static const uint32 PHYSICAL_PAGE_SIZE = 4096;
 		static const uint32 PHYSICAL_MEMORY_LOW = 0xC0000000;
 		static const uint32 PHYSICAL_MEMORY_HIGH = 0xE0000000;
+		static const uint32 PHYSICAL_PAGES_MAX = (PHYSICAL_MEMORY_HIGH - PHYSICAL_MEMORY_LOW) / PHYSICAL_PAGE_SIZE;
 
 		// native memory system
 		native::IMemory& m_nativeMemory;
@@ -90,9 +91,9 @@ namespace xenon
 			return (size + (VIRTUAL_PAGE_SIZE - 1)) / VIRTUAL_PAGE_SIZE;
 		}
 
-		typedef utils::BlockAllocator< VIRTUAL_MEMORY_MAX / VIRTUAL_PAGE_SIZE >	TVirtualBlocks;
+		typedef utils::BlockAllocator< VIRTUAL_PAGES_MAX >	TVirtualBlocks;
 		typedef utils::BitMask< VIRTUAL_PAGES_MAX >	TVirtualCommit;
-		typedef utils::BlockAllocator< (PHYSICAL_MEMORY_HIGH - PHYSICAL_MEMORY_LOW) / PHYSICAL_PAGE_SIZE >	TPhysicalBlocks;
+		typedef utils::BlockAllocator< PHYSICAL_PAGES_MAX >	TPhysicalBlocks;
 
 		void*			m_virtualMemoryBase;			// allocated base of the memory range
 		uint32			m_virtualMemorySize;			// size of the allocated memory range

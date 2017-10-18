@@ -433,6 +433,9 @@ namespace xenon
 		// execute interrupt code
 		void ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const bool trace);
 
+		// send global notification to all event notifiers
+		void PostEventNotification(const uint32 eventId, const uint32 eventData);
+
 		//---
 
 		// allocate TLS index (global)
@@ -461,37 +464,68 @@ namespace xenon
 		bool AdvanceThreads();
 
 	private:
-		static const uint32			MAX_OBJECT = 65536;
-		static const uint32			MAX_TLS = 64;
+		static const uint32 MAX_OBJECT = 65536;
+		static const uint32 MAX_TLS = 64;
 
-		native::IKernel*			m_nativeKernel;
+		//---
 
-		const runtime::CodeTable*	m_codeTable;
+		// External request to kill everything and leave
+		std::atomic<bool> m_exitRequested;
 
-		IKernelObject*				m_objects[MAX_OBJECT];
-		uint32						m_maxObjectIndex;
+		//---
 
-		uint32						m_freeIndices[MAX_OBJECT];
-		uint32						m_numFreeIndices;
+		// native kernel is used to do the heavy lifting when the STD is not enough
+		native::IKernel* m_nativeKernel;
 
-		KernelDispatcher*			m_dpcDispatcher;
+		// all executable code is registered in this table
+		// this provides the implementation for each executable region in memory
+		const runtime::CodeTable* m_codeTable;
 
-		native::ICriticalSection*	m_lock;
-		native::ICriticalSection*	m_interruptLock;
+		//--
 
-		native::ICriticalSection*	m_tlsLock;
-		bool						m_tlsFreeEntries[ MAX_TLS ];
+		// all kernel objects
+		IKernelObject* m_objects[MAX_OBJECT];
+		uint32 m_maxObjectIndex;
 
-		bool						m_exitRequested;
-
-		std::wstring				m_traceFileRootName;
+		// free indices for kernel objects
+		uint32 m_freeIndices[MAX_OBJECT];
+		uint32 m_numFreeIndices;
+		std::mutex m_lock;
 
 		// active threads
-		typedef std::vector< KernelThread* >	TThreads;
-		TThreads					m_threads;
-		native::ICriticalSection*	m_threadLock;
+		typedef std::vector< KernelThread* > TThreads;
+		TThreads m_threads;
+		std::mutex m_threadLock;
+
+		// active event notifiers
+		typedef std::vector< KernelEventNotifier* > TEventNotifiers;
+		TEventNotifiers m_eventNotifiers;
+		std::mutex m_eventNotifiersLock;
+
+		//--
+
+		// kernel DPC (deferred procedure call) implementation
+		KernelDispatcher* m_dpcDispatcher;
+
+		//--
+
+		// lock for interrupt execution (we can do only one)
+		std::mutex m_interruptLock;
+
+		//---
+
+		// TLS (thread local storage) mapping
+		// TODO: move to Process
+		std::mutex m_tlsLock;
+		bool m_tlsFreeEntries[ MAX_TLS ];
+
+		///----
+
+		std::wstring m_traceFileRootName;
 
 		runtime::TraceWriter* CreateThreadTraceWriter();
+
+		///----
 	};
 
 	//---------------------------------------------------------------------------
