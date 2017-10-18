@@ -170,6 +170,9 @@
     <ClCompile Include="xenonMemory.cpp">
       <Filter>devices\memory</Filter>
     </ClCompile>
+    <ClCompile Include="xenonLibAudio.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibUtils.h">
