@@ -588,8 +588,36 @@ uint64 __fastcall XboxThreads_NtWaitForSingleObjectEx(uint64 ip, cpu::CpuRegs& r
 
 uint64 __fastcall XboxThreads_KeWaitForMultipleObjects(uint64 ip, cpu::CpuRegs& regs)
 {
-	DebugBreak();
-	RETURN_DEFAULT();
+	const auto count = (uint32)regs.R3;
+	const auto objectsPtr = utils::MemPtr32<uint32>(regs.R4);
+	const auto waitType = (uint32)regs.R5;
+	const auto waitReason = (uint32)regs.R6;
+	const auto unkn = (uint32)regs.R7;
+	const auto alterable = (uint32)regs.R8;
+	const auto timeoutPtr = utils::MemPtr32<uint32>(regs.R9);
+	const auto waitBlockPtr = utils::MemPtr32<uint32>(regs.R10);
+
+	DEBUG_CHECK(waitType == 0 || waitType == 1);
+
+	const auto timeOut = timeoutPtr ? timeoutPtr.Get() : 0;
+
+	std::vector<xenon::IKernelWaitObject*> waitObjects;
+	for (uint32_t i = 0; i < count; ++i)
+	{
+		auto objectPtr = objectsPtr.GetAt(i);
+		if (objectPtr)
+		{
+			auto objectData = GPlatform.GetKernel().ResolveObject((void*)objectPtr, xenon::NativeKernelObjectType::Unknown, true);
+			if (!objectData || !objectData->CanWait())
+				RETURN_ARG(xnative::X_STATUS_INVALID_PARAMETER);
+
+			waitObjects.push_back(static_cast<xenon::IKernelWaitObject*>(objectData));
+		}
+	}
+
+	const auto waitAll = (waitType == 1);
+	const auto ret = GPlatform.GetKernel().WaitMultiple(waitObjects, waitAll, timeOut, alterable != 0);
+	RETURN_ARG(ret);
 }
 
 uint64 __fastcall XboxThreads_NtWaitForMultipleObjectsEx(uint64 ip, cpu::CpuRegs& regs)

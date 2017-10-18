@@ -53,6 +53,7 @@ namespace xenon
 		FileSysEntry = 120,
 		ThreadBlock = 130,
 		EventNotifier = 140,
+		Waitable = 255,
 	};
 
 	enum class NativeKernelObjectType : int32
@@ -318,6 +319,7 @@ namespace xenon
 		IKernelWaitObject(Kernel* kernel, const KernelObjectType type, const char* name);
 
 		virtual bool CanWait() const override final { return true; }
+		virtual native::IKernelObject* GetNativeObject() const = 0;
 		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) = 0;
 	};
 
@@ -333,9 +335,9 @@ namespace xenon
 		uint32 Set( uint32 priorityIncrement, bool wait);
 		uint32 Pulse(uint32 priorityIncrement, bool wait);
 		uint32 Reset();
-		void Clear();
 
 		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;
+		virtual native::IKernelObject* GetNativeObject() const override final;
 
 	private:
 		native::IEvent*		m_event;
@@ -435,6 +437,9 @@ namespace xenon
 
 		// send global notification to all event notifiers
 		void PostEventNotification(const uint32 eventId, const uint32 eventData);
+
+		// wait for multiple waitable objects
+		uint32 WaitMultiple(const std::vector<IKernelWaitObject*>& waitObjects, const bool waitAll, const uint32 timeout, const bool alertable);
 
 		//---
 

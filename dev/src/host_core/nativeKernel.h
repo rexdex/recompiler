@@ -45,8 +45,17 @@ namespace native
 		virtual void Release() = 0;
 	};
 
+	/// basic kernel object
+	class LAUNCHER_API IKernelObject
+	{
+	public:
+		virtual ~IKernelObject();
+
+		virtual void* GetNativeHandle() const = 0;
+	};
+
 	/// event
-	class LAUNCHER_API IEvent
+	class LAUNCHER_API IEvent : public IKernelObject
 	{
 	public:
 		virtual ~IEvent();
@@ -59,7 +68,7 @@ namespace native
 	};
 
 	/// semaphore
-	class LAUNCHER_API ISemaphore
+	class LAUNCHER_API ISemaphore : public IKernelObject
 	{
 	public:
 		virtual ~ISemaphore();
@@ -69,7 +78,7 @@ namespace native
 	};
 
 	/// thread
-	class LAUNCHER_API IThread
+	class LAUNCHER_API IThread : public IKernelObject
 	{
 	public:
 		virtual ~IThread();
@@ -104,6 +113,11 @@ namespace native
 
 		/// create a native (host) thread running given code
 		virtual IThread* CreateThread(IRunnable* runnable) = 0;
+
+		///---
+
+		/// wait for multiple objects
+		virtual WaitResult WaitMultiple(const std::vector<IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable) = 0;
 	};
 
 } // native

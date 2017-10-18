@@ -9,13 +9,14 @@ namespace win
 	{
 		switch (ret)
 		{
-		case WAIT_OBJECT_0: return native::WaitResult::Success;
-		case WAIT_IO_COMPLETION: return native::WaitResult::IOCompletion;
-		case WAIT_TIMEOUT: return native::WaitResult::Timeout;
-		case WAIT_ABANDONED: return native::WaitResult::Abandoned;
-		case WAIT_FAILED: return native::WaitResult::Failed;
+			case WAIT_OBJECT_0: return native::WaitResult::Success;
+			case WAIT_IO_COMPLETION: return native::WaitResult::IOCompletion;
+			case WAIT_TIMEOUT: return native::WaitResult::Timeout;
+			case WAIT_ABANDONED: return native::WaitResult::Abandoned;
+			case WAIT_FAILED: return native::WaitResult::Failed;
 		}
 
+		DEBUG_CHECK(!"Unknown return mode");
 		return native::WaitResult::Failed;
 	}
 
@@ -76,6 +77,12 @@ namespace win
 		return ToWaitResult(ret);
 	}
 
+	void* Event::GetNativeHandle() const
+	{
+		return m_hEvent;
+	}
+
+
 	//----
 
 	Semaphore::Semaphore(uint32 initalCount, uint32 maxCount)
@@ -102,6 +109,12 @@ namespace win
 		return ToWaitResult(ret);
 	}
 
+	void* Semaphore::GetNativeHandle() const
+	{
+		return m_hSemaphore;
+	}
+
+
 	//----
 
 	Thread::Thread(native::IRunnable* runnable)
@@ -115,6 +128,11 @@ namespace win
 	{
 		CloseHandle(m_hThread);
 		m_hThread = NULL;
+	}
+
+	void* Thread::GetNativeHandle() const
+	{
+		return m_hThread;
 	}
 
 	native::WaitResult Thread::Wait(const uint32 timeout, const bool alertable)
@@ -192,6 +210,22 @@ namespace win
 	native::IThread* Kernel::CreateThread(native::IRunnable* runnable)
 	{
 		return new Thread(runnable);
+	}
+
+	native::WaitResult Kernel::WaitMultiple(const std::vector<native::IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable)
+	{
+		// collect the handles
+		std::vector<HANDLE> handles;
+		for (const auto* kernelObject : objects)
+		{
+			const auto handle = (HANDLE)kernelObject->GetNativeHandle();
+			DEBUG_CHECK(handle != nullptr);
+			handles.push_back(handle);
+		}
+
+		// wait
+		const auto ret = WaitForMultipleObjectsEx((DWORD)handles.size(), handles.data(), waitAll, timeOut, alertable);
+		return ToWaitResult(ret);
 	}
 
 	//---

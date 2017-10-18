@@ -27,6 +27,9 @@ namespace native
 
 	//---
 
+	IKernelObject::~IKernelObject()
+	{}
+
 	IRunnable::~IRunnable()
 	{}
 

@@ -61,6 +61,7 @@ namespace xenon
 
 		// waitable
 		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;
+		virtual native::IKernelObject* GetNativeObject() const override final;
 
 		// get current thread
 		static KernelThread* GetCurrentThread();

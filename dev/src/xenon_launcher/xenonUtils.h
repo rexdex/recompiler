@@ -38,6 +38,17 @@ namespace utils
 			return x.v;
 		}
 
+		T GetAt(const uint32 index) const
+		{
+			union
+			{
+				T v;
+				uint32 u;
+			} x;
+			x.u = _byteswap_ulong(m_ptr[index]);
+			return x.v;
+		}
+
 		void Set(T value)
 		{
 			union
@@ -47,6 +58,17 @@ namespace utils
 			} x;
 			x.v = value;
 			*m_ptr = _byteswap_ulong(x.u);
+		}
+
+		void SetAt(const uint32 index, T value)
+		{
+			union
+			{
+				T v;
+				uint32 u;
+			} x;
+			x.v = value;
+			m_ptr[index] = _byteswap_ulong(x.u);
 		}
 
 	private:

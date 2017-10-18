@@ -422,6 +422,11 @@ namespace xenon
 		return ConvWaitResult(result);
 	}
 
+	native::IKernelObject* KernelEvent::GetNativeObject() const
+	{
+		return m_event;
+	}
+
 	//-----------------------------------------------------------------------------
 
 	KernelEventNotifier::KernelEventNotifier(Kernel* kernel)
@@ -753,6 +758,22 @@ namespace xenon
 			notifier->PushNotification(eventId, eventData);
 	}
 
+	uint32 Kernel::WaitMultiple(const std::vector<IKernelWaitObject*>& waitObjects, const bool waitAll, const uint32 timeout, const bool alertable)
+	{
+		// collect native kernel object
+		std::vector<native::IKernelObject*> nativeKernelObjects;
+		for (const auto* waitObject : waitObjects)
+		{
+			auto* nativeObject = waitObject->GetNativeObject();
+			DEBUG_CHECK(nativeObject != nullptr);
+			nativeKernelObjects.push_back(nativeObject);
+		}
+
+		// wait
+		const auto ret = m_nativeKernel->WaitMultiple(nativeKernelObjects, waitAll, timeout, alertable);
+		return ConvWaitResult(ret);
+	}
+
 	void Kernel::ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const bool trace)
 	{
 		std::lock_guard<std::mutex> lock(m_interruptLock);
@@ -929,6 +950,11 @@ namespace xenon
 		const auto timeoutValue = optTimeout ? TimeoutTicksToMs(*optTimeout) : native::TimeoutInfinite;
 		const auto result = m_nativeThread->Wait(timeoutValue, alertable);
 		return ConvWaitResult(result);
+	}
+
+	native::IKernelObject* KernelThread::GetNativeObject() const
+	{
+		return m_nativeThread;
 	}
 
 	//----

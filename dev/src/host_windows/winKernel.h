@@ -26,6 +26,7 @@ namespace win
 		virtual bool Pulse() override final;
 		virtual bool Reset() override final;
 		virtual native::WaitResult Wait(const uint32 timeout, const bool alertable) override final;
+		virtual void* GetNativeHandle() const override final;
 
 	private:
 		HANDLE	m_hEvent;
@@ -39,6 +40,7 @@ namespace win
 
 		virtual uint32 Release(const uint32 count) override final;
 		virtual native::WaitResult Wait(const uint32 timeout, const bool alertable) override final;
+		virtual void* GetNativeHandle() const override final;
 
 	private:
 		HANDLE	m_hSemaphore;
@@ -50,6 +52,7 @@ namespace win
 		Thread(native::IRunnable* runnable);
 		virtual ~Thread();
 
+		virtual void* GetNativeHandle() const override final;
 		virtual native::WaitResult Wait(const uint32 timeout, const bool alertable) override final;
 
 		virtual bool Pause() override final;
@@ -82,6 +85,7 @@ namespace win
 		virtual native::IEvent* CreateEvent(const bool manualReset, const bool initialState) override final;
 		virtual native::ISemaphore* CreateSemaphore(const uint32 initialCount, const uint32 maxCount) override final;
 		virtual native::IThread* CreateThread(native::IRunnable* runnable) override final;
+		virtual native::WaitResult WaitMultiple(const std::vector<native::IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable) override final;
 	};
 
 } // win
