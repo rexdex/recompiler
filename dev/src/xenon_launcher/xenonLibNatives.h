@@ -111,6 +111,16 @@ namespace xnative
 		X_FILE_DOES_NOT_EXIST = ((X_FILE)0x00000005),
 	};
 
+	enum XFileMode
+	{
+		CreateAlways=0,
+		Open=1,
+		Create=2,
+		OpenIf=3,
+		Overwrite=4,
+		OverwriteIf=5,
+	};
+
 	// HRESULT (ERROR_*)
 	typedef uint32 X_RESULT;
 #define X_FACILITY_WIN32 7

@@ -6,17 +6,16 @@
 
 //---------------------------------------------------------------------------
 
-uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
-{
-	uint32 handle_ptr = (const uint32)regs.R3;
-	uint32 desired_access = (const uint32)regs.R4;
-	uint32 object_attributes_ptr = (const uint32)regs.R5;
-	uint32 io_status_block_ptr = (const uint32)regs.R6;
-	uint32 allocation_size_ptr = (const uint32)regs.R7;
-	uint32 file_attributes = (const uint32)regs.R8;
-	uint32 share_access = (const uint32)regs.R9;
-	uint32 creation_disposition = (const uint32)regs.R10;
+// http://processhacker.sourceforge.net/doc/ntioapi_8h.html
+static const uint32_t FILE_DIRECTORY_FILE = 0x00000001;
+static const uint32_t FILE_SEQUENTIAL_ONLY = 0x00000004;
+static const uint32_t FILE_SYNCHRONOUS_IO_ALERT = 0x00000010;
+static const uint32_t FILE_SYNCHRONOUS_IO_NONALERT = 0x00000020;
+static const uint32_t FILE_NON_DIRECTORY_FILE = 0x00000040;
+static const uint32_t FILE_RANDOM_ACCESS = 0x00000800;
 
+static uint32 CreateFileImpl(uint32 handle_ptr, uint32 desired_access, uint32 object_attributes_ptr, uint32 io_status_block_ptr, uint32 allocation_size_ptr, uint32 file_attributes, uint32 share_access, uint32 creation_disposition, uint32 creation_options)
+{
 	xnative::X_OBJECT_ATTRIBUTES attrs(nullptr, object_attributes_ptr);
 	char* object_name = attrs.ObjectName.Duplicate();
 
@@ -88,12 +87,41 @@ uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
 
 	// cleanup
 	free(object_name);
+	return result;
+}
+
+uint64 __fastcall XboxFiles_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
+{
+	uint32 handle_ptr = (const uint32)regs.R3;
+	uint32 desired_access = (const uint32)regs.R4;
+	uint32 object_attributes_ptr = (const uint32)regs.R5;
+	uint32 io_status_block_ptr = (const uint32)regs.R6;
+	uint32 allocation_size_ptr = (const uint32)regs.R7;
+	uint32 file_attributes = (const uint32)regs.R8;
+	uint32 share_access = (const uint32)regs.R9;
+	uint32 creation_disposition = (const uint32)regs.R10;
+	uint32 creation_options = 0;
+
+	const auto result = CreateFileImpl(handle_ptr, desired_access, object_attributes_ptr, io_status_block_ptr, allocation_size_ptr, file_attributes, share_access, creation_disposition, creation_options);
 	RETURN_ARG(result);
 }
 
 uint64 __fastcall XboxFiles_NtOpenFile(uint64 ip, cpu::CpuRegs& regs)
 {
-	RETURN_DEFAULT();
+	uint32 handle_ptr = (const uint32)regs.R3;
+	uint32 desired_access = (const uint32)regs.R4;
+	uint32 object_attributes_ptr = (const uint32)regs.R5;
+	uint32 io_status_block_ptr = (const uint32)regs.R6;
+	uint32 options = (const uint32)regs.R7;
+
+	uint32 allocation_size_ptr = 0;
+	uint32 file_attributes = 0;
+	uint32 share_access = 0;
+	uint32 creation_disposition = (uint32)xnative::XFileMode::Open;
+	uint32 creation_options = options;
+
+	const auto result = CreateFileImpl(handle_ptr, desired_access, object_attributes_ptr, io_status_block_ptr, allocation_size_ptr, file_attributes, share_access, creation_disposition, creation_options);
+	RETURN_ARG(result);
 }
 
 uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs)
