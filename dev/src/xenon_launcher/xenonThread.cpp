@@ -5,6 +5,7 @@
 
 #include "../host_core/runtimeCodeExecutor.h"
 #include "../host_core/runtimeTraceWriter.h"
+#include "../host_core/runtimeTraceFile.h"
 
 namespace xenon
 {
@@ -29,11 +30,10 @@ namespace xenon
 
 	__declspec(thread) KernelThread* GCurrentThread = NULL;
 
-	KernelThread::KernelThread(Kernel* kernel, native::IKernel* nativeKernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params)
+	KernelThread::KernelThread(Kernel* kernel, native::IKernel* nativeKernel, const KernelThreadParams& params)
 		: IKernelWaitObject(kernel, KernelObjectType::Thread, "Thread")
 		, m_code(&m_regs, &kernel->GetCode(), params.m_entryPoint)
 		, m_memory( kernel, params.m_stackSize, GetIndex(), params.m_entryPoint, 1 )
-		, m_traceFile( traceFile )
 		, m_tls( kernel )
 		, m_isStopped(false) // not stopped yet
 		, m_isCrashed(false) // not crashed yet
@@ -43,6 +43,7 @@ namespace xenon
 		, m_requestExit(false)
 		, m_affinity(0xFF)
 		, m_apcList(nullptr)
+		, m_traceWriter(nullptr)
 		, m_irql(0)
 	{
 		// register descriptor in kernel linked lists
@@ -63,6 +64,10 @@ namespace xenon
 
 		// create the native thread
 		m_nativeThread = nativeKernel->CreateThread(this);
+
+		// create trace writer
+		if (GPlatform.GetTraceFile())
+			m_traceWriter = GPlatform.GetTraceFile()->CreateThreadWriter(GetIndex());
 	}
 
 	KernelThread::~KernelThread()
@@ -80,8 +85,8 @@ namespace xenon
 		m_apcList = nullptr;
 
 		// if we still have trace file close it now (should be closed on the thread)
-		delete m_traceFile;
-		m_traceFile = nullptr;
+		delete m_traceWriter;
+		m_traceWriter = nullptr;
 	}
 
 	bool KernelThread::Pause()
@@ -174,16 +179,17 @@ namespace xenon
 		int exitCode = 0;
 		try
 		{
-			if (m_traceFile != nullptr)
+			if (m_traceWriter != nullptr)
 			{
-				m_traceFile->AddFrame(m_code.GetInstructionPointer(), m_regs);
+				m_traceWriter->AddFrame(m_code.GetInstructionPointer(), m_regs);
 
-				while (!m_requestExit && m_code.Step())
-					m_traceFile->AddFrame(m_code.GetInstructionPointer(), m_regs);
+				while (!m_requestExit && m_code.RunTraced(*m_traceWriter))
+				{}					
 			}
 			else
 			{
-				while (!m_requestExit && m_code.Step()) {};
+				while (!m_requestExit && m_code.RunPure())
+				{}
 			}
 		}
 
@@ -200,13 +206,6 @@ namespace xenon
 		{
 			GLog.Err("Thread: Thread '%hs' (ID=%u) received unhandled exception %s at 0x%08llX", GetName(), GetIndex(), e.what(), e.GetInstructionPointer());
 			m_isCrashed = true;
-		}
-
-		// close trace file, hopefully it contains the last executed instruction
-		if (m_traceFile)
-		{
-			delete m_traceFile;
-			m_traceFile = nullptr;
 		}
 
 		// cleanup APCs
@@ -286,7 +285,7 @@ namespace xenon
 			executionParams.m_args[4] = scratchAddr + 12;
 
 			// execute code
-			InplaceExecution executor(GetOwner(), executionParams);
+			InplaceExecution executor(GetOwner(), executionParams, "APC");
 			if (executor.Execute())
 			{
 				const uint32 userNormalRoutine = cpu::mem::loadAddr<uint32>(scratchAddr + 0);
@@ -308,7 +307,7 @@ namespace xenon
 					userExecutionParams.m_args[1] = userSystemArg1;
 					userExecutionParams.m_args[2] = userSystemArg2;
 
-					InplaceExecution userExecutor(GetOwner(), userExecutionParams);
+					InplaceExecution userExecutor(GetOwner(), userExecutionParams, "APC");
 					userExecutor.Execute();
 
 					LockAPC();
@@ -350,7 +349,7 @@ namespace xenon
 				executionParams.m_args[0] = apcAddress;
 
 				// execute code
-				InplaceExecution executor(GetOwner(), executionParams);
+				InplaceExecution executor(GetOwner(), executionParams, "APC");
 				executor.Execute();
 			}
 		}

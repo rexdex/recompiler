@@ -104,7 +104,7 @@ void ILogOutput::SetTaskName(_Printf_format_string_ const char* txt, ...)
 	}
 }
 
-void ILogOutput::SetTaskProgress(int count, int max)
+void ILogOutput::SetTaskProgress(uint64_t count, uint64_t max)
 {
 	ILogOutput* cur = this;
 	while (cur != nullptr)
@@ -133,7 +133,7 @@ ILogOutput& ILogOutput::DevNull()
 	{
 		virtual void DoLog(const LogLevel, const char*) override {}
 		virtual void DoSetTaskName(const char*) override {}
-		virtual void DoSetTaskProgress(int, int) override {}
+		virtual void DoSetTaskProgress(uint64_t, uint64_t) override {}
 		virtual bool DoIsTaskCanceled() override { return false; }
 	};
 

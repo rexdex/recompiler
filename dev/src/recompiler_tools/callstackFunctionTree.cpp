@@ -236,7 +236,7 @@ namespace tools
 			Helper::StackWalker stackWalker(this, GetRootItem(), nameCache);
 
 			// walk the stack
-			callstackData->WalkStack(0, stackWalker, maxRecursion);
+			//callstackData->WalkStack(0, stackWalker, maxRecursion);
 
 			// enable user to play with this stuff
 			Enable(true);

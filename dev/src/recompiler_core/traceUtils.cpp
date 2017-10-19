@@ -1,5 +1,5 @@
 #include "build.h"
-#include "traceData.h"
+#include "traceDataFile.h"
 #include "traceUtils.h"
 #include "platformCPU.h"
 

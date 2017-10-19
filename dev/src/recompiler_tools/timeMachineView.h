@@ -9,15 +9,26 @@
 
 namespace tools
 {
+
+	/// time machine navigation helper
+	class ITimeMachineViewNavigationHelper
+	{
+	public:
+		virtual ~ITimeMachineViewNavigationHelper() {};
+
+		/// navigate to frame
+		virtual bool NavigateToFrame(const TraceFrameID id) = 0;
+	};
+
 	/// Displays code casual history
 	class TimeMachineView : public canvas::CanvasPanel
 	{
 	public:
-		TimeMachineView(wxWindow* parent, class timemachine::Trace* trace);
+		TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, ITimeMachineViewNavigationHelper* navigator);
 		virtual ~TimeMachineView();
 
 		// Set trace data index
-		const int32 GetRootTraceIndex() const;
+		const TraceFrameID GetRootTraceIndex() const;
 
 		// Focus on root node
 		void ShowRootNode();
@@ -26,6 +37,8 @@ namespace tools
 		void ShowAllNodes();
 
 	private:
+		ITimeMachineViewNavigationHelper* m_navigator;
+
 		timemachine::Trace*		m_trace;
 
 		struct LayoutInfo;

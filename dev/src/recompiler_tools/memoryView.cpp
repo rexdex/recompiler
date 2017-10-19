@@ -1,3 +1,4 @@
+this
 #include "build.h"
 #include "memoryView.h"
 #include "progressDialog.h"
@@ -1289,7 +1290,7 @@ namespace tools
 		{
 			if (m_view != nullptr)
 			{
-				m_view->NavigateBack(this);
+				m_view->Navigate(this, NavigationType::Back);
 			}
 		}
 		else
@@ -1301,6 +1302,7 @@ namespace tools
 	void MemoryView::OnKeyDown(wxKeyEvent& event)
 	{
 		const bool selectionMode = wxGetKeyState(WXK_SHIFT);
+		const bool specialMode = wxGetKeyState(WXK_CONTROL);
 
 		if (event.GetKeyCode() == WXK_UP)
 		{
@@ -1327,6 +1329,23 @@ namespace tools
 			const int numLines = m_lineMapping.GetNumberOfLines();
 			SetSelectionCursor(numLines - 1, selectionMode);
 		}
+		else if (event.GetKeyCode() == WXK_F11)
+		{
+			if (selectionMode)
+			{
+				if (specialMode)
+					m_view->Navigate(this, NavigationType::GlobalStepBack);
+				else
+					m_view->Navigate(this, NavigationType::LocalStepBack);
+			}
+			else
+			{
+				if (specialMode)
+					m_view->Navigate(this, NavigationType::GlobalStepIn);
+				else
+					m_view->Navigate(this, NavigationType::LocalStepIn);
+			}
+		}		
 	}
 
 	void MemoryView::OnScroll(wxScrollWinEvent& event)

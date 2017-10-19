@@ -17,8 +17,7 @@ namespace tools
 	END_EVENT_TABLE()
 
 	StartWindow::StartWindow(App* app)
-		: m_projectFiles("ProjectFile")
-		, m_config(L"StartWindow")
+		: m_config(L"StartWindow")
 		, m_app(app)
 	{
 		// load the dialog
@@ -27,10 +26,6 @@ namespace tools
 		// get controls
 		m_html = XRCCTRL(*this, "HTML", wxHtmlWindow);
 		m_html->Bind(wxEVT_HTML_LINK_CLICKED, [this](const wxHtmlLinkEvent& e) { HandleLink(e.GetLinkInfo().GetHref()); });
-
-		// setup file formats for projects
-		m_projectFiles.AddFormat(FileFormat("Project File", "rep"));
-		m_projectFiles.SetMultiselection(false);
 
 		// initialize content
 		RefreshContent();
@@ -68,7 +63,7 @@ namespace tools
 				b.LineBreak();
 				b.LineBreak();
 				b.LineBreak();
-				b.Print("Build " __DATE__ " " __TIME__);
+				b.PrintEncoded("Build " __DATE__ " " __TIME__);
 			}
 		}
 
@@ -189,12 +184,13 @@ namespace tools
 		if (!platformDefinition)
 			return;
 
-		// ask user to specify the name of the project file
-		if (!m_projectFiles.DoSave(this, "project"))
+		// ask for the actual file name
+		wxFileDialog saveFileDialog(this, "Save project file", "", "project.rep", "Project files (*.rep)|*.rep", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		if (saveFileDialog.ShowModal() == wxID_CANCEL)
 			return;
 
 		// get file extension
-		const std::wstring filePath = m_projectFiles.GetFile().wc_str();
+		const std::wstring filePath = saveFileDialog.GetPath().wc_str();
 		const auto createdProject = Project::CreateProject(m_app->GetLogWindow(), filePath, platformDefinition);
 		if (!createdProject)
 		{
@@ -208,12 +204,13 @@ namespace tools
 
 	void StartWindow::OnOpenProject()
 	{
-		// ask for file name
-		if (!m_projectFiles.DoOpen(this))
+		// ask for the actual file name
+		wxFileDialog loadFileDialog(this, "Load project file", "", "", "Project files (*.rep)|*.rep", wxFD_OPEN);
+		if (loadFileDialog.ShowModal() == wxID_CANCEL)
 			return;
 
 		// get file extension
-		const std::wstring filePath = m_projectFiles.GetFile().wc_str();
+		const std::wstring filePath = loadFileDialog.GetPath().wc_str();
 
 		// load the recent projects
 		std::shared_ptr<Project> loadedProject;

@@ -32,9 +32,6 @@
     <ClCompile Include="widgetHelpers.cpp">
       <Filter>widgets</Filter>
     </ClCompile>
-    <ClCompile Include="projectTraceData.cpp">
-      <Filter>project</Filter>
-    </ClCompile>
     <ClCompile Include="registerView.cpp">
       <Filter>widgets\regView</Filter>
     </ClCompile>
@@ -53,16 +50,10 @@
     <ClCompile Include="callstackFunctionTree.cpp">
       <Filter>widgets\callstack</Filter>
     </ClCompile>
-    <ClCompile Include="memoryFrame.cpp">
-      <Filter>widgets\traceMemoryView</Filter>
-    </ClCompile>
     <ClCompile Include="canvas.cpp">
       <Filter>widgets\canvas</Filter>
     </ClCompile>
     <ClCompile Include="timeMachineView.cpp">
-      <Filter>widgets\timemachine</Filter>
-    </ClCompile>
-    <ClCompile Include="timeMachineFrame.cpp">
       <Filter>widgets\timemachine</Filter>
     </ClCompile>
     <ClCompile Include="choiceDialog.cpp">
@@ -86,9 +77,6 @@
     <ClCompile Include="htmlBuilder.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="fileDialog.cpp">
-      <Filter>dialogs\file</Filter>
-    </ClCompile>
     <ClCompile Include="startWindow.cpp">
       <Filter>windows\start</Filter>
     </ClCompile>
@@ -109,6 +97,9 @@
     </ClCompile>
     <ClCompile Include="buildDialog.cpp">
       <Filter>dialogs\build</Filter>
+    </ClCompile>
+    <ClCompile Include="projectTraceTab.cpp">
+      <Filter>tabs\workspace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,9 +134,6 @@
     <ClInclude Include="widgetHelpers.h">
       <Filter>widgets</Filter>
     </ClInclude>
-    <ClInclude Include="projectTraceData.h">
-      <Filter>project</Filter>
-    </ClInclude>
     <ClInclude Include="registerView.h">
       <Filter>widgets\regView</Filter>
     </ClInclude>
@@ -165,16 +153,10 @@
     <ClInclude Include="callstackFunctionTree.h">
       <Filter>widgets\callstack</Filter>
     </ClInclude>
-    <ClInclude Include="memoryFrame.h">
-      <Filter>widgets\traceMemoryView</Filter>
-    </ClInclude>
     <ClInclude Include="canvas.h">
       <Filter>widgets\canvas</Filter>
     </ClInclude>
     <ClInclude Include="timeMachineView.h">
-      <Filter>widgets\timemachine</Filter>
-    </ClInclude>
-    <ClInclude Include="timeMachineFrame.h">
       <Filter>widgets\timemachine</Filter>
     </ClInclude>
     <ClInclude Include="choiceDialog.h">
@@ -198,9 +180,6 @@
     <ClInclude Include="htmlBuilder.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="fileDialog.h">
-      <Filter>dialogs\file</Filter>
-    </ClInclude>
     <ClInclude Include="startWindow.h">
       <Filter>windows\start</Filter>
     </ClInclude>
@@ -222,6 +201,9 @@
     <ClInclude Include="buildDialog.h">
       <Filter>dialogs\build</Filter>
     </ClInclude>
+    <ClInclude Include="projectTraceTab.h">
+      <Filter>tabs\workspace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="app">
@@ -241,9 +223,6 @@
     </Filter>
     <Filter Include="widgets\codeView">
       <UniqueIdentifier>{70b603ee-9252-4f24-9107-1780d21af46a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="widgets\traceMemoryView">
-      <UniqueIdentifier>{4105f139-e825-4756-9f29-b11542762ecb}</UniqueIdentifier>
     </Filter>
     <Filter Include="widgets\canvas">
       <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
@@ -283,9 +262,6 @@
     </Filter>
     <Filter Include="windows">
       <UniqueIdentifier>{1c8c6abe-d56c-4626-a42a-77261440043e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="dialogs\file">
-      <UniqueIdentifier>{a2c47bf6-abd2-4596-a09f-88b922543d6a}</UniqueIdentifier>
     </Filter>
     <Filter Include="windows\start">
       <UniqueIdentifier>{dc9b3cf2-0221-44ff-ba81-8889512e163c}</UniqueIdentifier>

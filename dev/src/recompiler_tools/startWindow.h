@@ -22,7 +22,6 @@ namespace tools
 
 		void HandleLink(const wxString& link);
 
-		FileDialog m_projectFiles;
 		ConfigSection m_config;
 
 		void OnClose(wxCloseEvent& evt);

@@ -15,8 +15,8 @@ public:
 	virtual ~IInstructiondDecompilerXenon(){};
 
 	// platform::CPUInstructionNativeDecompiler interface implementation
-	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const override;
-	virtual bool GetCommentText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const override;
+	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const override;
+	virtual bool GetCommentText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const override;
 
 	// Decompile instruction
 	virtual const bool Decompile(class ILogOutput& output, const uint32 address, const decoding::Instruction& op, const decoding::InstructionExtendedInfo& exInfo, class code::IGenerator& codeGen, std::string& outCode) const = 0;

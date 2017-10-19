@@ -205,16 +205,16 @@ namespace decoding
 		void Setup(const uint32 codeSize, const platform::CPUInstruction* opcode, const Operand& arg0 = Operand(), const Operand& arg1 = Operand(), const Operand& arg2 = Operand(), const Operand& arg3 = Operand(), const Operand& arg4 = Operand(), const Operand& arg5 = Operand());
 
 		// get simple text representation (fast implementation)
-		void GenerateSimpleText(const uint32 codeAddress, char*& outStream, const char* maxPos) const;
+		void GenerateSimpleText(const uint64_t codeAddress, char*& outStream, const char* maxPos) const;
 
 		// get full text representation (requires instruction decoder)
-		void GenerateText(const uint32 codeAddress, char*& outStream, const char* maxPos) const;
+		void GenerateText(const uint64_t codeAddress, char*& outStream, const char* maxPos) const;
 
 		// generate comment text
-		const bool GenerateComment(const uint32 codeAddress, char*& outStream, const char* maxPos) const;
+		const bool GenerateComment(const uint64_t codeAddress, char*& outStream, const char* maxPos) const;
 
 		// get extra instruction information 
-		const bool GetExtendedInfo(const uint32 codeAddress, decoding::Context& context, InstructionExtendedInfo& outInfo) const;
+		const bool GetExtendedInfo(const uint64_t codeAddress, decoding::Context& context, InstructionExtendedInfo& outInfo) const;
 
 	private:
 		// get text representation (fast implementation)

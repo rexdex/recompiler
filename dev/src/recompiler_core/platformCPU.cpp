@@ -201,6 +201,7 @@ namespace platform
 		// create register
 		CPURegister* regInfo = new CPURegister(name, bitSize, 0, type, nullptr, nativeIndex);
 		m_registers.push_back(regInfo);
+		m_rootRegisters.push_back(regInfo);
 		m_registerMap[name] = regInfo;
 		return regInfo;
 	}

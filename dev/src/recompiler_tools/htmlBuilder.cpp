@@ -4,18 +4,27 @@
 namespace tools
 {
 
-	HTMLBuilder::HTMLBuilder()
+	HTMLBuilder::HTMLBuilder(const bool bright)
 		: m_blockStart(false)
 	{
 		Open("html");
 
-		const auto clientColor = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
 		Open("body");
-		Attr("bgcolor", "#282828");// clientColor.GetAsString().c_str());
-		Attr("text", "#808080");// clientColor.GetAsString().c_str());
 
-		/*Open("font");
-		Attr("size", "10");*/
+		if (bright)
+		{
+			const auto clientColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+			const auto textColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+			Attr("bgcolor", clientColor.GetAsString().c_str());
+			Attr("text", textColor.GetAsString().c_str());
+			//Open("font");
+			//Attr("size", "10");
+		}
+		else
+		{
+			Attr("bgcolor", "#282828");// clientColor.GetAsString().c_str());
+			Attr("text", "#808080");// clientColor.GetAsString().c_str());
+		}
 	}
 
 	void HTMLBuilder::Open(const char* block)
@@ -96,6 +105,20 @@ namespace tools
 	}
 
 	void HTMLBuilder::Print(const char* valueBuf, ...)
+	{
+		char buf[4096];
+		va_list args;
+
+		va_start(args, valueBuf);
+		vsprintf_s(buf, valueBuf, args);
+		va_end(args);
+
+		StartValue();
+
+		m_out.Append(buf);
+	}
+
+	void HTMLBuilder::PrintEncoded(const char* valueBuf, ...)
 	{
 		char buf[4096];
 		va_list args;

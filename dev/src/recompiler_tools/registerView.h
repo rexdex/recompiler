@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../recompiler_core/traceData.h"
+#include "../recompiler_core/traceDataFile.h"
 #include "../recompiler_core/traceUtils.h"
 
 //---------------------------------------------------------------------------
@@ -17,7 +17,7 @@ namespace tools
 		RegisterView(wxWindow* parent);
 
 		// initialize register list from a CPU definition
-		void InitializeRegisters(const trace::Registers& traceData);
+		void InitializeRegisters(const platform::CPU& cpuInfo);
 
 		// update register values from a trace frame
 		void UpdateRegisters(const trace::DataFrame& frame, const trace::DataFrame* nextFrame);
@@ -25,7 +25,8 @@ namespace tools
 	private:
 		wxListCtrl*		m_list;
 
-		trace::Registers		m_registers;
+		const platform::CPU*	m_cpu;
+
 		trace::DataFrame*		m_frameCurrent;
 		trace::DataFrame*		m_frameNext;
 

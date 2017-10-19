@@ -493,19 +493,14 @@ namespace xenon
 
 		for (uint32 i = 0; i < MAX_TLS; ++i)
 			m_tlsFreeEntries[i] = true;
-
-		// tracing enabled ?
-		if (cmdline.HasOption("tracefile"))
-		{
-			m_traceFileRootName = cmdline.GetOptionValueW("tracefile");
-			if (!m_traceFileRootName.empty())
-			{
-				GLog.Warn("Kernel: Trace file enable, all traces will be outputed as '%ls'", m_traceFileRootName.c_str());
-			}
-		}
 	}
 
 	Kernel::~Kernel()
+	{
+		DEBUG_CHECK(m_threads.empty());
+	}
+
+	void Kernel::StopAllThreads()
 	{
 		if (!m_threads.empty())
 		{
@@ -513,6 +508,7 @@ namespace xenon
 
 			for (auto* ptr : m_threads)
 				delete ptr;
+			m_threads.clear();
 		}
 	}
 
@@ -774,7 +770,7 @@ namespace xenon
 		return ConvWaitResult(ret);
 	}
 
-	void Kernel::ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const bool trace)
+	void Kernel::ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const char* name /*= "IRQ"*/)
 	{
 		std::lock_guard<std::mutex> lock(m_interruptLock);
 
@@ -790,8 +786,8 @@ namespace xenon
 		cpuExecutionParams.m_args[1] = numArgs >= 2 ? args[1] : 0;
 
 		// execute code
-		InplaceExecution cpuExecution(this, cpuExecutionParams);
-		cpuExecution.Execute(trace);
+		InplaceExecution cpuExecution(this, cpuExecutionParams, name);
+		cpuExecution.Execute();
 	}
 
 	uint32 Kernel::AllocTLSIndex()
@@ -881,31 +877,11 @@ namespace xenon
 		return !m_exitRequested;
 	}
 
-	static std::atomic<int> GTraceFileIndex = 1;
-
-	runtime::TraceWriter* Kernel::CreateThreadTraceWriter()
-	{
-		// tracing disabled
-		if (m_traceFileRootName.empty())
-			return nullptr;
-
-		// format a name
-		wchar_t buf[16];
-		const int traceIndex = GTraceFileIndex++;
-		wsprintf(buf, L".%d.trace", traceIndex);
-		std::wstring traceFileName = m_traceFileRootName;
-		traceFileName += buf;
-
-		// create the trace file
-		return runtime::TraceWriter::CreateTrace(CPU_RegisterBankInfo::GetInstance(), traceFileName);
-	}
-
 	//---
 
 	KernelThread* Kernel::CreateThread(const KernelThreadParams& params)
 	{
-		auto* traceFile = CreateThreadTraceWriter();
-		auto* thread = new KernelThread(this, m_nativeKernel, traceFile, params);
+		auto* thread = new KernelThread(this, m_nativeKernel, params);
 
 		{
 			std::lock_guard<std::mutex> lock(m_threadLock);

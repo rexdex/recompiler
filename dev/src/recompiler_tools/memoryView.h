@@ -24,6 +24,19 @@ namespace tools
 
 	//-----------------------------------------------------------------------------
 
+	/// Navigation type
+	enum class NavigationType
+	{
+		LocalStepBack,
+		GlobalStepBack,
+		LocalStepIn,
+		GlobalStepIn,
+		Back,
+		Advance,
+	};
+
+	//-----------------------------------------------------------------------------
+
 	/// Memory view interface
 	class IMemoryDataView
 	{
@@ -58,7 +71,7 @@ namespace tools
 		virtual bool Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift) { return false; }
 
 		//! Navigate back
-		virtual bool NavigateBack(class MemoryView* view) { return false; }
+		virtual bool Navigate(class MemoryView* view, const NavigationType navigatinType) { return false; }
 
 		//! Notify about the cursor change
 		virtual void SelectionCursorMoved(class MemoryView* view, const uint32 newOffset, const bool createHistoryEntry) {};

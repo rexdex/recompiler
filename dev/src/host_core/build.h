@@ -15,6 +15,11 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <atomic>
+#include <thread>
+#include <chrono>
+#include <ostream>
+#include <fstream>
 
 #include "launcherBase.h"
 #include "launcherOutputTTY.h"
@@ -26,4 +31,7 @@ namespace runtime
 
 	class RegisterBank;
 	class RegisterBankInfo;
+
+	class TraceFile;
+	class TraceWriter;
 }

@@ -59,9 +59,11 @@ namespace xenon
 		}
 
 		// setup the base pointer
-		auto* base = AddressFromPage(firstPageIndex);
-		GLog.Spam("VMEM: Memory allocated (%1.2fKB, %d pages) at %06Xh", size / 1024.0f, numPages, (uint32)base);
 		m_allocatedPages += numPages;
+		auto* base = AddressFromPage(firstPageIndex);
+
+		// stats
+		GLog.Spam("VMEM: Memory allocated (%1.2fKB, %d pages) at %06Xh, Total pages: %u", size / 1024.0f, numPages, (uint32)base, m_allocatedPages);
 
 		// return base
 		return base;
@@ -82,6 +84,9 @@ namespace xenon
 		m_allocator.FreeBlock(page);
 		m_allocatedPages -= numAllocatedPages;
 		outNumPages = numAllocatedPages;
+
+		// stats
+		GLog.Spam("VMEM: Memory free (%d pages) at %06Xh, Total pages: %u", numAllocatedPages, (uint32)memory, m_allocatedPages);
 	}
 
 	//--

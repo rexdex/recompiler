@@ -6,6 +6,7 @@
 #include "projectImageTab.h"
 #include "app.h"
 #include "progressDialog.h"
+#include "projectTraceTab.h"
 
 namespace tools
 {
@@ -66,7 +67,7 @@ namespace tools
 	void ProjectWindow::CreateLayout()
 	{
 		// create document tabs
-		m_tabs = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE & ~wxAUI_NB_CLOSE_BUTTON & ~wxAUI_NB_CLOSE_ON_ACTIVE_TAB);
+		m_tabs = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE | wxAUI_NB_CLOSE_BUTTON | wxAUI_NB_CLOSE_ON_ALL_TABS);
 		m_layout.AddPane(m_tabs, wxAuiPaneInfo().Name(wxT("$Content")).Caption(wxT("Documents")).CenterPane().PaneBorder(false).CloseButton(false));
 
 		// create the main project tab
@@ -210,6 +211,18 @@ namespace tools
 
 		// return the tab
 		return existingTab;
+	}
+
+	ProjectTraceTab* ProjectWindow::GetTraceTab(std::unique_ptr<trace::DataFile>& data, const bool focus /*= true*/)
+	{
+		if (!data)
+			return nullptr;
+
+		auto* projectTraceTab = new ProjectTraceTab(this, m_tabs, data);
+		projectTraceTab->NavigateToEnd();
+		m_tabs->AddPage(projectTraceTab, wxString::Format("Trace"), focus);
+
+		return projectTraceTab;
 	}
 
 	bool ProjectWindow::ImportImage(const std::wstring& imageImportPath)

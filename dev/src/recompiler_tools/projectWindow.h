@@ -4,6 +4,7 @@ namespace tools
 {
 	class ProjectMainTab;
 	class ProjectImageTab;
+	class ProjectTraceTab;
 
 	// type of the tab
 	enum class ProjectTabType
@@ -61,6 +62,9 @@ namespace tools
 
 		// get/create tab for given project image
 		ProjectImageTab* GetImageTab(const std::shared_ptr<ProjectImage>& img, const bool createIfMissing = true, const bool focus = true);
+
+		// create the trace tab
+		ProjectTraceTab* GetTraceTab(std::unique_ptr<trace::DataFile>& data, const bool focus = true);
 
 	protected:
 		void OnActivate(wxActivateEvent& event);

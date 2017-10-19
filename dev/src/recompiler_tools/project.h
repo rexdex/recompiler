@@ -1,7 +1,6 @@
 #pragma once
 
 #include "projectAddressHistory.h"
-#include "projectTraceData.h"
 
 namespace tools
 {
@@ -58,6 +57,9 @@ namespace tools
 		// remove image from project
 		void RemoveImage(const std::shared_ptr<ProjectImage>& image);
 
+		// get all startup images
+		void GetStartupImages(std::vector<std::shared_ptr<ProjectImage>>& outImages) const;
+
 		//---
 
 		// load existing project
@@ -65,6 +67,14 @@ namespace tools
 
 		// create new project
 		static std::shared_ptr<Project> CreateProject(ILogOutput& log, const std::wstring& projectPath, const platform::Definition* platform);
+
+		//---
+
+		// get decoding context for given instruction pointer
+		decoding::Context* GetDecodingContext(const uint64 ip);
+
+		// get project image for given instruction point
+		std::shared_ptr<ProjectImage> FindImageForAddress(const uint64 ip);
 
 	private:
 		Project(const platform::Definition* platform, const wxString& projectFilePath);
@@ -84,6 +94,11 @@ namespace tools
 
 		// local modification flag
 		bool m_isModified;
+
+		// cached decoding context
+		uint64 m_currentDecodingContextStart;
+		uint64 m_currentDecodingContextEnd;
+		decoding::Context* m_currentDecodingContext;
 	};
 
 } // tools

@@ -126,7 +126,9 @@ namespace win
 
 	Thread::~Thread()
 	{
-		CloseHandle(m_hThread);
+		if (WAIT_OBJECT_0 != WaitForSingleObjectEx(m_hThread, 100, TRUE))
+			TerminateThread(m_hThread, 0);
+
 		m_hThread = NULL;
 	}
 

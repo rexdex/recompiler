@@ -17,7 +17,7 @@
 
 namespace tools
 {
-	ImageMemoryView::ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, ProjectImageTab* imageTab)
+	ImageMemoryView::ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, IImageMemoryNavigationHelper* imageTab)
 		: m_projectImage(projectImage)
 		, m_imageData(projectImage->GetEnvironment().GetImage().get())
 		, m_decodingContext(projectImage->GetEnvironment().GetDecodingContext())
@@ -566,9 +566,9 @@ namespace tools
 		return false;
 	}
 
-	bool ImageMemoryView::NavigateBack(class MemoryView* view)
+	bool ImageMemoryView::Navigate(class MemoryView* view, const NavigationType type)
 	{
-		return m_imageTab->NavigateBack();
+		return m_imageTab->Navigate(type);
 	}
 
 	void ImageMemoryView::SelectionCursorMoved(class MemoryView* view, const uint32 newOffset, const bool createHistoryEntry)

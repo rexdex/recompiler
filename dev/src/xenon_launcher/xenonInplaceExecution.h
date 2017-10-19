@@ -36,15 +36,16 @@ namespace xenon
 	class InplaceExecution
 	{
 	public:
-		InplaceExecution( Kernel* kernel, const InplaceExecutionParams& params);
+		InplaceExecution(Kernel* kernel, const InplaceExecutionParams& params, const char* name);
 		~InplaceExecution();
 
 		// process until exited or exception is thrown or the code finished, returns exit code
-		int Execute( const bool trace = false );
+		int Execute();
 
 	private:
 		cpu::CpuRegs				m_regs;
 		runtime::CodeExecutor		m_code;
+		const char*					m_name;
 
 		KernelThreadMemory			m_memory;
 	};

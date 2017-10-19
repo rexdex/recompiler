@@ -39,13 +39,13 @@ namespace platform
 		virtual ~CPUInstructionNativeDecompiler() {};
 
 		//! Generate human readable instruction comment
-		virtual bool GetCommentText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const = 0;
+		virtual bool GetCommentText(const class decoding::Instruction& instr, const uint64_t codeAddress, char* outText, const uint32 outTextSize) const = 0;
 
 		//! Generate human readable instruction text
-		virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const = 0;
+		virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint64_t codeAddress, char* outText, const uint32 outTextSize) const = 0;
 
 		//! Generate extended info for instruction
-		virtual bool GetExtendedInfo(const class decoding::Instruction& instr, const uint32 codeAddress, const decoding::Context& context, decoding::InstructionExtendedInfo& outInfo) const = 0;
+		virtual bool GetExtendedInfo(const class decoding::Instruction& instr, const uint64_t codeAddress, const decoding::Context& context, decoding::InstructionExtendedInfo& outInfo) const = 0;
 	};
 
 	//---------------------------------------------------------------------------
@@ -146,6 +146,9 @@ namespace platform
 		inline const uint32 GetNumRegisters() const { return (uint32)m_registers.size(); }
 		inline const CPURegister* GetRegister( const uint32 index ) const { return m_registers[ index ]; }
 
+		inline const uint32 GetNumRootRegisters() const { return (uint32)m_rootRegisters.size(); }
+		inline const CPURegister* GetRootRegister(const uint32 index) const { return m_rootRegisters[index]; }
+
 		inline const uint32 GetNumInstructions() const { return (uint32)m_instructions.size(); }
 		inline const CPUInstruction* GetInstruction( const uint32 index ) const { return m_instructions[ index ]; }
 
@@ -186,6 +189,9 @@ namespace platform
 		typedef std::map< std::string, CPURegister* > TRegisterMap;
 		TRegisters						m_registers;
 		TRegisterMap					m_registerMap;
+
+		// root registers
+		TRegisters						m_rootRegisters;
 
 		// instruction sets used by CPU
 		typedef std::vector< CPUInstruction* > TInstructions;

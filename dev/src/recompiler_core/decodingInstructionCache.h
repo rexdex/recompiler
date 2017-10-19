@@ -31,10 +31,10 @@ namespace decoding
 		void Clear();
 
 		// validate location, returns instruction size or 0 if invalid
-		const uint32 ValidateInstruction( ILogOutput& log, const uint32 codeAddress, const bool cached = true ) const;
+		const uint32 ValidateInstruction( ILogOutput& log, const uint64_t codeAddress, const bool cached = true ) const;
 
 		// fully decode the (assumed valid) instruction at given address
-		const uint32 DecodeInstruction( ILogOutput& log, const uint32 codeAddress, Instruction& outInstruction, const bool cached = true ) const;
+		const uint32 DecodeInstruction( ILogOutput& log, const uint64_t codeAddress, Instruction& outInstruction, const bool cached = true ) const;
 
 	public:
 		inline const platform::CPU* GetCPU() const { return m_cachedCPU; }
@@ -58,11 +58,11 @@ namespace decoding
 		class MemoryMap*		m_memoryMap;
 
 		// fully decoded instructions
-		typedef std::unordered_map< uint32, Instruction >	TDecodedInstructions;
+		typedef std::unordered_map< uint64_t, Instruction >	TDecodedInstructions;
 		mutable TDecodedInstructions	m_decodedInstructions;
 
 		// validation data - size of the instruction at given location
-		typedef std::unordered_map< uint32, uint32 >			TValidatedInstructions;
+		typedef std::unordered_map< uint64_t, uint32 >			TValidatedInstructions;
 		mutable TValidatedInstructions	m_validatedInstructions;
 	};
 

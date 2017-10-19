@@ -12,53 +12,53 @@ namespace common
 		char		m_platformName[16];
 		char		m_cpuName[16];
 
-		int			m_numFramesPerPage; // amount of delta frames per each full page
-		int			m_numRegisers; // number of registers captured
+		uint32_t	m_numRegisers; // number of registers captured
 	};
 
 	struct TraceRegiserInfo
 	{
 		char		m_name[16];
-		int			m_bitSize;		
+		uint32_t	m_bitSize;
 	};
 
-	struct TraceIndexFrame
+	struct TraceBlockHeader
 	{
-		static const uint32 MAGIC = 0x1111B00B; // IIIIndex Boob
+		static const uint32 MAGIC = 'BLCK';
 
-		uint32		m_magic; // identifier
-		uint64		m_nextIndexFrame; // offset to next index frame, zero if this is the last one
-		uint64		m_fullFrameOffsets[1]; // offsets to full frames
+		uint32 m_magic; // identifier
+		uint32 m_writerId; // unique ID of the writer
+		uint32 m_threadId; // id of the thread writing this frame or 0 for interrupt call
+		uint32 m_numEntries; // number of entries in this block
+
+		inline TraceBlockHeader()
+			: m_magic(0)
+			, m_writerId(0)
+			, m_threadId(0)
+			, m_numEntries(0) // filled later
+		{}
 	};
 
-	struct TraceFullFrame
-	{
-		static const uint32 MAGIC = 0xFFFFB00B; // FFFFull Boob
-
-		uint32	m_magic; // identifier
-		uint32	m_nextOffset; // offset to next full frame, 0 if this is the last one, measured from the start of structure
-	};
-
-	struct TraceDeltaFrame
-	{
-		static const uint32 MAGIC = 0xDDDDB00B; // DDDDelta Boob
-
-		uint32	m_magic; // identifier
-	};
-
-	struct TraceDataHeader
+	struct TraceFrame
 	{
 		static const uint32 MAX_REGS = 512; // maximum supported registers
+		static const uint32 MAGIC = 'FRAM';
 
-		uint32	m_ip; // instruction pointer at the capture
-		uint64	m_clock; // physical clock value
-		uint64	m_mask[MAX_REGS / 64]; // mask of stored register values
-		uint32	m_dataSize; // size of the following data block (in bytes)
+		uint32 m_magic; // identifier
+		uint32 m_seq; // sequence number (allows to have absolute order of operations)
+		uint64 m_ip; // instruction pointer at the capture
+		uint64 m_clock; // physical clock value
+		uint8 m_mask[MAX_REGS / 8]; // mask of stored register values
+
+		inline TraceFrame()
+			: m_magic(0)
+			, m_ip(0)
+			, m_clock(0)
+		{}
 
 		const bool HasDataForReg(const uint32 regIndex) const
 		{
-			const auto arrayIndex = regIndex / 64;
-			const auto arrayMask = 1ULL << (regIndex & 63);
+			const auto arrayIndex = regIndex / 8;
+			const auto arrayMask = 1 << (regIndex & 7);
 			return 0 != (m_mask[arrayIndex] & arrayMask);
 		}
 	};

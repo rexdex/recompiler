@@ -1,6 +1,5 @@
 #include "build.h"
 #include "utils.h"
-#include "projectTraceData.h"
 #include "../recompiler_core/platformCPU.h"
 
 namespace Parse

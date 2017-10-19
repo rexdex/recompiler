@@ -13,6 +13,7 @@ namespace xenon
 	class Memory;
 	class UserProfileManager;
 	class Audio;
+	class TraceFile;
 
 	/// Top level wrapper
 	class Platform : public runtime::IPlatform
@@ -35,6 +36,8 @@ namespace xenon
 		inline UserProfileManager& GetUserProfileManager() const { return *m_users; }
 
 		inline Audio& GetAudio() const { return *m_audio; }
+
+		inline runtime::TraceFile* GetTraceFile() const { return m_traceFile; }
 
 	public:
 		Platform();
@@ -84,6 +87,9 @@ namespace xenon
 		// interrupt table
 		cpu::Interrupts*	m_interruptTable;
 		cpu::GeneralIO*		m_ioTable;
+
+		// trace file (may be null)
+		runtime::TraceFile*		m_traceFile;
 
 		// external exit
 		bool m_userExitRequested;

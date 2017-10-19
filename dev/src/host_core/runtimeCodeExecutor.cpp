@@ -2,6 +2,7 @@
 #include "runtimeCodeTable.h"
 #include "runtimeCodeExecutor.h"
 #include "runtimeRegisterBank.h"
+#include "runtimeTraceWriter.h"
 
 namespace runtime
 {
@@ -17,11 +18,36 @@ namespace runtime
 	{
 	}
 
-	bool CodeExecutor::Step()
+	bool CodeExecutor::RunPure()
 	{
-		const auto relAddress = m_ip - m_code->GetCodeStartAddress();
-		const auto func = m_code->GetCodeTable()[relAddress];
-		m_ip = func(m_ip, *m_regs);
+		auto register shiftedCodeTable = m_code->GetCodeTable() - m_code->GetCodeStartAddress();
+		auto register ip = m_ip;
+		auto register counter = 1000;
+
+		while (ip && counter--)
+		{
+			const auto func = shiftedCodeTable[ip];
+			ip = func(ip, *m_regs);
+		}
+
+		m_ip = ip;
+		return (m_ip != 0);
+	}
+
+	bool CodeExecutor::RunTraced(TraceWriter& trace)
+	{
+		auto register shiftedCodeTable = m_code->GetCodeTable() - m_code->GetCodeStartAddress();
+		auto register ip = m_ip;
+		auto register counter = 1000;
+
+		while (ip && counter--)
+		{
+			const auto func = shiftedCodeTable[ip];
+			ip = func(ip, *m_regs);
+			trace.AddFrame(ip, *m_regs);
+		}
+
+		m_ip = ip;
 		return (m_ip != 0);
 	}
 

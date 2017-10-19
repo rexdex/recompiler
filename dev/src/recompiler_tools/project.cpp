@@ -5,6 +5,8 @@
 #include "../recompiler_core/platformDefinition.h"
 #include "../recompiler_core/platformLibrary.h"
 #include "../recompiler_core/internalFile.h"
+#include "../recompiler_core/decodingEnvironment.h"
+#include "../recompiler_core/image.h"
 
 namespace tools
 {
@@ -33,6 +35,9 @@ namespace tools
 		, m_projectPath(projectFilePath)
 		, m_projectDir(wxFileName(projectFilePath).GetPath())
 		, m_isModified(false)
+		, m_currentDecodingContextStart(0)
+		, m_currentDecodingContextEnd(0)
+		, m_currentDecodingContext(nullptr)
 	{
 		m_projectDir += wxFileName::GetPathSeparator();
 	}
@@ -63,6 +68,17 @@ namespace tools
 	{
 		std::remove(m_images.begin(), m_images.end(), image);
 		MarkAsModified();
+	}
+
+	void Project::GetStartupImages(std::vector<std::shared_ptr<ProjectImage>>& outImages) const
+	{
+		for (const auto& img : m_images)
+		{
+			if (img->CanRun() && img->GetSettings().m_imageType == ProjectImageType::Application)
+			{
+				outImages.push_back(img);
+			}
+		}
 	}
 
 	bool Project::Save(ILogOutput& log)
@@ -102,6 +118,50 @@ namespace tools
 		log.Log("Project: Saved project '%ls'", m_projectPath.c_str());
 		m_isModified = false;
 		return true;
+	}
+
+	std::shared_ptr<ProjectImage> Project::FindImageForAddress(const uint64 ip)
+	{
+		// linear search
+		for (const auto& projectImage : m_images)
+		{
+			const auto& env = projectImage->GetEnvironment();
+			const auto section = env.GetImage()->FindSectionForAddress(ip);
+			if (section != nullptr)
+			{
+				m_currentDecodingContextStart = section->GetVirtualOffset() + env.GetImage()->GetBaseAddress();
+				m_currentDecodingContextEnd = m_currentDecodingContextStart + section->GetVirtualSize();
+				m_currentDecodingContext = env.GetDecodingContext();
+				return projectImage;
+			}
+		}
+
+		// not found
+		return nullptr;
+	}
+
+	decoding::Context* Project::GetDecodingContext(const uint64 ip)
+	{
+		// use cached one
+		if (ip >= m_currentDecodingContextStart && ip < m_currentDecodingContextEnd)
+			return m_currentDecodingContext;
+
+		// find decoding context for the image that covers the IP range
+		for (const auto& projectImage : m_images)
+		{
+			const auto& env = projectImage->GetEnvironment();
+			const auto section = env.GetImage()->FindSectionForAddress(ip);
+			if (section != nullptr)
+			{
+				m_currentDecodingContextStart = section->GetVirtualOffset() + env.GetImage()->GetBaseAddress();
+				m_currentDecodingContextEnd = m_currentDecodingContextStart + section->GetVirtualSize();
+				m_currentDecodingContext = env.GetDecodingContext();
+				return m_currentDecodingContext;
+			}
+		}
+
+		// not found
+		return nullptr;
 	}
 
 	/*std::shared_ptr<Project> Project::LoadImageFile(ILogOutput& log, const std::wstring& imagePath, const std::wstring& projectPath)

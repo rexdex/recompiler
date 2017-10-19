@@ -1,5 +1,4 @@
 #include "build.h"
-#include "projectTraceData.h"
 #include "projectDynamicTraceData.h"
 
 namespace tools

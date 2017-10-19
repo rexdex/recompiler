@@ -3,10 +3,9 @@
 #include "widgetHelpers.h"
 #include "utils.h"
 #include "project.h"
-#include "projectTraceData.h"
 #include "htmlBuilder.h"
 
-#include "../recompiler_core/traceData.h"
+#include "../recompiler_core/traceDataFile.h"
 #include "../recompiler_core/decodingInstruction.h"
 #include "../recompiler_core/decodingEnvironment.h"
 #include "../recompiler_core/decodingContext.h"
@@ -25,9 +24,10 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
-	TraceInfoView::TraceInfoView(wxWindow* parent)
+	TraceInfoView::TraceInfoView(wxWindow* parent, trace::DataFile& traceData, Project* project)
 		: m_infoView(NULL)
-		, m_displayFormat(trace::RegDisplayFormat::Auto)
+		, m_project(project)
+		, m_traceData(&traceData)
 	{
 		wxXmlResource::Get()->LoadPanel(this, parent, wxT("TracePanel"));
 
@@ -41,23 +41,29 @@ namespace tools
 	{
 	}
 
-	void TraceInfoView::UpdateInfo(const class ProjectTraceData* data)
+	void TraceInfoView::SetFrame(const TraceFrameID id, const trace::RegDisplayFormat format)
 	{
 		// get the frames
-		const trace::DataFrame& frame = data->GetCurrentFrame();
-		const trace::DataFrame& nextFrame = data->GetNextFrame();
+		const trace::DataFrame& frame = m_traceData->GetFrame(id);
+		const trace::DataFrame& nextFrame = m_traceData->GetFrame(id+1);
 
-		// get the current address
-		const uint32 address = frame.GetAddress();
+		// show the content of the trace frame
+		if (frame.GetType() == trace::FrameType::CpuInstruction)
+		{
+			// get the current address
+			const auto address = frame.GetAddress();
 
-		// decode instruction
-		decoding::Instruction op;
-		//data->GetProject().GetEnv().GetDecodingContext()->DecodeInstruction(wxTheApp->GetLogWindow(), address, op, false);
+			// decode instruction
+			decoding::Instruction op;
+			const auto context = m_project->GetDecodingContext(address);
+			if (context)
+				context->DecodeInstruction(wxTheApp->GetLogWindow(), address, op, false);
 
-		// build document
-		HTMLBuilder doc;
-		BuildDoc(doc, data, op, frame, nextFrame);
-		m_infoView->SetPage(doc.Extract());
+			// build document
+			HTMLBuilder doc(true);
+			BuildCpuInstructionDoc(doc, op, frame, nextFrame, format);
+			m_infoView->SetPage(doc.Extract());
+		}
 	}
 
 	class RegisterListCollector
@@ -187,7 +193,7 @@ namespace tools
 		return "<unknown>";
 	}
 
-	void TraceInfoView::BuildDoc(class HTMLBuilder& doc, const class ProjectTraceData* data, const class decoding::Instruction& op, const trace::DataFrame& frame, const trace::DataFrame& nextFrame)
+	void TraceInfoView::BuildCpuInstructionDoc(class HTMLBuilder& doc, const class decoding::Instruction& op, const trace::DataFrame& frame, const trace::DataFrame& nextFrame, const trace::RegDisplayFormat format)
 	{
 		if (!op.IsValid())
 		{
@@ -203,26 +209,22 @@ namespace tools
 		}
 
 		// general instruction header
-		const uint32 numFrames = 1;// wxTheFrame->GetProject()->GetTrace()->GetNumEntries();
+		const auto numFrames = m_traceData->GetNumDataFrames();
 		doc.Print("Instruction: <b>%s</b><br>", instructionText);
-		doc.Print("Address: %06Xh<br>", frame.GetAddress());
-		doc.Print("Trace: %d/%d (%1.3f%%)<br>", frame.GetIndex(), numFrames, (float)frame.GetIndex() / (float)numFrames * 100.0f);
-		doc.Print("Call stack: <a href=\"callhistory:%d\">SHOW</a>", frame.GetIndex());
-		doc.Print("<br>", frame.GetIndex());
+		doc.Print("Address: %06llXh<br>", frame.GetAddress());
+		doc.Print("Trace: %llu/%llu (%1.3f%%)<br>", frame.GetLocationInfo().m_seq, numFrames, (double)frame.GetLocationInfo().m_seq / (double)numFrames * 100.0);
+		doc.Print("<br>");
 
-		// time machine
+		/*// time machine
 		{
 			char command[128];
-			sprintf_s(command, "timemachine:%u",
-				frame.GetIndex());
-
+			sprintf_s(command, "timemachine:%u", frame.GetIndex());
 			doc.Print("Open <a href=\"%s\"/>TIME MACHINE</a><br>", command);
-		}
+		}*/
 
 		// get extra information
 		decoding::InstructionExtendedInfo info;
-		//auto* context = data->GetProject().GetEnv().GetDecodingContext();
-		decoding::Context* context = nullptr;
+		decoding::Context* context = m_project->GetDecodingContext(frame.GetAddress());
 		if (op.GetExtendedInfo(frame.GetAddress(), *context, info))
 		{
 			// branch info
@@ -318,12 +320,12 @@ namespace tools
 						doc.Print("Output");
 						doc.Close();
 					}
-					{
+					/*{
 						doc.Open("th");
 						doc.Attr("width", "60");
 						doc.Print("Access");
 						doc.Close();
-					}
+					}*/
 					doc.Close(); // tr
 				}
 
@@ -340,15 +342,15 @@ namespace tools
 
 					// reg value
 					{
-						const auto thisVal = trace::GetRegisterValueText(info.m_reg, frame, m_displayFormat);
+						const auto thisVal = trace::GetRegisterValueText(info.m_reg, frame, format);
 						doc.PrintBlock("td", "%s", thisVal.c_str());
 
-						const auto nextVal = trace::GetRegisterValueText(info.m_reg, nextFrame, m_displayFormat);
+						const auto nextVal = trace::GetRegisterValueText(info.m_reg, nextFrame, format);
 						doc.PrintBlock("td", "%s", nextVal.c_str());
 					}
 
 					// reg scan
-					{
+					/*{
 						if (info.m_dependency && info.m_output)
 						{
 							doc.PrintBlock("td", "<a href=\"regscan:%d,2,-1,%s\">W</a> <a href=\"regscan:%d,1,1,%s\">R</a>",
@@ -369,7 +371,7 @@ namespace tools
 						{
 							doc.PrintBlock("td", " ");
 						}
-					}
+					}*/
 
 					doc.Close();
 				}
@@ -380,7 +382,7 @@ namespace tools
 			}
 
 			// trace history
-			if (info.m_registersDependenciesCount)
+			/*if (info.m_registersDependenciesCount)
 			{
 				doc.Print("<br>");
 				doc.Print("Dump reg history for %08Xh:<br>", frame.GetAddress());
@@ -410,7 +412,7 @@ namespace tools
 
 
 				doc.Print("<br>");
-			}
+			}*/
 
 			// memory access
 			if (info.m_memoryFlags & (decoding::InstructionExtendedInfo::eMemoryFlags_Read | decoding::InstructionExtendedInfo::eMemoryFlags_Write | decoding::InstructionExtendedInfo::eMemoryFlags_Touch))
@@ -459,87 +461,10 @@ namespace tools
 					doc.Print("Address value: <i>invalid</i><br>", memoryAddress);
 				}
 
-				// memory scan (bacward read)
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,1,-1,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>BACK READ</a><br>", command);
-				}
-
-				// memory scan (backward write)
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,2,-1,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>BACK WRITE</a><br>", command);
-				}
-
-				// memory scan (forward read)
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,1,1,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>FWD READ</a><br>", command);
-				}
-
-				// memory scan (forward write)
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,2,1,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>FWD WRITE</a><br>", command);
-				}
-
-				// first memory read
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,1,0,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>FIRST READ</a><br>", command);
-				}
-
-				// first memory write
-				{
-					char command[128];
-					sprintf_s(command, "memscan:%u,2,0,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>FIRST WRITE</a><br>", command);
-				}
-
-				// memory history
-				{
-					char command[128];
-					sprintf_s(command, "memhistory:%u,%06llXh,%u",
-						frame.GetIndex(),
-						memoryAddress,
-						info.m_memorySize);
-
-					doc.Print("Scan: <a href=\"%s\"/>HISTORY</a><br>", command);
-				}
-
 				doc.Print("<br>");
 
 				// TEMPSHIT: show memory history
-				{
+				/*{
 					std::vector<ProjectTraceMemoryHistoryInfo> memHistory;
 					//if (wxTheFrame->GetProject()->GetTrace()->GetMemoryHistory(memoryAddress, info.m_memorySize, memHistory))
 					{
@@ -597,7 +522,7 @@ namespace tools
 
 						doc.Close(); // table
 					}
-				}
+				}*/
 			}
 		}
 	}

@@ -156,7 +156,7 @@ static const char* GetBranchTypeName(const decoding::Instruction& instr, const c
 	return buf;
 }
 
-static bool GenerateBranchInfo(const decoding::Instruction& instr, const uint32 codeAddress, char* outInfoCode, const uint32 outInfoSize)
+static bool GenerateBranchInfo(const decoding::Instruction& instr, const uint64 codeAddress, char* outInfoCode, const uint32 outInfoSize)
 {
 	// invalid branch type
 	if ( instr.GetArg0().m_type != decoding::Instruction::eType_Imm )
@@ -224,12 +224,12 @@ static bool GenerateBranchInfo(const decoding::Instruction& instr, const uint32 
 	return true;
 }
 
-bool IInstructiondDecompilerXenon::GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+bool IInstructiondDecompilerXenon::GetExtendedText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 {
 	return false; // no special info
 }
 
-bool IInstructiondDecompilerXenon::GetCommentText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+bool IInstructiondDecompilerXenon::GetCommentText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 {
 	return false; // no special comment
 }
@@ -280,7 +280,7 @@ public:
 	CInstructiondDecoderXenon_NOP()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op))
 			return ErrInvalidArgs(op);
@@ -305,7 +305,7 @@ public:
 	CInstructiondDecoderXenon_MR()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG))
 			return ErrInvalidArgs(op);
@@ -507,7 +507,7 @@ template< const uint32 BitSize, const bool UpdateAddress, EMemoryType type >
 class CInstructiondDecoderXenon_MEM_LOAD : public IInstructiondDecompilerXenon
 {
 public:
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		// first operand is always a register
 		if (!CheckArgs(op, REG, MREG))
@@ -639,7 +639,7 @@ template< const uint32 BitSize, const bool UpdateAddress, EMemoryType type >
 class CInstructiondDecoderXenon_MEM_STORE : public IInstructiondDecompilerXenon
 {
 public:
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		// first operand is always a register
 		if (!CheckArgs(op, REG, MREG))
@@ -769,7 +769,7 @@ public:
 class CInstructiondDecoderXenon_DCBZ : public IInstructiondDecompilerXenon
 {
 public:
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		// first operand is always a register
 		if (!CheckArgs(op, MREG))
@@ -881,7 +881,7 @@ public:
 		return false;
 	}
 
-	virtual bool GetCommentText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+	virtual bool GetCommentText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 	{
 		outText[0] = 0;
 
@@ -902,7 +902,7 @@ public:
 		return result;
 	}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		// first operand is always a register
 		if (!CheckArgs(op, arg0, arg1, arg2, arg3, arg4, arg5))
@@ -1091,7 +1091,7 @@ public:
 	CInstructiondDecoderXenon_B()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM))
 			return ErrInvalidArgs(op);
@@ -1123,7 +1123,7 @@ public:
 	CInstructiondDecoderXenon_BL()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM))
 			return ErrInvalidArgs(op);
@@ -1157,7 +1157,7 @@ public:
 	CInstructiondDecoderXenon_CMP()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (CheckArgs(op, REG, REG, IMM))
 		{
@@ -1224,7 +1224,7 @@ public:
 	CInstructiondDecoderXenon_FCMP()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (CheckArgs(op, REG, REG, REG))
 		{
@@ -1269,7 +1269,7 @@ public:
 	CInstructiondDecoderXenon_TRAP()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM, REG, IMM))
 			return ErrInvalidArgs(op);
@@ -1316,7 +1316,7 @@ public:
 	CInstructiondDecoderXenon_TRAP_REG()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM, REG, REG))
 			return ErrInvalidArgs(op);
@@ -1418,7 +1418,7 @@ public:
 	CInstructiondDecoderXenon_BC()
 	{}
 
-	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 	{
 		// get the branch code
 		if (GenerateBranchInfo(instr, codeAddress, outText, outTextSize))
@@ -1428,7 +1428,7 @@ public:
 		return false;
 	}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM, REG, IMM))
 			return ErrInvalidArgs(op);
@@ -1519,7 +1519,7 @@ public:
 	CInstructiondDecoderXenon_BCLR()
 	{}
 
-	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 	{
 		// get the branch code
 		if (GenerateBranchInfo(instr, codeAddress, outText, outTextSize))
@@ -1529,7 +1529,7 @@ public:
 		return false;
 	}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM, REG))
 			return ErrInvalidArgs(op);
@@ -1618,7 +1618,7 @@ public:
 	CInstructiondDecoderXenon_BCCTRR()
 	{}
 
-	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint32 codeAddress, char* outText, const uint32 outTextSize) const
+	virtual bool GetExtendedText(const class decoding::Instruction& instr, const uint64 codeAddress, char* outText, const uint32 outTextSize) const
 	{
 		// get the branch code
 		if (GenerateBranchInfo(instr, codeAddress, outText, outTextSize))
@@ -1628,7 +1628,7 @@ public:
 		return false;
 	}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, IMM, REG))
 			return ErrInvalidArgs(op);
@@ -1711,7 +1711,7 @@ template< uint32 size, uint32 flags >
 class CInstructiondDecoderXenon_SRAI : public IInstructiondDecompilerXenon
 {
 public:
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG, IMM))
 			return ErrInvalidArgs(op);
@@ -1754,7 +1754,7 @@ public:
 	CInstructiondDecoderXenon_RL()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG, REG, IMM, IMM))
 			return ErrInvalidArgs(op);
@@ -1799,7 +1799,7 @@ public:
 	CInstructiondDecoderXenon_RLI()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG, IMM, IMM))
 			return ErrInvalidArgs(op);
@@ -1841,7 +1841,7 @@ public:
 	CInstructiondDecoderXenon_RLIM()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG, IMM, IMM, IMM))
 			return ErrInvalidArgs(op);
@@ -1884,7 +1884,7 @@ public:
 	CInstructiondDecoderXenon_RLM()
 	{}
 
-	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint32 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
 	{
 		if (!CheckArgs(op, REG, REG, REG, IMM, IMM))
 			return ErrInvalidArgs(op);

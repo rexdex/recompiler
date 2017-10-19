@@ -11,6 +11,7 @@
 
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
+#include "../host_core/runtimeTraceFile.h"
 
 //-----------------------------------------------------------------------------
 
@@ -29,6 +30,7 @@ namespace xenon
 		, m_interruptTable(nullptr)
 		, m_ioTable(nullptr)
 		, m_userExitRequested(false)
+		, m_traceFile(nullptr)
 	{
 	}
 
@@ -251,12 +253,35 @@ namespace xenon
 		m_ioTable->PORT_READ = &GlobalPortReadFunc;
 		m_ioTable->PORT_WRITE = &GlobalPortWriteFunc;
 
+		// create the trace file
+		{
+			const auto traceFileName = commandline.GetOptionValueW("trace");
+			if (!traceFileName.empty())
+			{
+				// stats
+				GLog.Log("Runtime: Tracing executed instructions to '%ls'", traceFileName.c_str());
+
+				// create the trace file
+				m_traceFile = runtime::TraceFile::Create(CPU_RegisterBankInfo::GetInstance(), traceFileName);
+				if (!m_traceFile)
+				{
+					GLog.Err("Runtime: Failed to create the trace file");
+					return false;
+				}
+			}
+		}
+
 		GLog.Log("Runtime: Xenon platform initialized");
 		return true;
 	}
 
 	void Platform::Shutdown()
 	{
+		m_kernel->StopAllThreads();
+
+		delete m_traceFile;
+		m_traceFile = nullptr;
+
 		delete m_users;
 		m_users = nullptr;
 
@@ -269,9 +294,6 @@ namespace xenon
 		delete m_fileSys;
 		m_fileSys = nullptr;
 
-		delete m_kernel;
-		m_kernel = nullptr;
-
 		delete m_inputSys;
 		m_inputSys = nullptr;
 
@@ -280,6 +302,9 @@ namespace xenon
 
 		delete m_ioTable;
 		m_ioTable = nullptr;
+
+		delete m_kernel;
+		m_kernel = nullptr;
 
 		delete m_memory;
 		m_memory = nullptr;

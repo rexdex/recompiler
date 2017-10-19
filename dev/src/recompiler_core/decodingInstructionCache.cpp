@@ -32,7 +32,7 @@ namespace decoding
 		m_validatedInstructions.clear();
 	}
 
-	const uint32 InstructionCache::ValidateInstruction( ILogOutput& log, const uint32 codeAddress, const bool cached /*= true*/ ) const
+	const uint32 InstructionCache::ValidateInstruction( ILogOutput& log, const uint64_t codeAddress, const bool cached /*= true*/ ) const
 	{
 		// is this a executable memory ?
 		if ( !m_memoryMap->GetMemoryInfo( codeAddress ).IsExecutable() )
@@ -85,7 +85,7 @@ namespace decoding
 		return size;
 	}
 
-	const uint32 InstructionCache::DecodeInstruction( ILogOutput& log, const uint32 codeAddress, Instruction& outInstruction, const bool cached /*= true*/ ) const
+	const uint32 InstructionCache::DecodeInstruction( ILogOutput& log, const uint64_t codeAddress, Instruction& outInstruction, const bool cached /*= true*/ ) const
 	{
 		// is this a executable memory ?
 		if ( !m_memoryMap->GetMemoryInfo( codeAddress ).IsExecutable() )

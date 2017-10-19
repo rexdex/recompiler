@@ -7,7 +7,6 @@ namespace platform
 
 namespace trace
 {
-
 	class DataFrame;
 
 	//---------------------------------------------------------------------------

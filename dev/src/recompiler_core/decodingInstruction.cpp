@@ -146,7 +146,7 @@ namespace decoding
 		}
 	}
 
-	void Instruction::GenerateSimpleText(const uint32 codeAddress, char*& outStream, const char* maxPos) const
+	void Instruction::GenerateSimpleText(const uint64_t codeAddress, char*& outStream, const char* maxPos) const
 	{
 		// invalid instruction
 		if ( !m_opcode )
@@ -183,7 +183,7 @@ namespace decoding
 		*outStream = 0;
 	}
 
-	const bool Instruction::GenerateComment(const uint32 codeAddress, char*& outStream, const char* maxPos) const
+	const bool Instruction::GenerateComment(const uint64_t codeAddress, char*& outStream, const char* maxPos) const
 	{
 		// invalid instruction
 		if ( !m_opcode )
@@ -198,7 +198,7 @@ namespace decoding
 		return false;
 	}
 
-	void Instruction::GenerateText(const uint32 codeAddress, char*& outStream, const char* maxPos) const
+	void Instruction::GenerateText(const uint64_t codeAddress, char*& outStream, const char* maxPos) const
 	{
 		// invalid instruction
 		if ( !m_opcode )
@@ -217,7 +217,7 @@ namespace decoding
 		GenerateSimpleText(codeAddress, outStream, maxPos);
 	}
 
-	const bool Instruction::GetExtendedInfo(const uint32 codeAddress, class decoding::Context& context, InstructionExtendedInfo& outInfo) const
+	const bool Instruction::GetExtendedInfo(const uint64_t codeAddress, class decoding::Context& context, InstructionExtendedInfo& outInfo) const
 	{
 		// invalid instruction
 		if ( !m_opcode )

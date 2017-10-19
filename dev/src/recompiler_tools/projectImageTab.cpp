@@ -368,16 +368,22 @@ namespace tools
 		ctrl->Connect(wxEVT_CHOICE, wxCommandEventHandler(ProjectImageTab::OnSelectSection), nullptr, this);
 	}
 
-	bool ProjectImageTab::NavigateBack()
+	bool ProjectImageTab::Navigate(const NavigationType type)
 	{
-		const auto newAddress = m_image->GetAddressHistory().NavigateBack();
-		return NavigateToAddress(newAddress, false);
-	}
-
-	bool ProjectImageTab::NavigateForward()
-	{
-		const auto newAddress = m_image->GetAddressHistory().NavigateForward();
-		return NavigateToAddress(newAddress, false);
+		if (type == NavigationType::Back)
+		{
+			const auto newAddress = m_image->GetAddressHistory().NavigateBack();
+			return NavigateToAddress(newAddress, false);
+		}
+		else if (type == NavigationType::Advance)
+		{
+			const auto newAddress = m_image->GetAddressHistory().NavigateForward();
+			return NavigateToAddress(newAddress, false);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	bool ProjectImageTab::NavigateToAddress(const uint64 address, const bool addToHistory)
@@ -440,12 +446,14 @@ namespace tools
 
 	void ProjectImageTab::OnNextAddress(wxCommandEvent& evt)
 	{
-		NavigateForward();
+		if (!Navigate(NavigationType::Advance))
+			wxMessageBox(wxT("Navigation failed"), wxT("Go to next address"), wxICON_WARNING, this);
 	}
 
 	void ProjectImageTab::OnPrevAddress(wxCommandEvent& evt)
 	{
-		NavigateBack();
+		if (!Navigate(NavigationType::Back))
+			wxMessageBox(wxT("Navigation failed"), wxT("Go to next address"), wxICON_WARNING, this);
 	}
 
 	void ProjectImageTab::OnSettingsChanged(wxCommandEvent& evt)

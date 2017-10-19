@@ -59,10 +59,10 @@ namespace decoding
 		void ClearCachedData();
 
 		// test if address contains valid instruction, if so, size of the instruction in bytes will be returned
-		const uint32 ValidateInstruction(ILogOutput& log, const uint32 codeAddress, const bool cached = true);
+		const uint32 ValidateInstruction(ILogOutput& log, const uint64_t codeAddress, const bool cached = true);
 
 		// decode full representation of instruction (can be cached to save performance)
-		const uint32 DecodeInstruction(ILogOutput& log, const uint32 codeAddress, Instruction& outInstruction, const bool cached = true);
+		const uint32 DecodeInstruction(ILogOutput& log, const uint64_t codeAddress, Instruction& outInstruction, const bool cached = true);
 
 		// get function name for given code address (if known, if not known an automatic function name is returned)
 		const bool GetFunctionName(const uint32 codeAddress, std::string& outFunctionName, uint32& outFunctionStart) const;
@@ -111,7 +111,7 @@ namespace decoding
 		mutable InstructionCache*		m_currentInstructionCache;
 
 		// prepare instruction cache for decoding the instruction
-		InstructionCache* PrepareInstructionCache(const uint32 codeAddress) const;
+		InstructionCache* PrepareInstructionCache(const uint64_t codeAddress) const;
 	};
 
 	//---------------------------------------------------------------------------

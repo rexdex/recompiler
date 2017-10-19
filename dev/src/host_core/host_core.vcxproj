@@ -102,6 +102,7 @@
     </ClCompile>
     <ClCompile Include="launcherOutputTTY.cpp" />
     <ClCompile Include="runtimeSymbols.cpp" />
+    <ClCompile Include="runtimeTraceFile.cpp" />
     <ClCompile Include="runtimeTraceWriter.cpp" />
     <ClCompile Include="zlib\adler32.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -162,6 +163,7 @@
     <ClInclude Include="build.h" />
     <ClInclude Include="launcherOutputTTY.h" />
     <ClInclude Include="runtimeSymbols.h" />
+    <ClInclude Include="runtimeTraceFile.h" />
     <ClInclude Include="runtimeTraceWriter.h" />
     <ClInclude Include="zlib\crc32.h" />
     <ClInclude Include="zlib\deflate.h" />

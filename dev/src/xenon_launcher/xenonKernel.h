@@ -414,6 +414,9 @@ namespace xenon
 
 		//---
 
+		// stop all running threads
+		void StopAllThreads();
+
 		// allocate entry in the object list
 		void AllocIndex(IKernelObject* object, uint32& outIndex);
 
@@ -433,7 +436,7 @@ namespace xenon
 		void SetCode(const runtime::CodeTable* code);
 
 		// execute interrupt code
-		void ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const bool trace);
+		void ExecuteInterrupt(const uint32 cpuIndex, const uint32 callback, const uint64* args, const uint32 numArgs, const char* name = "IRQ");
 
 		// send global notification to all event notifiers
 		void PostEventNotification(const uint32 eventId, const uint32 eventData);
@@ -523,12 +526,6 @@ namespace xenon
 		// TODO: move to Process
 		std::mutex m_tlsLock;
 		bool m_tlsFreeEntries[ MAX_TLS ];
-
-		///----
-
-		std::wstring m_traceFileRootName;
-
-		runtime::TraceWriter* CreateThreadTraceWriter();
 
 		///----
 	};

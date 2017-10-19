@@ -1,5 +1,7 @@
 #include "build.h"
 
+#if 0
+
 #include "decodingContext.h"
 #include "decodingInstruction.h"
 #include "decodingInstructionInfo.h"
@@ -371,3 +373,5 @@ namespace trace
 	//---------------------------------------------------------------------------
 
 } // trace
+
+#endif

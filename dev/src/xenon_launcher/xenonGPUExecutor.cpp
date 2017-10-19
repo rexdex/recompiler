@@ -1423,6 +1423,5 @@ void CXenonGPUExecutor::DispatchInterrupt(const uint32 source, const uint32 cpu)
 		m_logWriter->Writef("Dispatching CPU interrupt at %08Xh (source: %08Xh, data: %08Xh)", m_interruptAddr, source, m_interruptUserData);
 
 	uint64 args[2] = { source, m_interruptUserData };
-	const bool trace = (source == 1);
-	GPlatform.GetKernel().ExecuteInterrupt(cpuIndex, m_interruptAddr, args, ARRAYSIZE(args), trace);
+	GPlatform.GetKernel().ExecuteInterrupt(cpuIndex, m_interruptAddr, args, ARRAYSIZE(args), "GPUIRQ");
 }

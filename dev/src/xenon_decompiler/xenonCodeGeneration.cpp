@@ -336,7 +336,7 @@ const bool CodeGeneratorXenon::Emit(class ILogOutput& log, class code::IGenerato
 		for (uint32 j = 0; j<block->m_instructions.size(); ++j)
 		{
 			const Instruction* instr = block->m_instructions[j];
-			const uint32 codeAddress = instr->m_address;
+			const uint64 codeAddress = instr->m_address;
 
 			// emit original code
 			{

@@ -85,6 +85,9 @@ namespace tools
 		// settings
 		RecentProjectFiles m_recentProjectPaths;
 
+		// GDI++
+		void* m_gdiplusToken;
+
 		// internal events
 		virtual bool OnInit();
 		virtual int OnExit();

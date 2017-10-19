@@ -21,7 +21,7 @@ public:
 
 	// progress
 	void SetTaskName(_Printf_format_string_  const char* txt, ...);
-	void SetTaskProgress(int count, int max);
+	void SetTaskProgress(uint64_t count, uint64_t max);
 
 	// task cancellation
 	bool IsTaskCanceled();
@@ -35,7 +35,7 @@ protected:
 	// interface, return false to stop propagation
 	virtual void DoLog(const LogLevel level, const char* buffer) {};
 	virtual void DoSetTaskName(const char* buffer) {};
-	virtual void DoSetTaskProgress(int count, int max) {};
+	virtual void DoSetTaskProgress(uint64_t count, uint64_t max) {};
 	virtual bool DoIsTaskCanceled() { return false; };
 
 	//---

@@ -1,5 +1,6 @@
 #include "build.h"
 #include "timeMachineView.h"
+#include "progressDialog.h"
 
 namespace tools
 {
@@ -78,13 +79,14 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
-	TimeMachineView::TimeMachineView(wxWindow* parent, class timemachine::Trace* trace)
-		: canvas::CanvasPanel(parent, wxCLIP_CHILDREN | wxCLIP_SIBLINGS | wxNO_BORDER)
+	TimeMachineView::TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, ITimeMachineViewNavigationHelper* navigator)
+		: canvas::CanvasPanel(parent, 0)
 		, m_requestedLayoutChange(0)
 		, m_trace(trace)
 		, m_mouseMode(0)
 		, m_highlightSlot(nullptr)
 		, m_highlightNode(nullptr)
+		, m_navigator(navigator)
 	{
 		// create the root node layout
 		if (GetLayoutNode(m_trace->GetRoot()))
@@ -106,7 +108,7 @@ namespace tools
 		}
 	}
 
-	const int32 TimeMachineView::GetRootTraceIndex() const
+	const TraceFrameID TimeMachineView::GetRootTraceIndex() const
 	{
 		return m_trace->GetRoot()->GetTraceIndex();
 	}
@@ -244,9 +246,15 @@ namespace tools
 		// resolve the dependencies
 		if (slot && slot->m_abstractDep)
 		{
-			// resolve the sources
 			std::vector< const timemachine::Entry::AbstractSource* > resolvedSources;
-			slot->m_abstractDep->Resolve(wxTheApp->GetLogWindow(), m_trace, resolvedSources);
+
+			// resolve the sources
+			ProgressDialog dlg(this, wxTheApp->GetLogWindow(), true);
+			dlg.RunLongTask([&resolvedSources, slot, this](ILogOutput& log)
+			{
+				slot->m_abstractDep->Resolve(log, m_trace, resolvedSources);
+				return 0;
+			});
 
 			// create the layouts and connect the blocks
 			std::vector< SlotInfo* > addedSlots;
@@ -283,6 +291,9 @@ namespace tools
 				const int deltaX = outputX - inputX;
 				otherSlot->m_node->m_position.x -= deltaX;
 			}
+
+			// redraw
+			Repaint();
 		}
 	}
 
@@ -731,7 +742,7 @@ namespace tools
 			if (node->m_entry->GetTraceIndex() >= 0)
 			{
 				char traceIndex[64];
-				sprintf_s(traceIndex, "#%05u", node->m_entry->GetTraceIndex());
+				sprintf_s(traceIndex, "#%05llu", node->m_entry->GetTraceIndex());
 
 				DrawText(node->GetTraceTextPlacement(), canvas::eFontType_Normal, traceIndex, wxColour(0, 0, 0), canvas::eVerticalAlign_Top, canvas::eHorizontalAlign_Right);
 			}
@@ -740,7 +751,7 @@ namespace tools
 			if (node->m_entry->GetCodeAddres() != 0)
 			{
 				char codeAddress[64];
-				sprintf_s(codeAddress, "0x%08X", node->m_entry->GetCodeAddres());
+				sprintf_s(codeAddress, "0x%08llX", node->m_entry->GetCodeAddres());
 
 				DrawText(node->GetAddrTextPlacement(), canvas::eFontType_Normal, codeAddress, wxColour(0, 0, 0), canvas::eVerticalAlign_Top, canvas::eHorizontalAlign_Right);
 			}
@@ -791,7 +802,7 @@ namespace tools
 					const auto* node = GetEntryAtPos(ClientToCanvas(event.GetPosition()));
 					if (node != nullptr)
 					{
-						//wxTheFrame->NavigateToTraceEntry(node->GetTraceIndex());
+						m_navigator->NavigateToFrame(node->GetTraceIndex());
 					}
 				}
 			}

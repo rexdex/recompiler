@@ -1,4 +1,6 @@
 #include "build.h"
+
+#if 0
 #include "traceData.h"
 #include "traceCalltree.h"
 #include "internalFile.h"
@@ -337,3 +339,5 @@ namespace trace
 	}
 
 } // trace
+
+#endif

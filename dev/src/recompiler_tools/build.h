@@ -73,6 +73,7 @@
 #include "wx/wfstream.h"
 #include "wx/filedlg.h"
 #include "wx/process.h"
+#include "wx/datetime.h"
 
 // Windows
 #include <windows.h>
@@ -135,7 +136,6 @@ const T& TemplateClamp( const T& v, const T& a, const T& b )
 // Crap
 #include "config.h"
 #include "app.h"
-#include "fileDialog.h"
 #include "bitmaps.h"
 #include "logWindow.h"
 
@@ -143,6 +143,12 @@ namespace tools
 {
 	class Project;
 	class ProjectImage;
+
+	enum class ValueViewMode
+	{
+		Auto,
+		Hex,
+	};
 
 	static const uint64 INVALID_ADDRESS = ~(uint64)0;
 }

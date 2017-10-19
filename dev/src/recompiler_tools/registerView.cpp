@@ -11,10 +11,11 @@ namespace tools
 	BEGIN_EVENT_TABLE(RegisterView, wxPanel)
 		EVT_TOOL(XRCID("filterRelevantOnly"), RegisterView::OnToggleFilter)
 		EVT_TOOL(XRCID("showHex"), RegisterView::OnToggleHexView)
-		END_EVENT_TABLE()
+	END_EVENT_TABLE()
 
-		RegisterView::RegisterView(wxWindow* parent)
-		: m_list(NULL)
+	RegisterView::RegisterView(wxWindow* parent)
+		: m_list(nullptr)
+		, m_cpu(nullptr)
 		, m_displayFormat(trace::RegDisplayFormat::Auto)
 	{
 		wxXmlResource::Get()->LoadPanel(this, parent, wxT("Registers"));
@@ -28,12 +29,9 @@ namespace tools
 		Show();
 	}
 
-	void RegisterView::InitializeRegisters(const trace::Registers& registers)
+	void RegisterView::InitializeRegisters(const platform::CPU& cpuInfo)
 	{
-		// just copy all registers used in the trace
-		m_registers = registers;
-
-		// refresh register list
+		m_cpu = &cpuInfo;
 		UpdateRegisterList();
 	}
 
@@ -45,15 +43,13 @@ namespace tools
 
 		// prepare filtering list
 		m_usedRegisters.clear();
-		const uint32 numRegs = m_registers.GetTraceRegisters().size();
+		const uint32 numRegs = m_cpu->GetNumRootRegisters();
 		for (uint32 i = 0; i < numRegs; ++i)
 		{
-			const platform::CPURegister* reg = m_registers.GetTraceRegisters()[i];
-			if (reg->GetParent() == nullptr)
-			{
-				int index = m_list->InsertItem(m_list->GetItemCount(), reg->GetName());
-				m_usedRegisters.push_back(reg);
-			}
+			const platform::CPURegister* reg = m_cpu->GetRootRegister(i);
+
+			int index = m_list->InsertItem(m_list->GetItemCount(), reg->GetName());
+			m_usedRegisters.push_back(reg);
 		}
 
 		// update register values

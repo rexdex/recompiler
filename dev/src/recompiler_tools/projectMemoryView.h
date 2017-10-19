@@ -5,15 +5,21 @@ namespace tools
 {
 	//-----------------------------------------------------------------------------
 
-	class ProjectImageTab;
+	/// navigation helper
+	class IImageMemoryNavigationHelper
+	{
+	public:
+		virtual ~IImageMemoryNavigationHelper() {};
 
-	//-----------------------------------------------------------------------------
+		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) { return false; };
+		virtual bool Navigate(const NavigationType type) { return false; };
+	};
 
 	/// Memory view for displaying the project data
 	class ImageMemoryView : public IMemoryDataView
 	{
 	public:
-		ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, ProjectImageTab* imageTab);
+		ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, IImageMemoryNavigationHelper* imageTab);
 		virtual ~ImageMemoryView();
 
 	protected:
@@ -27,7 +33,7 @@ namespace tools
 		virtual uint32 GetAddressHitCount(const uint32 offset) const;
 		virtual bool ShowContextMenu(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const wxPoint& point);
 		virtual bool Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift);
-		virtual bool NavigateBack(class MemoryView* view);
+		virtual bool Navigate(class MemoryView* view, const NavigationType type);
 		virtual void SelectionCursorMoved(class MemoryView* view, const uint32 newOffset, const bool createHistoryEntry);
 		virtual bool GetDirtyMemoryRegion(uint32& outStartOffset, uint32& outEndOffset) const;
 		virtual void ValidateDirtyMemoryRegion(const uint32 startOffset, const uint32 endOffset);
@@ -43,7 +49,7 @@ namespace tools
 		decoding::Context* m_decodingContext; // ref
 
 		// owner
-		ProjectImageTab* m_imageTab;
+		IImageMemoryNavigationHelper* m_imageTab;
 
 		// base address
 		uint64 m_base;

@@ -1,6 +1,7 @@
 #include "build.h"
 #include "runtimeRegisterBank.h"
 #include "runtimeTraceWriter.h"
+#include "runtimeTraceFile.h"
 #include "runtimeCPU.h"
 
 #include "../recompiler_core/traceCommon.h"
@@ -8,74 +9,78 @@
 namespace runtime
 {
 
-	TraceWriter::TraceWriter(const runtime::RegisterBankInfo& bankInfo, HANDLE hFileHandle)
-		: m_outputFile(hFileHandle)
+	TraceWriter::TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, const char* name)
+		: m_owner(owner)
 		, m_frameIndex(0)
-		, m_prevBlockSkipOffset(0)
-		, m_numFramesPerPage(1024)
-		, m_numRegsToWrite(0)
-		, m_fullWriteSize(0)
+		, m_localWriteBufferPos(0)
+		, m_localWriteStartFrameIndex(0)
+		, m_threadId(threadId)
+		, m_sequenceNumber(&sequenceNumber)
+		, m_name(name)
 	{
-		// write header
-		common::TraceFileHeader header;
-		header.m_magic = common::TraceFileHeader::MAGIC;
-		header.m_numFramesPerPage = m_numFramesPerPage;
-		header.m_numRegisers = bankInfo.GetNumRootRegisters();
-		strcpy_s(header.m_cpuName, bankInfo.GetCPUName().c_str());
-		strcpy_s(header.m_platformName, bankInfo.GetPlatformName().c_str());
-		Write(&header, sizeof(header));
+		static std::atomic<uint32_t> WriterIDAllocator(0);
+		m_writerId = WriterIDAllocator++;
 
-		// bit masks
-		memset(&m_deltaWwriteRegMask, 0, sizeof(m_deltaWwriteRegMask));
-		memset(&m_fullWriteRegMask, 0, sizeof(m_fullWriteRegMask));
+		memset(&m_prevData, 0, sizeof(m_prevData));
+	}
 
-		// prepare register write list, also, write the register information
-		for (uint32 i = 0; i < bankInfo.GetNumRootRegisters(); ++i)
-		{
-			const auto* reg = bankInfo.GetRootRegister(i);
-
-			common::TraceRegiserInfo regInfo;
-			regInfo.m_bitSize = reg->GetBitCount();
-			strcpy_s(regInfo.m_name, reg->GetName());
-			Write(&regInfo, sizeof(regInfo));
-
-			RegToWrite& writeInfo = m_registersToWrite[m_numRegsToWrite++];
-			writeInfo.m_dataOffset = reg->GetDataOffset();
-			writeInfo.m_size = reg->GetBitCount() / 8;
-			m_fullWriteSize += writeInfo.m_size;
-
-			m_fullWriteRegMask[i / 64] |= (1ULL << (i & 63));
-		}
-
-		GLog.Log("Trace: Trace contains %d registers to write (%d bytes in full frame)", m_numRegsToWrite, m_fullWriteSize);
+	void TraceWriter::Detach()
+	{
+		LocalFlush();
+		m_owner = nullptr;
 	}
 
 	TraceWriter::~TraceWriter()
 	{
-		if (m_outputFile != INVALID_HANDLE_VALUE)
-		{
-			GLog.Log("Trace: Written %d frames, %llu bytes of data", m_frameIndex, GetOffset());
+		LocalFlush();
+	}
 
-			CloseHandle(m_outputFile);
-			m_outputFile = INVALID_HANDLE_VALUE;
+	void TraceWriter::LocalFlush()
+	{
+		if (m_localWriteBufferPos > 0)
+		{
+			// patch data
+			auto* header = (common::TraceBlockHeader*)&m_localWriteBuffer[0];
+			header->m_magic = common::TraceBlockHeader::MAGIC;
+			header->m_numEntries = (uint32)(m_frameIndex - m_localWriteStartFrameIndex);
+			//header->m_size = m_localWriteBufferPos;
+
+			// write the data
+			if (m_owner != nullptr)
+				m_owner->WriteBlockAsync(m_localWriteBuffer, m_localWriteBufferPos);
+			m_localWriteBufferPos = 0;
+			m_localWriteStartFrameIndex = m_frameIndex;
 		}
 	}
 
-	void TraceWriter::Flush()
+	void TraceWriter::AddFrame(const uint64 ip, const runtime::RegisterBank& regs)
 	{
-	}
+		// no owner
+		if (m_owner == nullptr)
+			return;
 
-	void TraceWriter::CapureData(const runtime::RegisterBank& regs)
+		// do no add empty frames
+		if (!ip)
+			return;
+
+		// when starting the block, write the full frame
+		if (m_localWriteBufferPos == 0)
+			WriteBlockHeader();
+
+		// compute the deltas between current and previous frames
+		WriteDeltaFrame(ip, regs);
+
+		// flush when getting close to the end of block
+		if (m_localWriteBufferPos > (LOCAL_WRITE_BUFFER_SIZE - GUARD_AREA_SIZE))
+			LocalFlush();
+	}
+	
+	void TraceWriter::WriteBlockHeader()
 	{
-		const auto* info = m_registersToWrite;
-		uint8* writePtr = m_curData;
-		for (uint32 i = 0; i < m_numRegsToWrite; ++i, ++info)
-		{
-			const uint8* readPtr = (const uint8*)&regs + info->m_dataOffset;
-			const uint8* endReadPtr = readPtr + info->m_size;
-			while (readPtr < endReadPtr)
-				*writePtr++ = *readPtr++;
-		}
+		auto* info = LocalWrite<common::TraceBlockHeader>();
+		info->m_magic = 0xDEADBEAF;
+		info->m_threadId = m_threadId;
+		info->m_writerId = m_writerId;
 	}
 
 	static inline bool ComparePtr(const uint8* a, const uint8* b, const uint32 size)
@@ -94,143 +99,46 @@ namespace runtime
 		while (readPtr < end)
 			*writePtr++ = *readPtr++;
 	}
-
-	void TraceWriter::BuildDeltaData()
+		
+	void TraceWriter::WriteDeltaFrame(const uint64_t ip, const runtime::RegisterBank& regs)
 	{
-		m_deltaWriteSize = 0;
+		// count written frames
+		++m_frameIndex;
 
-		const auto* info = m_registersToWrite;
+		// write frame header (will be patched)
+		auto* frame = LocalWrite<common::TraceFrame>();
+		frame->m_magic = common::TraceFrame::MAGIC;
+		frame->m_ip = ip;
+		frame->m_clock = __rdtsc();
+		frame->m_seq = (*m_sequenceNumber)++;
+		memset(frame->m_mask, 0, sizeof(frame->m_mask));
 
-		for (uint32 i = 0; i < ARRAYSIZE(m_deltaWwriteRegMask); ++i)
-			m_deltaWwriteRegMask[i] = 0;
+		// save current position
+		auto pos = m_localWriteBufferPos;
+		int writtenRegs = 0;
 
-		uint8* writePtr = m_deltaWriteBuffer;
-		const auto* curPtr = m_curData;
-		const auto* prevPtr = m_prevData;
-		for (uint32 i = 0; i < m_numRegsToWrite; ++i, ++info)
+		// start writing data
 		{
-			// data different ?
-			if (!ComparePtr(curPtr, prevPtr, info->m_size))
+			const auto numRegs = m_owner->m_numRegsToWrite;
+			const auto* info = m_owner->m_registersToWrite;
+
+			const auto* curBase = (const uint8*)&regs;
+			auto* prevBase = (uint8*)m_prevData;
+			for (uint32 i = 0; i < numRegs; ++i, ++info)
 			{
-				m_deltaWwriteRegMask[i / 64] |= (1ULL << (i & 63));
-				CopyPtr(curPtr, writePtr, info->m_size);
+				const auto* curPtr = curBase + info->m_dataOffset;
+				auto* prevPtr = prevBase + info->m_dataOffset;
+
+				// data different ?
+				if (!ComparePtr(curPtr, prevPtr, info->m_size))
+				{
+					frame->m_mask[i / 8] |= (1 << (i & 7));
+					LocalWrite(curPtr, info->m_size);
+					CopyPtr(curPtr, prevPtr, info->m_size);
+					writtenRegs += 1;
+				}
 			}
-
-			curPtr += info->m_size;
-			prevPtr += info->m_size;
 		}
-
-		// compute size of data to write
-		m_deltaWriteSize = (uint32)(writePtr - m_deltaWriteBuffer);
-	}
-
-	void TraceWriter::AddFrame(const uint64 ip, const runtime::RegisterBank& regs)
-	{
-		// do no add empty frames
-		if (!ip)
-			return;
-
-		// should we write a full frame
-		const bool isFullFrame = (0 == (m_frameIndex % m_numFramesPerPage));
-		if (isFullFrame)
-		{
-			const auto currentOffset = GetOffset();
-
-			// patch the previous offset
-			if (m_prevBlockSkipOffset > 0)
-			{
-				common::TraceFullFrame prevInfo;
-				prevInfo.m_magic = common::TraceFullFrame::MAGIC;
-				prevInfo.m_nextOffset = (uint32)(currentOffset - m_prevBlockSkipOffset);
-				SetOffset(m_prevBlockSkipOffset);
-				Write(&prevInfo, sizeof(prevInfo));
-				SetOffset(currentOffset);
-			}
-
-			// make sure the block we are just about to write will get patched
-			m_prevBlockSkipOffset = currentOffset;
-
-			// write the full frame header
-			common::TraceFullFrame info;
-			info.m_magic = common::TraceFullFrame::MAGIC;
-			info.m_nextOffset = 0; // until patched
-			Write(&info, sizeof(info));
-		}
-		else
-		{
-			// write the delta frame header
-			common::TraceDeltaFrame info;
-			info.m_magic = common::TraceDeltaFrame::MAGIC;
-			Write(&info, sizeof(info));
-		}
-
-		// capture current data
-		CapureData(regs);
-
-		// build delta frame
-		if (!isFullFrame)
-			BuildDeltaData();
-
-		// setup data header
-		common::TraceDataHeader info;
-		info.m_ip = (uint32)ip;
-		info.m_clock = __rdtsc();
-		info.m_dataSize = isFullFrame ? m_fullWriteSize : m_deltaWriteSize;
-		for (uint32 i = 0; i < ARRAYSIZE(info.m_mask); ++i)
-			info.m_mask[i] = isFullFrame ? m_fullWriteRegMask[i] : m_deltaWwriteRegMask[i];
-		Write(&info, sizeof(info));
-
-		// write actual data
-		if (isFullFrame)
-			Write(m_curData, m_fullWriteSize);
-		else
-			Write(m_deltaWriteBuffer, m_deltaWriteSize);
-
-		// use current data as base for next frame
-		memcpy(m_prevData, m_curData, m_fullWriteSize);
-
-		// advance
-		m_frameIndex += 1;
-	}
-
-	//----
-
-	void TraceWriter::SetOffset(const uint64 offset)
-	{
-		LARGE_INTEGER pos;
-		pos.QuadPart = offset;
-		SetFilePointerEx(m_outputFile, pos, NULL, FILE_BEGIN);
-	}
-
-	uint64 TraceWriter::GetOffset() const
-	{
-		LARGE_INTEGER pos;
-		pos.QuadPart = 0;
-		if (SetFilePointerEx(m_outputFile, pos, &pos, FILE_CURRENT))
-			return pos.QuadPart;
-		return 0;
-	}
-
-	void TraceWriter::Write(const void* data, const uint32 size)
-	{
-		DWORD numWritten = 0;
-		WriteFile(m_outputFile, data, size, &numWritten, NULL);
-	}
-
-	//----
-
-	TraceWriter* TraceWriter::CreateTrace(const runtime::RegisterBankInfo& bankInfo, const std::wstring& outputFile)
-	{
-		// open file
-		HANDLE hFile = CreateFileW(outputFile.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile == INVALID_HANDLE_VALUE)
-		{
-			GLog.Err("TraceLog: Failed to create trace file '%ls'", outputFile.c_str());
-			return nullptr;
-		}
-
-		// create writer
-		return new TraceWriter(bankInfo, hFile);
 	}
 
 } // runtime

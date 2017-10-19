@@ -16,22 +16,20 @@ namespace tools
 	{
 		DECLARE_EVENT_TABLE();
 
-	private:
-		wxHtmlWindow*		m_infoView;
-
 	public:
-		TraceInfoView(wxWindow* parent);
+		TraceInfoView(wxWindow* parent, trace::DataFile& traceData, Project* project);
 		~TraceInfoView();
 
-		// update information about current trace location
-		void UpdateInfo(const class ProjectTraceData* data);
+		void SetFrame(const TraceFrameID id, const trace::RegDisplayFormat format);
 
 	private:
-		void BuildDoc(class HTMLBuilder& dic, const class ProjectTraceData* data, const decoding::Instruction& op, const trace::DataFrame& frame, const trace::DataFrame& nextFrame);
-
+		void BuildCpuInstructionDoc(class HTMLBuilder& dic, const decoding::Instruction& op, const trace::DataFrame& frame, const trace::DataFrame& nextFrame, const trace::RegDisplayFormat format);
 		void OnLinkClicked(wxHtmlLinkEvent& link);
 
-		trace::RegDisplayFormat		m_displayFormat;
+		wxHtmlWindow*		m_infoView;
+
+		Project* m_project;
+		trace::DataFile* m_traceData;
 	};
 
 	//-----------------------------------------------------------------------------

@@ -21,7 +21,7 @@ namespace xenon
 		inline KernelThreadMemory& GetMemoryBlock() { return m_memory; }
 
 	public:
-		KernelThread(Kernel* kernel, native::IKernel* nativeKernel, runtime::TraceWriter* traceFile, const KernelThreadParams& params);
+		KernelThread(Kernel* kernel, native::IKernel* nativeKernel, const KernelThreadParams& params);
 		virtual ~KernelThread();
 
 		// returns true if the thread has crashed (an uncontinuable exception was thrown)
@@ -82,7 +82,7 @@ namespace xenon
 
 		native::IThread*			m_nativeThread;		// actual thread
 
-		runtime::TraceWriter*		m_traceFile;		// in case we are tracing this thread this is the output
+		runtime::TraceWriter*		m_traceWriter;		// in case we are tracing this thread this is the output
 
 		int32						m_priority;			// thread priority
 		uint32						m_affinity;			// thread affinity

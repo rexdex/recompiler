@@ -3,14 +3,16 @@
 
 #include "../host_core/runtimeCodeExecutor.h"
 #include "../host_core/runtimeTraceWriter.h"
+#include "../host_core/runtimeTraceFile.h"
 
 namespace xenon
 {
 	extern cpu::Reservation GReservation;
 
-	InplaceExecution::InplaceExecution(Kernel* kernel, const InplaceExecutionParams& params)
+	InplaceExecution::InplaceExecution(Kernel* kernel, const InplaceExecutionParams& params, const char* name)
 		: m_code( &m_regs, &kernel->GetCode(), params.m_entryPoint )
 		, m_memory(kernel, params.m_stackSize, params.m_threadId, params.m_entryPoint, params.m_cpu)
+		, m_name(name)
 	{
 		// setup initial register state
 		m_regs.R1 = (uint64)m_memory.GetStack().GetTop();
@@ -29,38 +31,27 @@ namespace xenon
 	InplaceExecution::~InplaceExecution()
 	{
 	}
-
 	
-	int InplaceExecution::Execute(const bool trace)
+	int InplaceExecution::Execute()
 	{
-#if 0
-		runtime::TraceWriter* traceFile = nullptr;
-		if (trace)
+		auto* traceFile = GPlatform.GetTraceFile();
+		auto* traceWriter = traceFile ? traceFile->CreateInterruptWriter(m_name) : nullptr;
+
+		if (traceWriter != nullptr)
 		{
-			static uint32 s_traceIndex = 0;
+			traceWriter->AddFrame(m_code.GetInstructionPointer(), m_regs);
 
-			wchar_t filePath[128];
-			wsprintf(filePath, L"D:\\inplace_%08Xh_%d.trace", m_code.GetInstructionPointer(), s_traceIndex++);
-
-			traceFile = runtime::TraceWriter::CreateTrace(*m_regs.GetDesc(), filePath);
-		}
-
-		if (traceFile != nullptr)
-		{
-			traceFile->AddFrame(m_code.GetInstructionPointer(), m_regs);
-
-			while (m_code.Step())
-				traceFile->AddFrame(m_code.GetInstructionPointer(), m_regs);
+			while (m_code.RunTraced(*traceWriter))
+			{}				
 		}
 		else
 		{
-			while (m_code.Step()) {};
+			while (m_code.RunPure())
+			{}
 		}
 
-		delete traceFile;
-#else
-		while (m_code.Step()) {};
-#endif
+		delete traceWriter;
+
 		return (int)m_regs.R3;
 	}
 

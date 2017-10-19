@@ -6,6 +6,7 @@ namespace runtime
 {
 	class CodeTable;
 	class RegisterBank;
+	class TraceWriter;
 
 	/// executes the code
 	class LAUNCHER_API CodeExecutor
@@ -23,8 +24,11 @@ namespace runtime
 		/// get current instruction pointer
 		inline const uint64 GetInstructionPointer() const { return m_ip; }
 
-		/// process code execution, returns false when done
-		bool Step();
+		/// run code loop tracing after every instruction
+		bool RunTraced(TraceWriter& trace);
+
+		/// run pure code loop
+		bool RunPure();
 
 	private:
 		uint64				m_ip;

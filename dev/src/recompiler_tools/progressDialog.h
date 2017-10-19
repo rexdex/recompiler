@@ -19,7 +19,7 @@ namespace tools
 
 	private:
 		virtual void DoSetTaskName(const char* buffer) override final;
-		virtual void DoSetTaskProgress(int count, int max) override final;
+		virtual void DoSetTaskProgress(uint64_t count, uint64_t max) override final;
 		virtual bool DoIsTaskCanceled() override final;
 
 		void Refresh();

@@ -7,7 +7,7 @@ namespace tools
 	class HTMLBuilder
 	{
 	public:
-		HTMLBuilder();
+		HTMLBuilder(const bool bright = false);
 
 		void Open(const char* block);
 
@@ -16,6 +16,8 @@ namespace tools
 		void Attr(const char* name, const char* valueBuf, ...);
 
 		void Print(const char* valueBuf, ...);
+
+		void PrintEncoded(const char* valueBuf, ...);
 
 		void PrintBlock(const char* blockName, const char* valueBuf, ...);
 

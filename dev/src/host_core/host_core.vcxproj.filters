@@ -95,6 +95,9 @@
     <ClCompile Include="blockAllocator.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="runtimeTraceFile.cpp">
+      <Filter>runtime</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zlib\crc32.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="blockAllocator.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="runtimeTraceFile.h">
+      <Filter>runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

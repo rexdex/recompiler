@@ -1,6 +1,7 @@
 #include "build.h"
-#include "tracePagedFile.h"
-#include "traceData.h"
+
+#if 0
+
 #include "traceMemoryHistory.h"
 
 namespace trace 
@@ -201,3 +202,5 @@ namespace trace
 	}
 
 } // trace
+
+#endif // _DEBUG

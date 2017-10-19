@@ -4,7 +4,6 @@
 #include "platformDefinition.h"
 #include "platformCPU.h"
 #include "decodingInstructionInfo.h"
-#include "traceData.h"
 #include "traceUtils.h"
 
 namespace decoding

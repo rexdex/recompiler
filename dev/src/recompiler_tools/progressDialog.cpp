@@ -67,6 +67,7 @@ namespace tools
 	void ProgressDialog::RequestEnd(const int32 returnValue)
 	{
 		m_requestEnd.exchange(true);
+		m_requestExitCode.exchange(returnValue);
 	}
 
 	void ProgressDialog::DoSetTaskName(const char* buffer)
@@ -80,9 +81,10 @@ namespace tools
 		m_mutex.Leave();
 	}
 
-	void ProgressDialog::DoSetTaskProgress(int count, int max)
+	void ProgressDialog::DoSetTaskProgress(uint64_t count, uint64_t max)
 	{
-		const float value = (max > 0) ? std::max<float>(0.0f, std::min<float>(1.0f, (float)count / (float)max)) : 0.0f;
+		const float rawValue = (max > 0) ? std::max<float>(0.0f, std::min<float>(1.0f, (float)count / (float)max)) : 0.0f;
+		const float value = (float)(int)(rawValue * 100.0f) / 100.0f;
 
 		m_mutex.Enter();
 		if (value != m_currentProgressValue)

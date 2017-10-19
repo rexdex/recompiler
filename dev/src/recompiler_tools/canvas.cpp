@@ -16,9 +16,9 @@ namespace tools
 			EVT_RIGHT_DCLICK(CanvasPanel::OnMouseEvent)
 			EVT_RIGHT_UP(CanvasPanel::OnMouseEvent)
 			EVT_SIZE(CanvasPanel::OnSize)
-			END_EVENT_TABLE()
+		END_EVENT_TABLE()
 
-			CanvasPanel::CanvasPanel(wxWindow* parent, long style)
+		CanvasPanel::CanvasPanel(wxWindow* parent, long style)
 			: wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, style)
 			, m_scale(1.0f)
 			, m_invScale(1.0f)

@@ -95,12 +95,6 @@
     <ClInclude Include="decodingInstructionInfo.h">
       <Filter>decoding</Filter>
     </ClInclude>
-    <ClInclude Include="tracePagedFile.h">
-      <Filter>trace</Filter>
-    </ClInclude>
-    <ClInclude Include="traceData.h">
-      <Filter>trace</Filter>
-    </ClInclude>
     <ClInclude Include="traceMemoryHistory.h">
       <Filter>trace</Filter>
     </ClInclude>
@@ -139,6 +133,18 @@
     </ClInclude>
     <ClInclude Include="output.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="traceRawReader.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="traceDataFile.h">
+      <Filter>trace</Filter>
+    </ClInclude>
+    <ClInclude Include="bigArray.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="traceDataBuilder.h">
+      <Filter>trace</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -221,12 +227,6 @@
     <ClCompile Include="decodingInstructionInfo.cpp">
       <Filter>decoding</Filter>
     </ClCompile>
-    <ClCompile Include="tracePagedFile.cpp">
-      <Filter>trace</Filter>
-    </ClCompile>
-    <ClCompile Include="traceData.cpp">
-      <Filter>trace</Filter>
-    </ClCompile>
     <ClCompile Include="traceMemoryHistory.cpp">
       <Filter>trace</Filter>
     </ClCompile>
@@ -262,6 +262,15 @@
     </ClCompile>
     <ClCompile Include="externalAppWin.cpp">
       <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="traceRawReader.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceDataFile.cpp">
+      <Filter>trace</Filter>
+    </ClCompile>
+    <ClCompile Include="traceDataBuilder.cpp">
+      <Filter>trace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

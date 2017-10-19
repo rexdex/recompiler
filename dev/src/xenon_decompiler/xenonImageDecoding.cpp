@@ -210,7 +210,7 @@ public:
 		return section && !section->CanExecute();
 	}
 
-	const bool HandleDataAddress(ILogOutput& log, const decoding::Instruction& instr, const uint32 codeAddress, const uint32 targetAddress, const decoding::InstructionExtendedInfo& info)
+	const bool HandleDataAddress(ILogOutput& log, const decoding::Instruction& instr, const uint64 codeAddress, const uint32 targetAddress, const decoding::InstructionExtendedInfo& info)
 	{
 		//log.Log("Decode: decoded runtime data address at %06Xh", codeAddress);
 		const image::Section* section = GetSectionForAddress(targetAddress);
@@ -247,7 +247,7 @@ public:
 		return true;
 	}
 
-	const bool HandleCodeAddress(ILogOutput& log, const decoding::Instruction& instr, const uint32 codeAddress, const uint32 targetAddress, const decoding::InstructionExtendedInfo& info)
+	const bool HandleCodeAddress(ILogOutput& log, const decoding::Instruction& instr, const uint64 codeAddress, const uint32 targetAddress, const decoding::InstructionExtendedInfo& info)
 	{
 		//log.Log("Decode: decoded runtime code address at %06Xh", codeAddress);
 
@@ -274,7 +274,7 @@ public:
 		return true;
 	}
 
-	void Process(ILogOutput& log, const decoding::Instruction& instr, const uint32 codeAddress, const decoding::InstructionExtendedInfo& info)
+	void Process(ILogOutput& log, const decoding::Instruction& instr, const uint64 codeAddress, const decoding::InstructionExtendedInfo& info)
 	{
 		// block start, reset
 		const decoding::MemoryFlags flags = m_context->GetMemoryMap().GetMemoryInfo(codeAddress);
@@ -380,7 +380,7 @@ public:
 		m_opSync = CPU_XenonPPC::GetInstance().FindInstruction("sync");
 	}
 
-	void Process(ILogOutput& log, const decoding::Instruction& instr, const uint32 codeAddress, const decoding::InstructionExtendedInfo& info)
+	void Process(ILogOutput& log, const decoding::Instruction& instr, const uint64 codeAddress, const decoding::InstructionExtendedInfo& info)
 	{
 		if (instr.GetOpcode() == m_opEIEIO)
 		{

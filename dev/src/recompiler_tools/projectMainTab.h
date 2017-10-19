@@ -14,8 +14,8 @@ namespace tools
 
 	private:
 		wxListCtrl* m_imageList;
-		FileDialog m_imageOpenDialog;
 		uint32_t m_activeProjectInstance;
+		wxString m_activeTraceFile;
 		wxTimer m_refreshTimer;
 
 		void OnAddImage(wxCommandEvent& evt);
@@ -28,6 +28,7 @@ namespace tools
 		void OnCodeRunNormal(wxCommandEvent& evt);
 		void OnCodeRunTrace(wxCommandEvent& evt);
 		void OnLoadTrace(wxCommandEvent& evt);
+		void OnImportTrace(wxCommandEvent& evt);
 		void OnKill(wxCommandEvent& evt);
 		void OnRefreshTimer(wxTimerEvent & evt);
 
@@ -37,6 +38,9 @@ namespace tools
 		const bool CheckDebugProjects();
 		const bool KillProject();
 		const bool StartProject(const wxString& extraCommandLine);
+		const bool ImportTraceFile(const wxString& traceFilePath);
+		const bool LoadTraceFile(const wxString& traceFilePath);
+		const bool OpenTraceTab(std::unique_ptr<trace::DataFile>& traceData);
 	};
 
 } // tool
