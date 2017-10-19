@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{405B3396-2B1F-4D36-9B7B-AF5E107D5760}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>recompiler_tools</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)..\..\_bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\_temp\$(Configuration)\$(ProjectName)\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external\wxWidgets-3.1.0\include;$(SolutionDir)..\external\wxWidgets-3.1.0\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(TargetDir)$(ProjectName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(SolutionDir)..\..\bin\$(Configuration).$(Platform)\recompiler_tools.pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\external\wxWidgets-3.1.0\lib\vc_x64_dll</AdditionalLibraryDirectories>
+      <ImportLibrary>$(OutputDir)$(TargetName).lib</ImportLibrary>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+        call $(SolutionDir)..\external\wxWidgets-3.1.0\deploy.bat "$(TargetDir)" $(Configuration) $(Platform)
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external\wxWidgets-3.1.0\include\;$(SolutionDir)..\external\wxWidgets-3.1.0\include\msvc\</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external\wxWidgets-3.1.0\include\;$(SolutionDir)..\external\wxWidgets-3.1.0\include\msvc\</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="app.cpp" />
+    <ClCompile Include="bitmaps.cpp" />
+    <ClCompile Include="build.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="buildDialog.cpp" />
+    <ClCompile Include="canvas.cpp" />
+    <ClCompile Include="choiceDialog.cpp" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="configManager.cpp" />
+    <ClCompile Include="eventDispatcher.cpp" />
+    <ClCompile Include="eventListener.cpp" />
+    <ClCompile Include="findSymbolDialog.cpp" />
+    <ClCompile Include="projectImageTab.cpp" />
+    <ClCompile Include="projectMainTab.cpp" />
+    <ClCompile Include="projectTraceTab.cpp" />
+    <ClCompile Include="projectWindow.cpp" />
+    <ClCompile Include="gotoAddressDialog.cpp" />
+    <ClCompile Include="htmlBuilder.cpp" />
+    <ClCompile Include="logWindow.cpp" />
+    <ClCompile Include="memoryView.cpp" />
+    <ClCompile Include="projectAddressHistory.cpp" />
+    <ClCompile Include="projectDynamicTraceData.cpp" />
+    <ClCompile Include="projectImage.cpp" />
+    <ClCompile Include="memoryViewMapping.cpp" />
+    <ClCompile Include="progressDialog.cpp" />
+    <ClCompile Include="project.cpp" />
+    <ClCompile Include="projectMemoryView.cpp" />
+    <ClCompile Include="registerView.cpp" />
+    <ClCompile Include="startWindow.cpp" />
+    <ClCompile Include="timeMachineView.cpp" />
+    <ClCompile Include="traceInfoView.cpp" />
+    <ClCompile Include="treelistctrl.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="widgetHelpers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="app.h" />
+    <ClInclude Include="bitmaps.h" />
+    <ClInclude Include="build.h" />
+    <ClInclude Include="buildDialog.h" />
+    <ClInclude Include="canvas.h" />
+    <ClInclude Include="choiceDialog.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="configManager.h" />
+    <ClInclude Include="eventDispatcher.h" />
+    <ClInclude Include="eventListener.h" />
+    <ClInclude Include="findSymbolDialog.h" />
+    <ClInclude Include="projectImageTab.h" />
+    <ClInclude Include="projectTraceTab.h" />
+    <ClInclude Include="projectWindow.h" />
+    <ClInclude Include="gotoAddressDialog.h" />
+    <ClInclude Include="htmlBuilder.h" />
+    <ClInclude Include="logWindow.h" />
+    <ClInclude Include="memoryView.h" />
+    <ClInclude Include="projectAddressHistory.h" />
+    <ClInclude Include="projectDynamicTraceData.h" />
+    <ClInclude Include="projectImage.h" />
+    <ClInclude Include="memoryViewMapping.h" />
+    <ClInclude Include="progressDialog.h" />
+    <ClInclude Include="project.h" />
+    <ClInclude Include="projectMemoryView.h" />
+    <ClInclude Include="registerView.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="startWindow.h" />
+    <ClInclude Include="timeMachineView.h" />
+    <ClInclude Include="traceInfoView.h" />
+    <ClInclude Include="treelistctrl.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="widgetHelpers.h" />
+    <ClInclude Include="projectMainTab.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\recompiler_core\recompiler_core.vcxproj">
+      <Project>{654994e2-500b-46e3-8e8b-cf743548964a}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

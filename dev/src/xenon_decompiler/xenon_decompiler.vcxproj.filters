@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="mspack.cpp">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="rijndael-alg-fst.c">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonInstructionDecoding.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonImageDecoding.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonCodeGeneration.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonCPU.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonImageLoader.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonPlatform.cpp">
+      <Filter>xenon</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lzx.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="mspack.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="rijndael-alg-fst.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="xexformat.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonCodeGeneration.h">
+      <Filter>xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonCPU.h">
+      <Filter>xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonImageLoader.h">
+      <Filter>xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="xenonPlatform.h">
+      <Filter>xenon</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{7286fc6c-e45c-4431-90bb-ca4761d6c2e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xenon">
+      <UniqueIdentifier>{8c4b482d-5d69-4d83-87a1-4a60f931501e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xenon_decompiler.xml" />
+  </ItemGroup>
+</Project>

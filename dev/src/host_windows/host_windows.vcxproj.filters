@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="build.cpp" />
+    <ClCompile Include="winMemory.cpp">
+      <Filter>native\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="winKernel.cpp">
+      <Filter>native\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="winFileSystem.cpp">
+      <Filter>native\files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="build.h" />
+    <ClInclude Include="winMemory.h">
+      <Filter>native\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="winKernel.h">
+      <Filter>native\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="winFileSystem.h">
+      <Filter>native\files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="native">
+      <UniqueIdentifier>{0ee124ba-2b6d-4228-b406-24ed10064f3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\memory">
+      <UniqueIdentifier>{a17449fb-10cd-4f65-8a52-53926f3bf49c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\kernel">
+      <UniqueIdentifier>{6cf8698d-5de1-4a3d-bf74-3be28f8057b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="native\files">
+      <UniqueIdentifier>{449b7e66-2c50-4041-922d-6d183b26d941}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

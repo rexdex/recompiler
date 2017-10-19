@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shader-pdb pdbHint="4e4a0000-bcb103a9-db759a46" version="21119">
+ <files>
+  <file id="0" path="C:\Program Files (x86)\Microsoft Xbox 360 SDK\Source\Samples\Media\Shaders\LightShafts_Backdrop.hlsl" time="01ccf361-58696b1f">//--------------------------------------------------------------------------------------
+// LightShafts_Backdrop.hlsl
+//
+// Shaders for backdrop rendering in the LightShafts sample
+//
+// Xbox Advanced Technology Group.
+// Copyright (C) Microsoft Corporation. All rights reserved.
+// ATI 3D Application Research Group. 
+// Copyright (C) ATI Research, Inc. All rights reserved. 
+//--------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------
+// Vertex shader constants
+//--------------------------------------------------------------------------------------
+uniform float4x4 g_matWorldViewProj         : register(c0);
+//      float4x4 g_matWorldLightProj        : register(c4);
+uniform float4x4 g_matWorldLight            : register(c8);
+uniform float4x4 g_matWorldLightProjBias    : register(c20);
+uniform float4x4 g_matWorldLightProjScroll1 : register(c24);
+uniform float4x4 g_matWorldLightProjScroll2 : register(c28);
+
+uniform float    g_fFarPlane                : register(c32);
+
+
+//--------------------------------------------------------------------------------------
+// Pixel shader constants
+//--------------------------------------------------------------------------------------
+const   bool     g_bScrollingNoise = true;   // : register(c2);
+const   bool     g_bShadowMapping  = true;   // : register(c3);
+
+static const float4 g_vAmbient = { 0.3f, 0.3f, 0.3f, 0.3f };
+
+
+//--------------------------------------------------------------------------------------
+// Samplers
+//--------------------------------------------------------------------------------------
+sampler BaseTextureSampler    : register(s0);
+sampler CookieSampler         : register(s1);
+sampler ScrollingNoiseSampler : register(s2);
+sampler ShadowMapSampler      : register(s3);
+
+
+//--------------------------------------------------------------------------------------
+// Vertex structures
+//--------------------------------------------------------------------------------------
+struct VS_BACKDROP_OUTPUT
+{
+    float4 vPos                 : POSITION;
+    float4 vColor               : COLOR0;
+    float2 vBaseTexCoord        : TEXCOORD0;
+    float4 vCookieProjTexCoord  : TEXCOORD2;
+    float4 vScroll1ProjTexCoord : TEXCOORD3;
+    float4 vScroll2ProjTexCoord : TEXCOORD4;
+    float  fDepth               : TEXCOORD5;
+};
+
+struct VS_BACKDROP_DEPTH_OUTPUT
+{
+    float4 vPos   : POSITION;
+};
+
+struct VS_BACKDROP_AMBIENT_OUTPUT
+{
+    float4 vPos      : POSITION;
+    float2 vTexCoord : TEXCOORD0;
+};
+
+
+//--------------------------------------------------------------------------------------
+// Name: BackdropMainVS()
+// Desc: 
+//--------------------------------------------------------------------------------------
+VS_BACKDROP_OUTPUT BackdropMainVS( float3 vPosition : POSITION, 
+                                   float4 vColor    : COLOR0,
+                                   float2 vTexCoord : TEXCOORD0 )
+{
+    VS_BACKDROP_OUTPUT Out = (VS_BACKDROP_OUTPUT)0; 
+
+    float4 vObjectSpacePos = float4( vPosition, 1 );
+
+    // Output clip-space position
+    Out.vPos = mul( vObjectSpacePos, g_matWorldViewProj );
+
+    // Pass color through
+    Out.vColor = vColor;
+
+    // Pass through the base map texture coordinates
+    Out.vBaseTexCoord = vTexCoord;
+
+    // Output projective coordinates for cookie
+    Out.vCookieProjTexCoord = mul( vObjectSpacePos, g_matWorldLightProjBias );
+
+    // Output projective coordinates for scrolling noise maps
+    Out.vScroll1ProjTexCoord = mul( vObjectSpacePos, g_matWorldLightProjScroll1 );
+    Out.vScroll2ProjTexCoord = mul( vObjectSpacePos, g_matWorldLightProjScroll2 );
+
+    // Transform to light space
+    float4 vLightSpacePos = mul( vObjectSpacePos, g_matWorldLight );
+
+    // Normalize to max depth in Spotlight volume
+    Out.fDepth = vLightSpacePos.z / g_fFarPlane;
+
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: BackdropDepthVS()
+// Desc: Vertex Shader which puts interpolated depth into scalar texture coordinate
+//--------------------------------------------------------------------------------------
+VS_BACKDROP_DEPTH_OUTPUT BackdropDepthVS( float3 vPosition : POSITION )
+{
+    VS_BACKDROP_DEPTH_OUTPUT Out = (VS_BACKDROP_DEPTH_OUTPUT)0; 
+
+    // Output clip-space position
+    Out.vPos = mul( float4(vPosition,1), g_matWorldViewProj );
+
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: BackdropAmbientOnlyVS()
+// Desc: Vertex Shader which puts interpolated depth into scalar texture coordinate
+//--------------------------------------------------------------------------------------
+VS_BACKDROP_AMBIENT_OUTPUT BackdropAmbientOnlyVS( float3 vPosition : POSITION,
+                                                  float2 vTexCoord : TEXCOORD0 )
+{
+    VS_BACKDROP_AMBIENT_OUTPUT Out = (VS_BACKDROP_AMBIENT_OUTPUT)0; 
+
+    // Output clip-space position
+    Out.vPos = mul( float4(vPosition,1), g_matWorldViewProj );
+
+    // Pass texture coordinates through
+    Out.vTexCoord = vTexCoord;
+
+    return Out;
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: BackdropNoiseShadowPS()
+// Desc: 
+//--------------------------------------------------------------------------------------
+float4 BackdropNoiseShadowPS( VS_BACKDROP_OUTPUT In ) : COLOR
+{
+    // Sample the base map
+    float4 vBaseColor = In.vColor * tex2D( BaseTextureSampler, In.vBaseTexCoord );
+
+    // Sample the cookie
+    float4 vCookie = tex2Dproj( CookieSampler, In.vCookieProjTexCoord );
+
+    // Allow for a common-case, early out
+    if( vCookie.r == 0.0f )
+    {
+        return vBaseColor * g_vAmbient;
+    }
+    else
+    {
+        // Include the scrolling noise
+        float fCompositeNoise = 0.015f;
+        // if( g_bScrollingNoise )
+        {
+            // One noise map, but different projections and channels used
+            float4 vNoise1 = tex2Dproj( ScrollingNoiseSampler, In.vScroll1ProjTexCoord );
+            float4 vNoise2 = tex2Dproj( ScrollingNoiseSampler, In.vScroll2ProjTexCoord );
+            fCompositeNoise = vNoise1.r + vNoise2.g; 
+        }
+
+        // Perform shadow mapping. When fShadow == 0.0f it is in shadow
+        // Note: this is not really a shadow map, but a grayscale map just for the backdrop
+        float fShadow = 1.0f;
+        // if( g_bShadowMapping )
+        {
+            fShadow = tex2Dproj( ShadowMapSampler, In.vCookieProjTexCoord ).x;
+        }
+
+        // Agressively knock out any back projection
+        float fBackProjection = (In.fDepth &lt;= 0.1f ? 0.0f : 1.0f);
+
+        // Final composite
+        return vBaseColor * ( fBackProjection * fShadow * vCookie * fCompositeNoise + g_vAmbient );
+    }
+}
+
+
+//--------------------------------------------------------------------------------------
+// Name: BackdropAmbientOnlyPS()
+// Desc: Return the ambient-lit base texture
+//--------------------------------------------------------------------------------------
+float4 BackdropAmbientOnlyPS( float2 vTexCoord : TEXCOORD0 ) : COLOR
+{
+    return g_vAmbient * tex2D( BaseTextureSampler, vTexCoord );
+}
+</file>
+ </files>
+ <tool name="Compiler">
+  <defines>
+   <define name="EntryPoint_BackdropAmbientOnlyPS" value="" />
+  </defines>
+  <arguments>
+   <argument name="/Zi" value="true" />
+   <argument name="/Vd" value="false" />
+   <argument name="/Xu0_deprecated" value="false" />
+   <argument name="/Odu_deprecated" value="false" />
+   <argument name="/XOd_" value="false" />
+   <argument name="/XOu" value="false" />
+   <argument name="/Xmaxtempreg" value="0" />
+   <argument name="PsSampBase" value="0" />
+   <argument name="PsSampCount" value="0" />
+   <argument name="VsSampBase" value="0" />
+   <argument name="VsSampCount" value="0" />
+   <argument name="VsInstCount" value="0" />
+   <argument name="PsInstCount" value="0" />
+   <argument name="/Od" value="false" />
+   <argument name="/Zpr" value="false" />
+   <argument name="/Zpc" value="false" />
+   <argument name="/Gpp" value="false" />
+   <argument name="/Op" value="false" />
+   <argument name="/Gfa" value="false" />
+   <argument name="/Gfp" value="false" />
+   <argument name="/XZc:zeroInit" value="false" />
+   <argument name="/XVe" value="false" />
+   <argument name="/Xbe:3-" value="false" />
+   <argument name="/Xbe:1-" value="false" />
+   <argument name="/XQInomaskedexports" value="false" />
+   <argument name="/XOautoz" value="false" />
+  </arguments>
+ </tool>
+ <shaders>
+  <shader entrypoint="BackdropAmbientOnlyPS" target="ps_3_0" ZPass="0" pdbHint="4e4a0000-bcb103a9-db759a46">
+   <constanttable>
+    <constant register="s0">
+     <type name="BaseTextureSampler" class="object" type="sampler2D" />
+    </constant>
+   </constanttable>
+   <sourcemap>
+    <statement pc="2" file="0" line="194" scope="-1" lastinstruction="0" />
+    <statement pc="0.1" file="0" line="194" scope="-1" lastinstruction="0" />
+    <statement pc="3" file="0" line="194" scope="-1" lastinstruction="0" />
+   </sourcemap>
+   <variables>
+   </variables>
+   <variableDebugInfo>
+   </variableDebugInfo>
+   <scopes>
+   </scopes>
+   <funcInfo>
+    <function id="0" name="BackdropAmbientOnlyPS" retID="50">
+     <parameter id="49" />
+    </function>
+    <function id="1" name="BackdropNoiseShadowPS" retID="41">
+     <parameter id="40" />
+    </function>
+    <function id="2" name="BackdropAmbientOnlyVS" retID="38">
+     <parameter id="36" />
+     <parameter id="37" />
+    </function>
+    <function id="3" name="BackdropDepthVS" retID="34">
+     <parameter id="33" />
+    </function>
+    <function id="4" name="BackdropMainVS" retID="29">
+     <parameter id="26" />
+     <parameter id="27" />
+     <parameter id="28" />
+    </function>
+   </funcInfo>
+   <funcEntryExitInfo>
+   </funcEntryExitInfo>
+   <VfetchInfo>
+   </VfetchInfo>
+   <InterpolatorInfo>
+    <Interpolator Register="0" Semantic="0x50" Mask="xy" />
+   </InterpolatorInfo>
+   <LiteralFloats>
+    <Float Register="252" value0="0" value1="0" value2="0" value3="0" />
+    <Float Register="253" value0="0" value1="0" value2="0" value3="0" />
+    <Float Register="254" value0="0" value1="0" value2="0" value3="0" />
+    <Float Register="255" value0="0.30000001" value1="0" value2="0" value3="0" />
+   </LiteralFloats>
+   <LiteralInts>
+   </LiteralInts>
+   <LiteralBools>
+   </LiteralBools>
+  </shader>
+ </shaders>
+</shader-pdb>

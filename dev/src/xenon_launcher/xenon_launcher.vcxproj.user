@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommandArguments>-verbose -image=Q:\git\projects\recompiler\projects\xenon\launcher\.temp\default_0xF2ACCEBFB27B36E6\cpp_msvc_debug\code.bin -fsroot=Q:\git\projects\recompiler\projects\xenon\launcher\ -trace=Q:\trace1.trc</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>-verbose -image=Q:\git\projects\recompiler\projects\xenon\dolphin\.temp\dolphin_0xC89B668F6DB04974\cpp_msvc_debug\code.bin -fsroot=Q:\git\projects\recompiler\projects\xenon\dolphin -trace=X:\crap.file</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>

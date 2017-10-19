@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E0C33224-2CE6-46A7-9AC0-CDF57218E360}</ProjectGuid>
+    <RootNamespace>Recompiler.Launcher.Backend</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <SubSystem>Windows</SubSystem>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <SubSystem>Windows</SubSystem>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)..\..\_bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\_temp\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <OutputFile>$(SolutionDir)..\..\bin\$(Configuration).$(Platform)\Recompiler.Launcher.Backend.dll</OutputFile>
+      <ProgramDatabaseFile>$(SolutionDir)..\..\bin\$(Configuration).$(Platform)\Recompiler.Launcher.Backend.pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <BaseAddress>0x1F00000000</BaseAddress>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+        call $(SolutionDir)..\external\xinput1_3\deploy.bat "$(TargetDir)" $(Configuration) $(Platform)
+        call $(SolutionDir)..\external\d3dcompiler_46\deploy.bat "$(TargetDir)" $(Configuration) $(Platform)
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_WIN64;_DEBUG;_WINDOWS;_USRDLL;LOADER_PE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_WIN64;NDEBUG;_WINDOWS;_USRDLL;LOADER_PE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>build.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="bitset.cpp" />
+    <ClCompile Include="blockAllocator.cpp" />
+    <ClCompile Include="launcherCommandline.cpp" />
+    <ClCompile Include="launcherUtils.cpp" />
+    <ClCompile Include="native.cpp" />
+    <ClCompile Include="networkAddress.cpp" />
+    <ClCompile Include="networkManagerImpl.cpp" />
+    <ClCompile Include="networkSocket.cpp" />
+    <ClInclude Include="bitset.h" />
+    <ClInclude Include="blockAllocator.h" />
+    <ClInclude Include="debugPacket.h" />
+    <ClCompile Include="runtimeCodeExecutor.cpp" />
+    <ClCompile Include="runtimeCodeTable.cpp" />
+    <ClCompile Include="runtimeCPU.cpp" />
+    <ClCompile Include="runtimeDevice.cpp" />
+    <ClCompile Include="runtimeEnvironment.cpp" />
+    <ClCompile Include="runtimeException.cpp" />
+    <ClCompile Include="runtimePlatform.cpp" />
+    <ClCompile Include="runtimeRegisterBank.cpp" />
+    <ClCompile Include="runtimeImage.cpp" />
+    <ClCompile Include="build.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="launcherOutputTTY.cpp" />
+    <ClCompile Include="runtimeSymbols.cpp" />
+    <ClCompile Include="runtimeTraceFile.cpp" />
+    <ClCompile Include="runtimeTraceWriter.cpp" />
+    <ClCompile Include="zlib\adler32.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\compress.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\infback.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\uncompr.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="launcherCommandline.h" />
+    <ClInclude Include="launcherUtils.h" />
+    <ClInclude Include="native.h" />
+    <ClInclude Include="nativeFileSystem.h" />
+    <ClInclude Include="nativeKernel.h" />
+    <ClInclude Include="nativeMemory.h" />
+    <ClInclude Include="runtimeCPU.h" />
+    <ClInclude Include="runtimeDevice.h" />
+    <ClInclude Include="runtimeCodeExecutor.h" />
+    <ClInclude Include="runtimeEnvironment.h" />
+    <ClInclude Include="runtimeExceptions.h" />
+    <ClInclude Include="runtimeImageInfo.h" />
+    <ClInclude Include="networkAddress.h" />
+    <ClInclude Include="networkManager.h" />
+    <ClInclude Include="networkManagerImpl.h" />
+    <ClInclude Include="networkSocket.h" />
+    <ClInclude Include="runtimePlatform.h" />
+    <ClInclude Include="runtimeRegisterBank.h" />
+    <ClInclude Include="launcherBase.h" />
+    <ClInclude Include="runtimeCodeTable.h" />
+    <ClInclude Include="runtimeImage.h" />
+    <ClInclude Include="build.h" />
+    <ClInclude Include="launcherOutputTTY.h" />
+    <ClInclude Include="runtimeSymbols.h" />
+    <ClInclude Include="runtimeTraceFile.h" />
+    <ClInclude Include="runtimeTraceWriter.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
