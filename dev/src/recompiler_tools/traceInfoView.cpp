@@ -140,7 +140,8 @@ namespace tools
 	{
 		switch (reg->GetType())
 		{
-			case platform::EInstructionRegisterType::Integer:
+			case platform::CPURegisterType::Control:
+			case platform::CPURegisterType::Generic:
 			{
 				switch (reg->GetBitSize())
 				{
@@ -158,25 +159,7 @@ namespace tools
 				return "<unknown>";
 			}
 
-			case platform::EInstructionRegisterType::Flags:
-			{
-				switch (reg->GetBitSize())
-				{
-					case 1: return "bit";
-					case 2: return "bit2";
-					case 4: return "bit4";
-					case 8: return "bit8";
-					case 16: return "bit16";
-					case 32: return "bit32";
-					case 64: return "bit64";
-					case 128: return "bit128";
-					case 256: return "bit256";
-				}
-
-				return "<unknown>";
-			}
-
-			case platform::EInstructionRegisterType::FloatingPoint:
+			case platform::CPURegisterType::FloatingPoint:
 			{
 				if (reg->GetBitSize() == 64)
 					return "double";
@@ -184,7 +167,7 @@ namespace tools
 					return "float"; // hack
 			}
 
-			case platform::EInstructionRegisterType::Wide:
+			case platform::CPURegisterType::Wide:
 			{
 				return "wide";
 			}

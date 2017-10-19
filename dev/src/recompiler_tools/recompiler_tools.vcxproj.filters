@@ -44,12 +44,6 @@
     <ClCompile Include="projectDynamicTraceData.cpp">
       <Filter>project</Filter>
     </ClCompile>
-    <ClCompile Include="callstackFrame.cpp">
-      <Filter>widgets\callstack</Filter>
-    </ClCompile>
-    <ClCompile Include="callstackFunctionTree.cpp">
-      <Filter>widgets\callstack</Filter>
-    </ClCompile>
     <ClCompile Include="canvas.cpp">
       <Filter>widgets\canvas</Filter>
     </ClCompile>
@@ -101,6 +95,9 @@
     <ClCompile Include="projectTraceTab.cpp">
       <Filter>tabs\workspace</Filter>
     </ClCompile>
+    <ClCompile Include="treelistctrl.cpp">
+      <Filter>widgets\treelist</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build.h" />
@@ -147,12 +144,6 @@
       <Filter>project</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="callstackFrame.h">
-      <Filter>widgets\callstack</Filter>
-    </ClInclude>
-    <ClInclude Include="callstackFunctionTree.h">
-      <Filter>widgets\callstack</Filter>
-    </ClInclude>
     <ClInclude Include="canvas.h">
       <Filter>widgets\canvas</Filter>
     </ClInclude>
@@ -204,6 +195,9 @@
     <ClInclude Include="projectTraceTab.h">
       <Filter>tabs\workspace</Filter>
     </ClInclude>
+    <ClInclude Include="treelistctrl.h">
+      <Filter>widgets\treelist</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="app">
@@ -224,14 +218,8 @@
     <Filter Include="widgets\codeView">
       <UniqueIdentifier>{70b603ee-9252-4f24-9107-1780d21af46a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="widgets\canvas">
-      <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
-    </Filter>
     <Filter Include="widgets\timemachine">
       <UniqueIdentifier>{38976b6e-fe69-475c-8593-0ab78d97a747}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="widgets\callstack">
-      <UniqueIdentifier>{417c6a8a-7153-4933-8f1b-258394115fff}</UniqueIdentifier>
     </Filter>
     <Filter Include="tabs">
       <UniqueIdentifier>{68ee44ab-d299-47ff-8242-157afb33fae9}</UniqueIdentifier>
@@ -277,6 +265,12 @@
     </Filter>
     <Filter Include="dialogs\build">
       <UniqueIdentifier>{9d701f21-a4af-469b-9770-454e0a97e241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\treelist">
+      <UniqueIdentifier>{db390724-bc70-488d-a702-4a50b10721ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\canvas">
+      <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

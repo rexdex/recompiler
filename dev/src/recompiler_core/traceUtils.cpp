@@ -88,9 +88,9 @@ namespace trace
 
 	static const RegDisplayFormat GetBestFormat(const platform::CPURegister* reg)
 	{
-		if (reg->GetType() == platform::EInstructionRegisterType::Wide)
+		if (reg->GetType() == platform::CPURegisterType::Wide)
 			return RegDisplayFormat::Hex; // we can use forced mode to show it 
-		else if (reg->GetType() == platform::EInstructionRegisterType::FloatingPoint)
+		else if (reg->GetType() == platform::CPURegisterType::FloatingPoint)
 			return RegDisplayFormat::FloatingPoint;
 
 		return RegDisplayFormat::Signed;
@@ -125,6 +125,10 @@ namespace trace
 
 	std::string GetRegisterValueText(const platform::CPURegister* reg, const DataFrame& frame, const RegDisplayFormat requestedFormat /*= RegDisplayFormat::Auto*/)
 	{
+		// invalid frame
+		if (frame.GetType() != FrameType::CpuInstruction)
+			return "-";
+
 		// change format if required
 		auto format = (requestedFormat == RegDisplayFormat::Auto) ? GetBestFormat(reg) : requestedFormat;
 
@@ -183,8 +187,22 @@ namespace trace
 		}
 		else if (format == RegDisplayFormat::Hex)
 		{
-			for (auto i = 0; i < numBytes; ++i )
-				PrependString(str, "%02X", (uint8)rawData[i]);
+			if (reg->GetBitSize() < 8)
+			{
+				for (auto i = 0; i < reg->GetBitSize(); ++i)
+				{
+					const auto bit = ((*(const uint8_t*)rawData) & (1LLU << (bitOffset + i))) != 0;
+					PrependString(str, "%u", bit ? 1 : 0);
+				}
+				str += "b";
+			}
+			else
+			{
+				for (auto i = 0; i < numBytes; ++i)
+					PrependString(str, "%02X", (uint8)rawData[i]);
+
+				str += "h";
+			}
 		}
 		else if (format == RegDisplayFormat::ASCII)
 		{

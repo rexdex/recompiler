@@ -1010,7 +1010,7 @@ public:
 
 private:
 	// internal registers map
-	const class platform::CPURegister* m_regMap[ eRegister_MAX ];
+	const class platform::CPURegister* m_regMap[ eRegister_MAX + (128 * (16 + 8 + 4 + 2))];
 
 	// internal instruction map
 	const class platform::CPUInstruction* m_opMap[ eInstruction_MAX ];

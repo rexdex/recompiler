@@ -88,8 +88,6 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="buildDialog.cpp" />
-    <ClCompile Include="callstackFrame.cpp" />
-    <ClCompile Include="callstackFunctionTree.cpp" />
     <ClCompile Include="canvas.cpp" />
     <ClCompile Include="choiceDialog.cpp" />
     <ClCompile Include="config.cpp" />
@@ -116,6 +114,7 @@
     <ClCompile Include="startWindow.cpp" />
     <ClCompile Include="timeMachineView.cpp" />
     <ClCompile Include="traceInfoView.cpp" />
+    <ClCompile Include="treelistctrl.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="widgetHelpers.cpp" />
   </ItemGroup>
@@ -124,8 +123,6 @@
     <ClInclude Include="bitmaps.h" />
     <ClInclude Include="build.h" />
     <ClInclude Include="buildDialog.h" />
-    <ClInclude Include="callstackFrame.h" />
-    <ClInclude Include="callstackFunctionTree.h" />
     <ClInclude Include="canvas.h" />
     <ClInclude Include="choiceDialog.h" />
     <ClInclude Include="config.h" />
@@ -152,6 +149,7 @@
     <ClInclude Include="startWindow.h" />
     <ClInclude Include="timeMachineView.h" />
     <ClInclude Include="traceInfoView.h" />
+    <ClInclude Include="treelistctrl.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="widgetHelpers.h" />
     <ClInclude Include="projectMainTab.h" />

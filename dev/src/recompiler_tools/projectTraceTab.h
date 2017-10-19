@@ -10,6 +10,7 @@ namespace tools
 	class MemoryView;
 	class ImageMemoryView;
 	class TraceInfoView;
+	class RegisterView;
 
 	/// tab for the project trace 
 	class ProjectTraceTab : public ProjectTab, public IImageMemoryNavigationHelper, public ITimeMachineViewNavigationHelper
@@ -57,6 +58,10 @@ namespace tools
 
 		// trace views
 		TraceInfoView* m_traceInfoView;
+
+		// register view
+		wxNotebook* m_registerViewsTabs;
+		std::vector<RegisterView*> m_registerViews;
 
 		// time machine tabs
 		wxAuiNotebook* m_timeMachineTabs;

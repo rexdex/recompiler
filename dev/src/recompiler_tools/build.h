@@ -64,7 +64,7 @@
 #include "wx/clrpicker.h"
 #include "wx/ribbon/toolbar.h"
 #include "wx/valnum.h"
-#include "wx/treelist.h"
+//#include "wx/treelist.h"
 #include "wx/dataview.h"
 #include "wx/renderer.h"
 #include "wx/richtext/richtextctrl.h"

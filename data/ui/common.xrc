@@ -35,185 +35,6 @@
 			</object>
 		</object>
 	</object>
-	<object class="wxPanel" name="TabProject">
-		<style>wxTAB_TRAVERSAL</style>
-		<size>500,300</size>
-		<object class="wxBoxSizer">
-			<orient>wxVERTICAL</orient>
-			<object class="sizeritem">
-				<option>1</option>
-				<flag>wxEXPAND | wxALL</flag>
-				<border>0</border>
-				<object class="wxNotebook" name="m_notebook1">
-					<object class="notebookpage">
-						<label>Module</label>
-						<selected>0</selected>
-						<object class="wxPanel" name="m_panel8">
-							<style>wxTAB_TRAVERSAL</style>
-							<object class="wxBoxSizer">
-								<orient>wxVERTICAL</orient>
-								<object class="sizeritem">
-									<option>1</option>
-									<flag>wxEXPAND</flag>
-									<border>5</border>
-									<object class="wxSplitterWindow" name="MainSplitter">
-										<style>wxSP_NOBORDER</style>
-										<sashpos>0</sashpos>
-										<gravity>0.66</gravity>
-										<minsize>0</minsize>
-										<orientation>horizontal</orientation>
-										<object class="wxPanel" name="m_panel2">
-											<style>wxTAB_TRAVERSAL</style>
-											<object class="wxBoxSizer">
-												<orient>wxVERTICAL</orient>
-												<object class="sizeritem">
-													<option>1</option>
-													<flag>wxEXPAND</flag>
-													<border>5</border>
-													<object class="wxSplitterWindow" name="TopSplitter">
-														<style>wxSP_NOBORDER</style>
-														<sashpos>0</sashpos>
-														<gravity>0.33</gravity>
-														<minsize>0</minsize>
-														<orientation>vertical</orientation>
-														<object class="wxPanel" name="m_panel4">
-															<style>wxTAB_TRAVERSAL</style>
-															<object class="wxBoxSizer">
-																<orient>wxVERTICAL</orient>
-																<object class="sizeritem">
-																	<option>1</option>
-																	<flag>wxEXPAND</flag>
-																	<border>5</border>
-																	<object class="wxTreeCtrl" name="ModulesTree">
-																		<style>wxTR_DEFAULT_STYLE|wxTR_HIDE_ROOT|wxTR_LINES_AT_ROOT|wxSUNKEN_BORDER</style>
-																	</object>
-																</object>
-															</object>
-														</object>
-														<object class="wxPanel" name="m_panel5">
-															<style>wxTAB_TRAVERSAL</style>
-															<object class="wxBoxSizer">
-																<orient>wxVERTICAL</orient>
-																<object class="sizeritem">
-																	<option>1</option>
-																	<flag>wxEXPAND</flag>
-																	<border>5</border>
-																	<object class="wxSplitterWindow" name="m_splitter3">
-																		<style>wxSP_NOBORDER</style>
-																		<sashpos>0</sashpos>
-																		<gravity>0.5</gravity>
-																		<minsize>0</minsize>
-																		<orientation>horizontal</orientation>
-																		<object class="wxPanel" name="m_panel6">
-																			<style>wxTAB_TRAVERSAL</style>
-																			<object class="wxBoxSizer">
-																				<orient>wxVERTICAL</orient>
-																				<object class="sizeritem">
-																					<option>1</option>
-																					<flag>wxEXPAND</flag>
-																					<border>5</border>
-																					<object class="wxListCtrl" name="ImportList">
-																						<style>wxLC_HRULES|wxLC_REPORT|wxLC_VRULES|wxNO_BORDER</style>
-																					</object>
-																				</object>
-																			</object>
-																		</object>
-																		<object class="wxPanel" name="m_panel7">
-																			<style>wxTAB_TRAVERSAL</style>
-																			<object class="wxBoxSizer">
-																				<orient>wxVERTICAL</orient>
-																				<object class="sizeritem">
-																					<option>1</option>
-																					<flag>wxEXPAND</flag>
-																					<border>5</border>
-																					<object class="wxListCtrl" name="ExportList">
-																						<style>wxLC_HRULES|wxLC_REPORT|wxLC_VRULES|wxNO_BORDER</style>
-																					</object>
-																				</object>
-																			</object>
-																		</object>
-																	</object>
-																</object>
-															</object>
-														</object>
-													</object>
-												</object>
-											</object>
-										</object>
-										<object class="wxPanel" name="m_panel3">
-											<style>wxSUNKEN_BORDER|wxTAB_TRAVERSAL</style>
-											<object class="wxBoxSizer">
-												<orient>wxVERTICAL</orient>
-												<object class="sizeritem">
-													<option>1</option>
-													<flag>wxALL|wxEXPAND</flag>
-													<border>0</border>
-													<object class="wxListCtrl" name="ModulesList">
-														<style>wxLC_HRULES|wxLC_REPORT|wxLC_VRULES|wxNO_BORDER</style>
-													</object>
-												</object>
-											</object>
-										</object>
-									</object>
-								</object>
-							</object>
-						</object>
-					</object>
-					<object class="notebookpage">
-						<label>Symbols</label>
-						<selected>0</selected>
-						<object class="wxPanel" name="m_panel9">
-							<style>wxTAB_TRAVERSAL</style>
-						</object>
-					</object>
-				</object>
-			</object>
-		</object>
-	</object>
-	<object class="wxPanel" name="TabDisassembly">
-		<style>wxTAB_TRAVERSAL</style>
-		<size>500,300</size>
-		<object class="wxBoxSizer">
-			<orient>wxVERTICAL</orient>
-			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxToolBar" name="InternalToolbar">
-					<style>wxTB_FLAT|wxTB_HORIZONTAL</style>
-					<bitmapsize></bitmapsize>
-					<margins></margins>
-					<packing>1</packing>
-					<separation>5</separation>
-					<object class="tool" name="navigatePrev">
-						<label>Previous</label>
-						<tooltip></tooltip>
-						<longhelp></longhelp>
-						<bitmap>icons\arrow_left.png</bitmap>
-					</object>
-					<object class="tool" name="navigateNext">
-						<label>Next</label>
-						<tooltip></tooltip>
-						<longhelp></longhelp>
-						<bitmap>icons\arrow_right.png</bitmap>
-					</object>
-					<object class="separator" />
-					<object class="wxTextCtrl" name="navigateTo">
-						<size>200,-1</size>
-						<value></value>
-					</object>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>1</option>
-				<flag>wxEXPAND | wxALL</flag>
-				<border>5</border>
-				<object class="wxPanel" name="InnerPanel">
-					<style>wxTAB_TRAVERSAL</style>
-				</object>
-			</object>
-		</object>
-	</object>
 	<object class="wxDialog" name="OperationLog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
 		<size>645,449</size>
@@ -605,37 +426,11 @@
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxToolBar" name="Toolbar">
-					<style>wxTB_FLAT|wxTB_HORIZONTAL</style>
-					<bitmapsize></bitmapsize>
-					<margins></margins>
-					<packing>1</packing>
-					<separation>5</separation>
-					<object class="tool" name="filterRelevantOnly">
-						<label>tool</label>
-						<tooltip></tooltip>
-						<longhelp></longhelp>
-						<bitmap>icons\table.png</bitmap>
-						<toggle>1</toggle>
-					</object>
-					<object class="tool" name="showHex">
-						<label>tool</label>
-						<tooltip>Toggle hexadecimal dispaly of numerical values</tooltip>
-						<longhelp></longhelp>
-						<bitmap>icons\calculator.png</bitmap>
-						<toggle>1</toggle>
-					</object>
-				</object>
-			</object>
-			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
+				<flag>wxEXPAND | wxALL</flag>
 				<border>5</border>
-				<object class="wxListCtrl" name="RegList">
-					<style>wxLC_HRULES|wxLC_NO_SORT_HEADER|wxLC_REPORT|wxLC_VRULES</style>
+				<object class="wxPanel" name="RegListPanel">
+					<style>wxTAB_TRAVERSAL</style>
 				</object>
 			</object>
 		</object>
@@ -2205,6 +2000,15 @@
 																		<selected>0</selected>
 																		<object class="wxPanel" name="RegListPanel">
 																			<style>wxTAB_TRAVERSAL</style>
+																			<object class="wxBoxSizer">
+																				<orient>wxVERTICAL</orient>
+																				<object class="sizeritem">
+																					<option>1</option>
+																					<flag>wxEXPAND | wxALL</flag>
+																					<border>5</border>
+																					<object class="wxNotebook" name="RegListTabs" />
+																				</object>
+																			</object>
 																		</object>
 																	</object>
 																	<object class="notebookpage">

@@ -2,6 +2,8 @@
 
 #include "../recompiler_core/traceDataFile.h"
 #include "../recompiler_core/traceUtils.h"
+#include "../recompiler_core/platformCPU.h"
+#include "treelistctrl.h"
 
 //---------------------------------------------------------------------------
 
@@ -17,32 +19,35 @@ namespace tools
 		RegisterView(wxWindow* parent);
 
 		// initialize register list from a CPU definition
-		void InitializeRegisters(const platform::CPU& cpuInfo);
+		void InitializeRegisters(const platform::CPU& cpuInfo, const platform::CPURegisterType regType);
 
 		// update register values from a trace frame
-		void UpdateRegisters(const trace::DataFrame& frame, const trace::DataFrame* nextFrame);
+		void UpdateRegisters(const trace::DataFrame& frame, const trace::DataFrame& nextFrame, const trace::RegDisplayFormat format);
 
 	private:
-		wxListCtrl*		m_list;
+		wxcode::wxTreeListCtrl*	m_list;
 
-		const platform::CPU*	m_cpu;
+		struct RegInfo
+		{
+			const platform::CPURegister* m_rootReg;
+			const platform::CPURegister* m_reg;
+			wxTreeItemId m_item;
 
-		trace::DataFrame*		m_frameCurrent;
-		trace::DataFrame*		m_frameNext;
+			wxString m_curValue;
+			wxString m_nextValue;
+			bool m_wasModified;
 
-		trace::RegDisplayFormat	m_displayFormat;
+			inline RegInfo()
+				: m_wasModified(false)
+			{}
+		};
 
-		typedef std::vector< const platform::CPURegister* > TRegisterMap;
-		TRegisterMap	m_usedRegisters;
+		std::vector<RegInfo> m_registers;
 
-		void UpdateRegisterList();
-		void UpdateRegisterValues();
+		void UpdateRegisterList(const platform::CPU& cpuInfo, const platform::CPURegisterType regType);
+		void UpdateRegisterValues(const trace::DataFrame& frame, const trace::DataFrame& nextFrame, const trace::RegDisplayFormat format);
 
-		void UpdateRegisterValues(const trace::DataFrame& frame, const trace::DataFrame& nextFrame);
-
-		void OnRegisterContextMenu(wxCommandEvent& event);
-		void OnToggleHexView(wxCommandEvent& event);
-		void OnToggleFilter(wxCommandEvent& event);
+		void CreateRegisterInfo(wxTreeItemId parentItem, const platform::CPURegister* rootReg, const platform::CPURegister* reg);
 	};
 
 } // tools

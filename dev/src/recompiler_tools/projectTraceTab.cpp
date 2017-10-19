@@ -10,6 +10,7 @@
 #include "../recompiler_core/decodingEnvironment.h"
 #include "../recompiler_core/image.h"
 #include "../recompiler_core/traceDataFile.h"
+#include "registerView.h"
 
 #pragma optimize ("",off)
 
@@ -67,6 +68,45 @@ namespace tools
 			m_timeMachineTabs = new wxAuiNotebook(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE | wxAUI_NB_CLOSE_BUTTON | wxAUI_NB_CLOSE_ON_ALL_TABS);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_timeMachineTabs, 1, wxEXPAND, 0);
+		}
+
+		// registers
+		{
+			auto* tabs = XRCCTRL(*this, "RegListTabs", wxNotebook);
+			m_registerViewsTabs = tabs;
+
+			tabs->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, [this, tabs](wxNotebookEvent& evt)
+			{
+				SyncRegisterView();
+			});
+
+			{
+				auto* view = new RegisterView(tabs);
+				view->InitializeRegisters(*m_data->GetCPU(), platform::CPURegisterType::Control);
+				tabs->AddPage(view, "Control");
+				m_registerViews.push_back(view);
+			}
+
+			{
+				auto* view = new RegisterView(tabs);
+				view->InitializeRegisters(*m_data->GetCPU(), platform::CPURegisterType::Generic);
+				tabs->AddPage(view, "Generic");
+				m_registerViews.push_back(view);
+			}
+
+			{
+				auto* view = new RegisterView(tabs);
+				view->InitializeRegisters(*m_data->GetCPU(), platform::CPURegisterType::FloatingPoint);
+				tabs->AddPage(view, "FPU");
+				m_registerViews.push_back(view);
+			}
+
+			{
+				auto* view = new RegisterView(tabs);
+				view->InitializeRegisters(*m_data->GetCPU(), platform::CPURegisterType::Wide);
+				tabs->AddPage(view, "Wide");
+				m_registerViews.push_back(view);
+			}			
 		}
 	}
 
@@ -348,7 +388,13 @@ namespace tools
 
 	void ProjectTraceTab::SyncRegisterView()
 	{
+		const auto displayFormat = GetValueDisplayFormat();
+		const auto curFrame = m_data->GetFrame(m_currentEntry);
+		const auto nextFrame = m_data->GetFrame(m_currentEntry+1);
 
+		auto* curPage = (RegisterView*)m_registerViewsTabs->GetCurrentPage();
+		if (curPage)
+			curPage->UpdateRegisters(curFrame, nextFrame, displayFormat);
 	}
 
 	void ProjectTraceTab::SyncTraceView()

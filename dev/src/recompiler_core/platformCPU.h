@@ -51,12 +51,14 @@ namespace platform
 	//---------------------------------------------------------------------------
 
 	/// Type of register value
-	enum class EInstructionRegisterType : char
+	enum class CPURegisterType : char
 	{
-		Flags = 0, // register contains bits that are interpreted as flags
-		Integer = 1, // register contains numerical value
-		FloatingPoint = 2, // register contains floating point value 
-		Wide = 3, // multi component SSE/MMX type registers
+		Control = 1, // control registers
+		Generic = 2, // generic register
+		FloatingPoint = 3, // register contains floating point value 
+		Wide = 4, // multi component SSE/MMX type registers
+
+		ANY = -1, // any type (filters only)
 	};
 
 	/// Register referenced by instruction (global object shared by instructions)
@@ -64,7 +66,7 @@ namespace platform
 	{
 	private:
 		// register type
-		EInstructionRegisterType		m_type;
+		CPURegisterType		m_type;
 
 		// register size (in bits)
 		uint32							m_bitSize;
@@ -91,14 +93,14 @@ namespace platform
 		mutable int						m_traceDataOffset; // offset in the trace frame to the data for this register, NOTE: only parent registers are in trace files
 
 	public:
-		CPURegister(const char* name, const uint32 bitSize, const uint32 bitOffset, const EInstructionRegisterType itype, const CPURegister* parent, const int nativeIndex);
+		CPURegister(const char* name, const uint32 bitSize, const uint32 bitOffset, const CPURegisterType itype, const CPURegister* parent, const int nativeIndex);
 		virtual ~CPURegister();
 
 		inline const char* GetName() const { return m_name.c_str(); }
 		inline const uint32 GetBitSize() const { return m_bitSize; }
 		inline const uint32 GetBitOffset() const { return m_bitOffset; }
 		inline const int GetNativeIndex() const { return m_nativeIndex; }
-		inline const EInstructionRegisterType GetType() const { return m_type; }
+		inline const CPURegisterType GetType() const { return m_type; }
 
 		inline const CPURegister* GetParent() const { return m_parentRegister; }
 		inline const int GetChildIndex() const { return m_childIndex;  }
@@ -172,10 +174,10 @@ namespace platform
 		const CPUInstruction* AddInstruction(const char* name, const class CPUInstructionNativeDecompiler* decompiler);
 
 		// add root register to CPU
-		const CPURegister* AddRootRegister(const char* name, const int nativeIndex, const uint32 bitSize, const EInstructionRegisterType type);
+		const CPURegister* AddRootRegister(const char* name, const int nativeIndex, const uint32 bitSize, const CPURegisterType type);
 
 		// add child register to CPU
-		const CPURegister* AddChildRegister(const char* parentName, const char* name, const int nativeIndex, const uint32 bitSize, const uint32 bitOffset, const EInstructionRegisterType type);
+		const CPURegister* AddChildRegister(const char* parentName, const char* name, const int nativeIndex, const uint32 bitSize, const uint32 bitOffset, const CPURegisterType type);
 
 	private:
 		// fallback: decode CPU instruction using provided input stream, retruns decoded string (or empty string if nothing found)
