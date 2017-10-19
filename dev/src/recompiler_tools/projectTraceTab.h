@@ -29,11 +29,8 @@ namespace tools
 		// navigate to trace entry
 		bool NavigateToFrame(const TraceFrameID seq);
 
-		// navigate to start of the trace
-		bool NavigateToStart();
-
-		// navigate to end of the trace
-		bool NavigateToEnd();
+		// general navigation
+		virtual bool Navigate(const NavigationType type) override;
 
 	private:
 		Project* m_project;
@@ -71,8 +68,10 @@ namespace tools
 		void OnRefreshTimer(wxTimerEvent & evt);
 		void OnFindSymbol(wxCommandEvent& evt);
 		void OnGoToAddress(wxCommandEvent& evt);
-		void OnTraceToStart(wxCommandEvent& evt);
-		void OnTraceToEnd(wxCommandEvent& evt);
+		void OnTraceToLocalStart(wxCommandEvent& evt);
+		void OnTraceToLocalEnd(wxCommandEvent& evt);
+		void OnTraceToGlobalStart(wxCommandEvent& evt);
+		void OnTraceToGlobalEnd(wxCommandEvent& evt);
 		void OnTraceFreeRun(wxCommandEvent& evt);
 		void OnTraceGlobalPrev(wxCommandEvent& evt);
 		void OnTraceLocalPrev(wxCommandEvent& evt);
@@ -94,7 +93,6 @@ namespace tools
 		bool OpenTimeMachine(const TraceFrameID id);
 
 		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) override;
-		virtual bool Navigate(const NavigationType type) override;
 	};
 
 } // tool

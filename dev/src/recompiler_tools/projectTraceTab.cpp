@@ -20,8 +20,10 @@ namespace tools
 		EVT_TIMER(wxID_ANY, ProjectTraceTab::OnRefreshTimer)
 		EVT_MENU(XRCID("navigateFind"), ProjectTraceTab::OnFindSymbol)
 		EVT_MENU(XRCID("navigateGoTo"), ProjectTraceTab::OnGoToAddress)
-		EVT_MENU(XRCID("traceToStart"), ProjectTraceTab::OnTraceToStart)
-		EVT_MENU(XRCID("traceToStart"), ProjectTraceTab::OnTraceToEnd)
+		EVT_MENU(XRCID("traceToLocalStart"), ProjectTraceTab::OnTraceToLocalStart)
+		EVT_MENU(XRCID("traceToLocalEnd"), ProjectTraceTab::OnTraceToLocalEnd)
+		EVT_MENU(XRCID("traceToGlobalStart"), ProjectTraceTab::OnTraceToGlobalStart)
+		EVT_MENU(XRCID("traceToGlobalEnd"), ProjectTraceTab::OnTraceToGlobalEnd)
 		EVT_MENU(XRCID("traceRun"), ProjectTraceTab::OnTraceFreeRun)
 		EVT_MENU(XRCID("traceAbsolutePrev"), ProjectTraceTab::OnTraceGlobalPrev)
 		EVT_MENU(XRCID("traceLocalPrev"), ProjectTraceTab::OnTraceLocalPrev)
@@ -134,14 +136,29 @@ namespace tools
 		}
 	}
 
-	void ProjectTraceTab::OnTraceToStart(wxCommandEvent& evt)
+	void ProjectTraceTab::OnTraceToLocalStart(wxCommandEvent& evt)
 	{
-		NavigateToStart();
+		if (!Navigate(NavigationType::LocalStart))
+			wxMessageBox(wxT("Already at the beginning of scope"), wxT("Navigation"), wxICON_WARNING, this);
 	}
 
-	void ProjectTraceTab::OnTraceToEnd(wxCommandEvent& evt)
+	void ProjectTraceTab::OnTraceToLocalEnd(wxCommandEvent& evt)
 	{
-		NavigateToEnd();
+		if (!Navigate(NavigationType::LocalEnd))
+			wxMessageBox(wxT("Already at the end of scope"), wxT("Navigation"), wxICON_WARNING, this);
+
+	}
+
+	void ProjectTraceTab::OnTraceToGlobalStart(wxCommandEvent& evt)
+	{
+		if (!Navigate(NavigationType::GlobalStart))
+			wxMessageBox(wxT("Already at the beginning of file"), wxT("Navigation"), wxICON_WARNING, this);
+	}
+
+	void ProjectTraceTab::OnTraceToGlobalEnd(wxCommandEvent& evt)
+	{
+		if (!Navigate(NavigationType::GlobalEnd))
+			wxMessageBox(wxT("Already at the end of file"), wxT("Navigation"), wxICON_WARNING, this);
 	}
 
 	void ProjectTraceTab::OnTraceFreeRun(wxCommandEvent& evt)
@@ -288,6 +305,49 @@ namespace tools
 				else
 					return false;
 			}
+
+			case NavigationType::LocalStart:
+			{
+				const auto& entry = m_data->GetFrame(m_currentEntry);
+				if (entry.GetType() != trace::FrameType::Invalid)
+				{
+					const auto& contextInfo = m_data->GetContextList()[entry.GetLocationInfo().m_contextId];
+					return NavigateToFrame(contextInfo.m_first.m_seq);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			case NavigationType::LocalEnd:
+			{
+				const auto& entry = m_data->GetFrame(m_currentEntry);
+				if (entry.GetType() != trace::FrameType::Invalid)
+				{
+					const auto& contextInfo = m_data->GetContextList()[entry.GetLocationInfo().m_contextId];
+					return NavigateToFrame(contextInfo.m_last.m_seq);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			case NavigationType::GlobalStart:
+			{
+				return NavigateToFrame(0);
+			}
+
+			case NavigationType::GlobalEnd:
+			{
+				const auto lastFrame = m_data->GetNumDataFrames() - 1;
+				const auto& entry = m_data->GetFrame(lastFrame);
+				if (entry.GetType() != trace::FrameType::Invalid && entry.GetAddress())
+					return NavigateToFrame(lastFrame);
+				else
+					return false;
+			}
 		}
 
 		return false;
@@ -354,6 +414,10 @@ namespace tools
 
 			m_currentEntry = seq;	
 
+			SyncImageView();
+			SyncRegisterView();
+			SyncTraceView();
+
 			if (frame.GetType() == trace::FrameType::CpuInstruction)
 			{
 				const auto address = frame.GetAddress();
@@ -362,23 +426,9 @@ namespace tools
 				if (!NavigateToAddress(address, false))
 					return false;
 			}
-
-			SyncImageView();
-			SyncRegisterView();
-			SyncTraceView();
 		}
 
 		return true;
-	}
-
-	bool ProjectTraceTab::NavigateToStart()
-	{
-		return NavigateToFrame(0);
-	}
-
-	bool ProjectTraceTab::NavigateToEnd()
-	{
-		return NavigateToFrame(m_data->GetNumDataFrames() - 1);
 	}
 
 	void ProjectTraceTab::SyncImageView()

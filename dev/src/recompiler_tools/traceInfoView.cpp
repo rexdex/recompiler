@@ -191,11 +191,33 @@ namespace tools
 			op.GenerateText(frame.GetAddress(), writeStream, instructionText + sizeof(instructionText));
 		}
 
+		// get context info
+		const auto& contextInfo = m_traceData->GetContextList()[frame.GetLocationInfo().m_contextId];
+
 		// general instruction header
 		const auto numFrames = m_traceData->GetNumDataFrames();
 		doc.Print("Instruction: <b>%s</b><br>", instructionText);
 		doc.Print("Address: %06llXh<br>", frame.GetAddress());
-		doc.Print("Trace: %llu/%llu (%1.3f%%)<br>", frame.GetLocationInfo().m_seq, numFrames, (double)frame.GetLocationInfo().m_seq / (double)numFrames * 100.0);
+		doc.Print("Global: %llu/%llu (%1.3f%%)<br>", 
+			frame.GetLocationInfo().m_seq, numFrames, 
+			(double)frame.GetLocationInfo().m_seq / (double)numFrames * 100.0);
+		doc.Print("Context: %llu/%llu (%1.3f%%)<br>", 
+			frame.GetLocationInfo().m_contextSeq, contextInfo.m_last.m_contextSeq,
+			(double)frame.GetLocationInfo().m_contextSeq / (double)contextInfo.m_last.m_contextSeq * 100.0);
+		doc.Print("<br>");
+
+		doc.Print("Context ID: <b>%u</b><br>", contextInfo.m_id);
+		doc.Print("Context name: <b>%s</b><br>", contextInfo.m_name);
+
+		if (contextInfo.m_type == trace::ContextType::Thread)
+			doc.Print("Context type: <b>THREAD</b><br>", contextInfo.m_type);
+		else if (contextInfo.m_type == trace::ContextType::IRQ)
+			doc.Print("Context type: <b>IRQ</b><br>", contextInfo.m_type);
+		else if (contextInfo.m_type == trace::ContextType::APC)
+			doc.Print("Context type: <b>APC</b><br>", contextInfo.m_type);
+		else
+			doc.Print("Context type: <b>UNKNOWN</b><br>", contextInfo.m_type);
+
 		doc.Print("<br>");
 
 		/*// time machine

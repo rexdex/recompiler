@@ -1,18 +1,24 @@
 #include "build.h"
 #include "traceDataBuilder.h"
+#include "decodingContext.h"
+#include "decodingMemoryMap.h"
+#include "decodingInstruction.h"
+#include "decodingInstructionInfo.h"
 
 //#pragma optimize("",off)
 
 namespace trace
 {
 
-	DataBuilder::DataBuilder(const RawTraceReader& rawTrace)
+	DataBuilder::DataBuilder(const RawTraceReader& rawTrace, const TDecodingContextQuery& decodingContextQuery)
 		: m_rawTrace(&rawTrace)
+		, m_decodingContextQueryFunc(decodingContextQuery)
 	{
 		m_blob.push_back(0); // make sure the blob offset 0 will mean "invalid"
+		m_callFrames.push_back(CallFrame());
 	}
 
-	void DataBuilder::StartContext(const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name)
+	void DataBuilder::StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name)
 	{
 		// create context entry
 		auto& context = m_contexts.AllocAt(writerId);
@@ -37,19 +43,38 @@ namespace trace
 
 		// create the compression context
 		m_deltaContextData.AllocAt(writerId) = new DeltaContext();
+
+		// create the call frame
+		CallFrame callFrame;
+		callFrame.m_enterLocation = context.m_first;
+		callFrame.m_parentFrame = 0;
+		const auto callEntryIndex = m_callFrames.push_back(callFrame);
+
+		// create the call stack context
+		m_callstackBuilders.AllocAt(writerId) = new CallStackBuilder((uint32_t)callEntryIndex);
 	}
 
-	void DataBuilder::EndContext(const uint32 writerId, const uint64 ip, const TraceFrameID seq, const uint32 numFrames)
+	void DataBuilder::EndContext(ILogOutput& log, const uint32 writerId, const uint64 ip, const TraceFrameID seq, const uint32 numFrames)
 	{
+		// end context
 		auto& context = m_contexts[writerId];
 		context.m_last.m_contextId = writerId;
 		context.m_last.m_contextSeq = numFrames;
 		context.m_last.m_seq = seq;
 		context.m_last.m_ip = ip;
 		context.m_last.m_time = 0;
+
+		// end call stack by forcibly finishing all open functions
+		auto* callstackBuilder = m_callstackBuilders[writerId];
+		for (auto callEntryId : callstackBuilder->m_callFrames)
+		{
+			auto& entry = m_callFrames[callEntryId];
+			entry.m_leaveLocation = context.m_last;
+		}
+		callstackBuilder->m_callFrames.clear();
 	}
 
-	void DataBuilder::ConsumeFrame(const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame)
+	void DataBuilder::ConsumeFrame(ILogOutput& log, const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame)
 	{
 		// update context
 		auto& context = m_contexts[writerId];
@@ -86,6 +111,10 @@ namespace trace
 			auto& prevEntry = m_entries[deltaContext->m_prevSeq];
 			prevEntry.m_nextThread = seq;
 		}
+
+		// extract call structure
+		auto* callstackBuilder = m_callstackBuilders[writerId];
+		ExtractCallstackData(log, *callstackBuilder, frame, deltaContext->m_localSeq);
 
 		// update local sequence number
 		deltaContext->m_prevSeq = seq;
@@ -196,6 +225,155 @@ namespace trace
 			refData.m_descendSeq = ctx.m_localSeq + 64;
 			ctx.m_references.push_back(refData);
 		}
+	}
+
+	//--
+
+	void DataBuilder::ReturnFromFunction(ILogOutput& log, CallStackBuilder& builder, const LocationInfo& locationOfReturnInstruction)
+	{
+		if (builder.m_callFrames.size() == 1)
+		{
+			log.Error("Trace: Return from function found at 0x%08llX (#%llu) but there's nowhere to return to. Ignoring.", locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);
+			return;
+		}
+
+		/*log.Log("Trace: CallStack[%u->%u]: Returning from function at 0x%08llX (#%llu)",
+			builder.m_callFrames.size(), builder.m_callFrames.size()-1,
+			locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);*/
+
+		auto& topFrame = m_callFrames[builder.m_callFrames.back()];
+		topFrame.m_leaveLocation = locationOfReturnInstruction;;
+		builder.m_callFrames.pop_back();
+		builder.m_lastChildFrames.pop_back();
+	}
+
+	void DataBuilder::EnterToFunction(ILogOutput& log, CallStackBuilder& builder, const LocationInfo& locationOfFirstFunctionInstruction)
+	{
+		auto topFrameIndex = builder.m_callFrames.size() - 1;
+		auto topFrameEntryIndex = builder.m_callFrames[topFrameIndex];
+		auto& topFrame = m_callFrames[topFrameEntryIndex];
+
+		// create the call frame
+		CallFrame callFrame;
+		callFrame.m_enterLocation = locationOfFirstFunctionInstruction;
+		callFrame.m_parentFrame = topFrameEntryIndex;
+		const auto callEntryIndex = m_callFrames.push_back(callFrame);
+		builder.m_callFrames.push_back((uint32_t)callEntryIndex);
+		builder.m_lastChildFrames.push_back(0);
+
+		/*log.Log("Trace: CallStack[%u->%u]: Entering function at 0x%08llX (#%llu)", 
+			builder.m_callFrames.size()-1, builder.m_callFrames.size(),
+			locationOfFirstFunctionInstruction.m_ip, locationOfFirstFunctionInstruction.m_seq);*/
+
+		// link as a children of parent
+		if (builder.m_lastChildFrames[topFrameIndex] == 0)
+		{
+			topFrame.m_firstChildFrame = (uint32_t)callEntryIndex;
+		}
+		else
+		{
+			auto& lastChildFrame = m_callFrames[builder.m_lastChildFrames[topFrameIndex]];
+			lastChildFrame.m_nextChildFrame = (uint32_t)callEntryIndex;
+			builder.m_lastChildFrames[topFrameIndex] = (uint32_t)callEntryIndex;
+		}
+	}
+
+	bool DataBuilder::ExtractCallstackData(ILogOutput& log, CallStackBuilder& builder, const RawTraceFrame& frame, const uint32_t contextSeq)
+	{
+		const auto codeAddress = frame.m_ip;
+
+		// build location info
+		LocationInfo locInfo;
+		locInfo.m_contextId = frame.m_writerId;
+		locInfo.m_contextSeq = contextSeq;
+		locInfo.m_ip = frame.m_ip;
+		locInfo.m_seq = frame.m_seq;
+		locInfo.m_time = frame.m_timeStamp;
+
+		// jump to an import function - sometimes happens
+		auto* decodingContext = m_decodingContextQueryFunc(codeAddress);
+		if (!decodingContext)
+		{
+			log.Error("CallStack: Instruction at %08llXh is outside range that can be decoded", codeAddress);
+			return false;
+		}
+
+		// did the speculated return happened ?
+		if (builder.m_speculatedReturnNotTakenAddress != 0)
+		{
+			// if current address is different than the speculated one for return NOT being taken than we returned from function
+			if (codeAddress != builder.m_speculatedReturnNotTakenAddress)
+			{
+				ReturnFromFunction(log, builder, builder.m_speculatedLocation);
+			}
+
+		}
+		else if (builder.m_speculatedCallNotTakenAddress != 0)
+		{
+			// if current address is different than the speculated one for a call than the call WAS taken
+			if (codeAddress != builder.m_speculatedCallNotTakenAddress)
+			{
+				EnterToFunction(log, builder, locInfo);
+			}
+		}
+
+		// get info about instruction
+		auto memInfo = decodingContext->GetMemoryMap().GetMemoryInfo(codeAddress);
+		if (memInfo.IsExecutable() && memInfo.GetInstructionFlags().IsImportFunction())
+		{
+			builder.m_speculatedLocation = LocationInfo();
+			builder.m_speculatedCallNotTakenAddress = 0;
+			builder.m_speculatedReturnNotTakenAddress = 0;
+
+			ReturnFromFunction(log, builder, locInfo);
+			return true;
+		}
+
+		// decode instruction
+		decoding::Instruction op;
+		const auto opSize = decodingContext->DecodeInstruction(ILogOutput::DevNull(), codeAddress, op, false);
+		if (!opSize)
+		{
+			log.Error("CallStack: Instruction at %08llXh is invalid", codeAddress);
+			return false;
+		}
+
+		// get additional info
+		decoding::InstructionExtendedInfo info;
+		if (!op.GetExtendedInfo(codeAddress, *decodingContext, info))
+		{
+			log.Error("CallStack: Instruction at %08llXh has no extended information", codeAddress);
+			return false;
+		}
+
+		// invalid
+		if ((info.m_codeFlags & decoding::InstructionExtendedInfo::eInstructionFlag_Call) &&
+			(info.m_codeFlags & decoding::InstructionExtendedInfo::eInstructionFlag_Return))
+		{
+			log.Error("CallStack: Instruction at %08Xh is both a call and return", codeAddress);
+			return false;
+		}
+
+		// reset speculation
+		builder.m_speculatedLocation = LocationInfo();
+		builder.m_speculatedCallNotTakenAddress = 0;
+		builder.m_speculatedReturnNotTakenAddress = 0;
+
+		// call or return - we are about to enter or leave a function
+		if (info.m_codeFlags & decoding::InstructionExtendedInfo::eInstructionFlag_Call)
+		{
+			// if we don't take the call the new code address will be the current one + the size of the instruction
+			builder.m_speculatedCallNotTakenAddress = codeAddress + opSize;
+		}
+		else if (info.m_codeFlags & decoding::InstructionExtendedInfo::eInstructionFlag_Return)
+		{
+			// if we don't take the return the new code address will be the current one + the size of the instruction
+			builder.m_speculatedReturnNotTakenAddress = codeAddress + opSize;
+			builder.m_speculatedLocation = locInfo;
+		}
+
+		// valid
+		return true;
 	}
 
 	//--

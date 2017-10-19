@@ -120,7 +120,7 @@ namespace trace
 
 				// report start of the block
 				if (context->m_numEntries == 0)
-					vistor.StartContext(context->m_writerId, context->m_threadId, frame.m_ip, frame.m_seq, "");
+					vistor.StartContext(log, context->m_writerId, context->m_threadId, frame.m_ip, frame.m_seq, "");
 
 				// decode frame data
 				DecodeFrameData(frame.m_mask, context->m_refData.data(), rawFrame.m_data.data());
@@ -131,7 +131,7 @@ namespace trace
 				rawFrame.m_threadId = context->m_threadId;
 				rawFrame.m_writerId = context->m_writerId;
 				rawFrame.m_timeStamp = frame.m_clock;
-				vistor.ConsumeFrame(context->m_writerId, frame.m_seq, rawFrame);
+				vistor.ConsumeFrame(log, context->m_writerId, frame.m_seq, rawFrame);
 
 				// remember last sequence number of a context, this can be used to close it
 				context->m_lastSeq = frame.m_seq;
@@ -145,7 +145,7 @@ namespace trace
 		{
 			if (ctx)
 			{
-				vistor.EndContext(ctx->m_writerId, ctx->m_lastIp, ctx->m_lastSeq, ctx->m_numEntries);
+				vistor.EndContext(log, ctx->m_writerId, ctx->m_lastIp, ctx->m_lastSeq, ctx->m_numEntries);
 			}
 		}
 	}

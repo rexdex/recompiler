@@ -542,12 +542,18 @@ namespace tools
 		// compile full trace
 		std::unique_ptr<trace::DataFile> traceData;
 		{
-			const auto* cpuInfo = GetProjectWindow()->GetProject()->GetPlatform()->GetCPU(0);
+			auto* project = GetProjectWindow()->GetProject().get();
+			const auto* cpuInfo = project->GetPlatform()->GetCPU(0);
 
 			ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
-			dlg.RunLongTask([&traceData, &rawTraceData, cpuInfo](ILogOutput& log)
+			dlg.RunLongTask([&traceData, &rawTraceData, cpuInfo, project](ILogOutput& log)
 			{
-				traceData = trace::DataFile::Build(log, *cpuInfo, *rawTraceData);
+				auto decodingContextFunc = [project](const uint64_t ip)
+				{
+					return project->GetDecodingContext(ip);
+				};
+
+				traceData = trace::DataFile::Build(log, *cpuInfo, *rawTraceData, decodingContextFunc);
 				return 0;
 			});
 

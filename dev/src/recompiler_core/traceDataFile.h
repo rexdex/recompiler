@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 namespace trace
 {
@@ -48,11 +49,13 @@ namespace trace
 		char m_name[32];
 		LocationInfo m_first;
 		LocationInfo m_last;
+		uint32 m_rootCallFrame;
 
 		inline Context()
 			: m_type(ContextType::Thread)
 			, m_id(0)
 			, m_threadId(0)
+			, m_rootCallFrame(0)
 		{
 			memset(m_name, 0, sizeof(m_name));
 		}
@@ -69,6 +72,24 @@ namespace trace
 			: m_prevInContext(INVALID_TRACE_FRAME_ID)
 			, m_nextInContext(INVALID_TRACE_FRAME_ID)
 			, m_context(0)
+		{}
+	};
+
+	// call frame (executed function)
+	struct CallFrame
+	{
+		uint64_t		m_functionStart;		// address of function entered
+		LocationInfo	m_enterLocation;		// where was the scope entered
+		LocationInfo	m_leaveLocation;		// where was the scope left
+		uint32_t		m_parentFrame;			// 0 if root
+		uint32_t		m_firstChildFrame;		// first child frame index (0 means no child calls)
+		uint32_t		m_nextChildFrame;		// next child frame (0 marks end of the list)
+
+		inline CallFrame()
+			: m_functionStart(0)
+			, m_parentFrame(0)
+			, m_firstChildFrame(0)
+			, m_nextChildFrame(0)
 		{}
 	};
 
@@ -129,6 +150,10 @@ namespace trace
 		typedef std::vector<const platform::CPURegister*> TRegisterList;
 		inline const TRegisterList& GetRegisters() const { return m_registers; }
 
+		// get call frames
+		typedef std::vector<CallFrame> TCallFrames;
+		inline const TCallFrames& GetCallFrames() const { return m_callFrames; }
+
 		//--
 
 		// purge frame cache
@@ -148,7 +173,8 @@ namespace trace
 		const bool Save(ILogOutput& log, const std::wstring& filePath) const;
 
 		// build trace data from raw trace
-		static std::unique_ptr<DataFile> Build(ILogOutput& log, const platform::CPU& cpuInfo, const RawTraceReader& rawTrace);
+		typedef std::function<decoding::Context*(const uint64_t ip)> TDecodingContextQuery;
+		static std::unique_ptr<DataFile> Build(ILogOutput& log, const platform::CPU& cpuInfo, const RawTraceReader& rawTrace, const TDecodingContextQuery& decodingContextQuery);
 
 		// load raw trace data from file
 		static std::unique_ptr<DataFile> Load(ILogOutput& log, const platform::CPU& cpuInfo, const std::wstring& filePath);
@@ -162,6 +188,7 @@ namespace trace
 		static const uint32_t CHUNK_CONTEXTS = 0;
 		static const uint32_t CHUNK_ENTRIES = 1;
 		static const uint32_t CHUNK_DATA_BLOB = 2;
+		static const uint32_t CHUNK_CALL_FRAMES = 3;
 
 		struct FileChunk
 		{
@@ -225,6 +252,9 @@ namespace trace
 
 		// trace context table (threads and IRQs/APC/etc)
 		std::vector<Context> m_contexts;
+
+		// call frames
+		std::vector<CallFrame> m_callFrames;
 
 		//--
 

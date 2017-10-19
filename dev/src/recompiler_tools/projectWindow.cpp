@@ -219,7 +219,7 @@ namespace tools
 			return nullptr;
 
 		auto* projectTraceTab = new ProjectTraceTab(this, m_tabs, data);
-		projectTraceTab->NavigateToEnd();
+		projectTraceTab->Navigate(NavigationType::GlobalEnd);
 		m_tabs->AddPage(projectTraceTab, wxString::Format("Trace"), focus);
 
 		return projectTraceTab;

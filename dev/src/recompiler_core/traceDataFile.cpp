@@ -199,6 +199,12 @@ namespace trace
 			if (!WriteDataChunk(log, file, m_dataBlob, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Saving call frames...");
+			auto& info = header.m_chunks[CHUNK_CALL_FRAMES];
+			if (!WriteDataChunk(log, file, m_callFrames, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// patch the header
 		const auto fileDataSize = file.tellp();
@@ -332,13 +338,19 @@ namespace trace
 			if (!ReadDataChunk(log, file, ret->m_dataBlob, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Loading call frames...");
+			auto& info = header.m_chunks[CHUNK_CALL_FRAMES];
+			if (!ReadDataChunk(log, file, ret->m_dataBlob, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// loaded
 		ret->PostLoad();
 		return ret;
 	}
 
-	std::unique_ptr<DataFile> DataFile::Build(ILogOutput& log, const platform::CPU& cpuInfo, const RawTraceReader& rawTrace)
+	std::unique_ptr<DataFile> DataFile::Build(ILogOutput& log, const platform::CPU& cpuInfo, const RawTraceReader& rawTrace, const TDecodingContextQuery& decodingContextQuery)
 	{
 		std::unique_ptr<DataFile> ret(new DataFile(&cpuInfo));
 
@@ -379,13 +391,14 @@ namespace trace
 		ret->m_dataFrameSize = traceDataOffsetPos;
 
 		// build the data
-		DataBuilder builder(rawTrace);
+		DataBuilder builder(rawTrace, decodingContextQuery);
 		rawTrace.Scan(log, builder);
 
 		// extract data
 		builder.m_blob.exportToVector(ret->m_dataBlob);
 		builder.m_entries.exportToVector(ret->m_entries);
 		builder.m_contexts.exportToVector(ret->m_contexts);
+		builder.m_callFrames.exportToVector(ret->m_callFrames);
 
 		// done
 		return ret;

@@ -189,7 +189,7 @@ namespace trace
 		{
 			if (reg->GetBitSize() < 8)
 			{
-				for (auto i = 0; i < reg->GetBitSize(); ++i)
+				for (auto i = 0; i < (int)reg->GetBitSize(); ++i)
 				{
 					const auto bit = ((*(const uint8_t*)rawData) & (1LLU << (bitOffset + i))) != 0;
 					PrependString(str, "%u", bit ? 1 : 0);

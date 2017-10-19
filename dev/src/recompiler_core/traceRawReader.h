@@ -37,15 +37,15 @@ namespace trace
 		virtual ~IRawTraceVisitor() {};
 
 		// start trace context
-		virtual void StartContext(const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name) = 0;
+		virtual void StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name) = 0;
 
 		// end trace context, called with the index of last trace frame for that writer
-		virtual void EndContext(const uint32 writerId, const uint64 ip, const TraceFrameID seq, const uint32 numFrames) = 0;
+		virtual void EndContext(ILogOutput& log, const uint32 writerId, const uint64 ip, const TraceFrameID seq, const uint32 numFrames) = 0;
 
 		// consume frame
 		// NOTE: called in increasing sequence order
 		// NOTE: there may be gaps
-		virtual void ConsumeFrame(const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame) = 0;
+		virtual void ConsumeFrame(ILogOutput& log, const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame) = 0;
 	};
 
 	//---------------------------------------------------------------------------

@@ -1864,17 +1864,17 @@
 						<bitmap>icons/table_row_insert.png</bitmap>
 					</object>
 					<object class="separator" />
-					<object class="tool" name="traceToStart">
-						<label>To start</label>
-						<tooltip>Reset trace to the first entry</tooltip>
+					<object class="tool" name="traceToGlobalStart">
+						<label>File start</label>
+						<tooltip>Reset trace to the first frame ever</tooltip>
 						<longhelp></longhelp>
-						<bitmap>icons/align_left.png</bitmap>
+						<bitmap>icons/to_global_start.png</bitmap>
 					</object>
-					<object class="tool" name="traceToEnd">
-						<label>To end</label>
-						<tooltip>Reset trace to the first entry</tooltip>
+					<object class="tool" name="traceToGlobalEnd">
+						<label>File end</label>
+						<tooltip>Reset trace to the last frame in the file</tooltip>
 						<longhelp></longhelp>
-						<bitmap>icons/align_right.png</bitmap>
+						<bitmap>icons/to_global_end.png</bitmap>
 					</object>
 					<object class="tool" name="traceRun">
 						<label>Go</label>
@@ -1883,8 +1883,21 @@
 						<bitmap>icons/resultset_next.png</bitmap>
 					</object>
 					<object class="separator" />
+					<object class="tool" name="traceToLocalStart">
+						<label>Context start</label>
+						<tooltip>Reset trace to the first entry in current context</tooltip>
+						<longhelp></longhelp>
+						<bitmap>icons/to_local_start.png</bitmap>
+					</object>
+					<object class="tool" name="traceToLocalEnd">
+						<label>Context end</label>
+						<tooltip>Reset trace to the first entry</tooltip>
+						<longhelp></longhelp>
+						<bitmap>icons/to_local_end.png</bitmap>
+					</object>
+					<object class="separator" />
 					<object class="tool" name="traceAbsolutePrev">
-						<label>AbsBack</label>
+						<label>Wide back</label>
 						<tooltip>Go to previously executed instruction (global, all threads and IRQs)</tooltip>
 						<longhelp></longhelp>
 						<bitmap>icons/stepback_world.png</bitmap>
@@ -1908,7 +1921,7 @@
 						<bitmap>icons/stepforward.png</bitmap>
 					</object>
 					<object class="tool" name="traceAbsoluteNext">
-						<label>AbsNext</label>
+						<label>Wide next</label>
 						<tooltip>Go to next executed instruction (global, all threads and IRQs)</tooltip>
 						<longhelp></longhelp>
 						<bitmap>icons/stepforward_world.png</bitmap>

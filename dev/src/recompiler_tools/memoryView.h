@@ -27,10 +27,16 @@ namespace tools
 	/// Navigation type
 	enum class NavigationType
 	{
+		LocalStart,
+		LocalEnd,
 		LocalStepBack,
-		GlobalStepBack,
 		LocalStepIn,
+
+		GlobalStart,
+		GlobalEnd,
+		GlobalStepBack,
 		GlobalStepIn,
+
 		Back,
 		Advance,
 	};

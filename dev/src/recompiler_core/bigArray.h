@@ -50,8 +50,10 @@ namespace utils
 		}
 
 		// add single element
-		inline void push_back(const T& elem)
+		inline const uint64_t push_back(const T& elem)
 		{
+			const auto ofs = m_numTotalElements;
+
 			if (m_curPage->full())
 			{
 				m_curPage = new Page();
@@ -60,6 +62,8 @@ namespace utils
 			m_curPage->m_elements[m_curPage->m_numElements] = elem;
 			m_curPage->m_numElements += 1;
 			m_numTotalElements += 1;
+
+			return ofs;
 		}
 
 		// add multiple elements
