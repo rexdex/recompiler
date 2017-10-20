@@ -104,6 +104,9 @@
     <ClCompile Include="callTreeList.cpp">
       <Filter>widgets\calltree</Filter>
     </ClCompile>
+    <ClCompile Include="traceMemoryView.cpp">
+      <Filter>widgets\traceMemoryView</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build.h" />
@@ -210,6 +213,9 @@
     <ClInclude Include="callTreeList.h">
       <Filter>widgets\calltree</Filter>
     </ClInclude>
+    <ClInclude Include="traceMemoryView.h">
+      <Filter>widgets\traceMemoryView</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="app">
@@ -286,6 +292,9 @@
     </Filter>
     <Filter Include="widgets\calltree">
       <UniqueIdentifier>{a31bbdf8-2841-4e95-80af-b22466d91785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\traceMemoryView">
+      <UniqueIdentifier>{05ba8577-0376-492a-a246-695fdb551de0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,6 @@ namespace tools
 		virtual uint32 GetAddressInfo(const uint32 offset, uint32& outNumLines, uint32& outNumBytes) const;
 		virtual bool GetAddressText(const uint32 offset, IMemoryLinePrinter& printer) const;
 		virtual bool GetAddressMarkers(const uint32 offset, uint32& outMarkers, uint32& outLineOffset) const;
-		virtual uint32 GetAddressHitCount(const uint32 offset) const;
 		virtual bool ShowContextMenu(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const wxPoint& point);
 		virtual bool Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift);
 		virtual bool Navigate(class MemoryView* view, const NavigationType type);

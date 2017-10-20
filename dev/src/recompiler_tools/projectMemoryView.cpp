@@ -128,11 +128,6 @@ namespace tools
 		return offset;
 	}
 
-	uint32 ImageMemoryView::GetAddressHitCount(const uint32 address) const
-	{
-		return 0;
-	}
-
 	bool ImageMemoryView::GetAddressMarkers(const uint32 address, uint32& outMarkers, uint32& outLineOffset) const
 	{
 		const decoding::MemoryFlags flags = m_decodingContext->GetMemoryMap().GetMemoryInfo(m_base + address);

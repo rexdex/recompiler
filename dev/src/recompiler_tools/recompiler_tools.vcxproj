@@ -116,6 +116,7 @@
     <ClCompile Include="startWindow.cpp" />
     <ClCompile Include="timeMachineView.cpp" />
     <ClCompile Include="traceInfoView.cpp" />
+    <ClCompile Include="traceMemoryView.cpp" />
     <ClCompile Include="treelistctrl.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="widgetHelpers.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="startWindow.h" />
     <ClInclude Include="timeMachineView.h" />
     <ClInclude Include="traceInfoView.h" />
+    <ClInclude Include="traceMemoryView.h" />
     <ClInclude Include="treelistctrl.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="widgetHelpers.h" />

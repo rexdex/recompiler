@@ -45,8 +45,8 @@ namespace tools
 		//! Generate the text representation for, only valid addresses should be accepted
 		virtual bool GetAddressText(const uint32 offset, IMemoryLinePrinter& printer) const = 0;
 
-		//! Get address hit count (if any)
-		virtual uint32 GetAddressHitCount(const uint32 offset) const { return 0; }
+		//! Get address hit count text
+		virtual bool GetAddressHitCount(const uint32 offset, char* outHitCountText) const { return false; }
 
 		//! Get any special markers to show on the line
 		virtual bool GetAddressMarkers(const uint32 offset, uint32& outMarkers, uint32& outLineOffset) const { return false; }

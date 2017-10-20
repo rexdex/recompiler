@@ -1,5 +1,7 @@
 #pragma once
 
+#include "projectAddressHistory.h"
+
 namespace tools
 {
 	struct BuildTask;

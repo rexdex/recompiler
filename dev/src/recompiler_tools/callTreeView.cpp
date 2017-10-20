@@ -28,7 +28,7 @@ namespace tools
 	CallTreeView::CallTreeView(wxWindow* parent, INavigationHelper* navigator)
 		: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 		, m_data(nullptr)
-		, m_ticksPerPixel(1024)
+		, m_ticksPerPixel(4)
 		, m_navigator(navigator)
 		, m_currentPosition(0)
 		, m_offset(0)

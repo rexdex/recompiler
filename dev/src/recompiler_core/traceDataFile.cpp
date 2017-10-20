@@ -3,6 +3,9 @@
 #include "platformCPU.h"
 #include "traceRawReader.h"
 #include "traceDataBuilder.h"
+#include <algorithm>
+
+#pragma optimize("",off)
 
 namespace trace
 {
@@ -61,6 +64,140 @@ namespace trace
 		// return frame data
 		return frame ? *frame : *m_emptyFrame;
 	}
+
+	const CodeTracePage* DataFile::GetCodeTracePage(const uint32_t contextId, const uint64_t entryAddress) const
+	{
+		// get the context table
+		const auto& contextInfo = m_contexts[contextId];
+
+		// if context has no code pages we are done
+		if (!contextInfo.m_numCodePages)
+			return nullptr;
+
+		// find the first matching code page
+		/*const auto firstPageIt = m_codeTracePages.begin() + contextInfo.m_firstCodePage;
+		const auto lastPageIt = firstPageIt + contextInfo.m_numCodePages;
+		const auto tempshitComparand = CodeTracePage{ entryAddress };
+		const auto it = std::lower_bound(firstPageIt, lastPageIt, tempshitComparand, [](const CodeTracePage& a, const CodeTracePage& b) { return a.m_baseAddress < b.m_baseAddress; });
+		if (it == lastPageIt)
+			return nullptr;
+
+		// page found
+		return &*it;*/
+
+		// linear search
+		for (uint32 i = 0; i < contextInfo.m_numCodePages; ++i)
+		{
+			const auto& codePage = m_codeTracePages[contextInfo.m_firstCodePage + i];
+			if (entryAddress >= codePage.m_baseAddress && entryAddress < codePage.m_baseAddress + CodeTracePage::NUM_ADDRESSES_PER_PAGE)
+			{
+				return &codePage;
+			}
+		}
+
+		return nullptr;
+	}
+
+	const CodeTracePage* DataFile::GetCodeTracePage(const TraceFrameID id) const
+	{
+		// invalid id
+		if (id == INVALID_TRACE_FRAME_ID)
+			return nullptr;
+
+		// get the entry info
+		const auto& entryInfo = m_entries[id];
+
+		// unpack basic data
+		const auto& blobInfo = *(const BlobInfo*)(m_dataBlob.data() + entryInfo.m_offset);
+		const auto entryAddress = blobInfo.m_ip;
+
+		// lookup by address
+		return GetCodeTracePage(entryInfo.m_context, entryAddress);
+	}
+
+	const bool DataFile::GetCodeTracePageHistogram(const CodeTracePage& page, const TraceFrameID seq, const TraceFrameID minSeq, const TraceFrameID maxSeq, const uint64_t address, uint32& outBefore, uint32& outAfter) const
+	{
+		// validate address
+		if (address < page.m_baseAddress || address >= page.m_baseAddress + CodeTracePage::NUM_ADDRESSES_PER_PAGE)
+			return false;
+
+		// get offset to data
+		const auto sequenceIdOffset = page.m_dataOffsets[address - page.m_baseAddress];
+		if (!sequenceIdOffset)
+			return false;
+
+		// load count
+		const auto* readPtr = (const uint32_t*)(m_dataBlob.data() + sequenceIdOffset);
+		const auto count = *readPtr++;
+		
+		// find the entries
+		outBefore = 0;
+		outAfter = 0;
+		{
+			const auto* seqReadPtr = (const TraceFrameID*)readPtr;
+			for (uint32 i = 0; i < count; ++i)
+			{
+				const auto testSeq = *seqReadPtr++;
+				if (testSeq >= minSeq && testSeq <= maxSeq)
+				{
+					if (testSeq >= seq)
+						outAfter += 1;
+					else
+						outBefore += 1;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	const bool DataFile::GetInnerMostCallFunction(const TraceFrameID seq, TraceFrameID& outFunctionEntrySeq, TraceFrameID& outFunctionLeaveSeq)
+	{
+		// invalid id
+		if (seq == INVALID_TRACE_FRAME_ID)
+			return false;
+
+		// get the entry info
+		const auto& entryInfo = m_entries[seq];
+		const auto& contextInfo = m_contexts[entryInfo.m_context];
+		if (!contextInfo.m_rootCallFrame)
+			return false;
+
+		// walk the stack down
+		auto stackEntryIndex = contextInfo.m_rootCallFrame;
+		while (stackEntryIndex)
+		{
+			const auto& stackEntry = m_callFrames[stackEntryIndex];
+
+			// try to enter children
+			auto childStackEntryIndex = stackEntry.m_firstChildFrame;
+			while (childStackEntryIndex)
+			{
+				// is given sequence point inside this child ?
+				const auto& childStackEntry = m_callFrames[childStackEntryIndex];
+				if (seq >= childStackEntry.m_enterLocation.m_seq && seq <= childStackEntry.m_leaveLocation.m_seq)
+					break;
+
+				// go to next child
+				childStackEntryIndex = childStackEntry.m_nextChildFrame;
+			}
+
+			// unable to entry any child
+			if (!childStackEntryIndex)
+			{
+				outFunctionEntrySeq = stackEntry.m_enterLocation.m_seq;
+				outFunctionLeaveSeq = stackEntry.m_leaveLocation.m_seq;
+				return true;
+			}
+
+			// go to child
+			stackEntryIndex = childStackEntryIndex;
+		}
+
+		// not found
+		return false;
+	}
+
 
 	DataFrame* DataFile::CompileFrame(const TraceFrameID id)
 	{
@@ -205,6 +342,12 @@ namespace trace
 			if (!WriteDataChunk(log, file, m_callFrames, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Saving code trace pages...");
+			auto& info = header.m_chunks[CHUNK_CODE_TRACE];
+			if (!WriteDataChunk(log, file, m_codeTracePages, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// patch the header
 		const auto fileDataSize = file.tellp();
@@ -344,6 +487,12 @@ namespace trace
 			if (!ReadDataChunk(log, file, ret->m_callFrames, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Loading code trace...");
+			auto& info = header.m_chunks[CHUNK_CODE_TRACE];
+			if (!ReadDataChunk(log, file, ret->m_codeTracePages, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// loaded
 		ret->PostLoad();
@@ -399,6 +548,7 @@ namespace trace
 		builder.m_entries.exportToVector(ret->m_entries);
 		builder.m_contexts.exportToVector(ret->m_contexts);
 		builder.m_callFrames.exportToVector(ret->m_callFrames);
+		builder.m_codeTracePages.exportToVector(ret->m_codeTracePages);
 
 		// done
 		return ret;

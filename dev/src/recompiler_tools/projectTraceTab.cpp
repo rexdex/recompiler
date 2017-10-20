@@ -5,6 +5,7 @@
 #include "gotoAddressDialog.h"
 #include "projectImage.h"
 #include "traceInfoView.h"
+#include "traceMemoryView.h"
 #include "timeMachineView.h"
 
 #include "../recompiler_core/decodingEnvironment.h"
@@ -34,6 +35,7 @@ namespace tools
 		EVT_MENU(XRCID("traceSyncPos"), ProjectTraceTab::OnTraceSyncPos)
 		EVT_MENU(XRCID("timeMachineCreate"), ProjectTraceTab::OnCreateTimeMachine)
 		EVT_MENU(XRCID("showValuesAsHex"), ProjectTraceTab::OnToggleHexView)
+		EVT_MENU(XRCID("toggleGlobalStats"), ProjectTraceTab::OnToggleGlobalStats)
 	END_EVENT_TABLE()
 
 	ProjectTraceTab::ProjectTraceTab(ProjectWindow* parent, wxWindow* tabs, std::unique_ptr<trace::DataFile>& traceData)
@@ -56,6 +58,7 @@ namespace tools
 		{
 			auto* panel = XRCCTRL(*this, "DisasmPanel", wxPanel);
 			m_disassemblyPanel = new MemoryView(panel);
+			m_disassemblyPanel->SetHitcountDisplay(true);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_disassemblyPanel, 1, wxEXPAND, 0);
 		}
@@ -256,6 +259,14 @@ namespace tools
 		return true;
 	}
 
+	bool ProjectTraceTab::GetGlobalStatsFlags() const
+	{
+		auto* toolbar = XRCCTRL(*this, "ToolBar", wxToolBar);
+
+		const auto useGlobalStats = toolbar->GetToolState(XRCID("toggleGlobalStats"));
+		return useGlobalStats;
+	}
+
 	trace::RegDisplayFormat ProjectTraceTab::GetValueDisplayFormat() const
 	{
 		auto* toolbar = XRCCTRL(*this, "RegistersToolbar", wxToolBar);
@@ -271,6 +282,11 @@ namespace tools
 	{		
 		SyncRegisterView();
 		SyncTraceView();
+	}
+
+	void ProjectTraceTab::OnToggleGlobalStats(wxCommandEvent& evt)
+	{
+		SyncImageView();
 	}
 
 	void ProjectTraceTab::OnCreateTimeMachine(wxCommandEvent& evt)
@@ -396,11 +412,12 @@ namespace tools
 			// change the disassembly to new image
 			delete m_disassemblyView;
 			if (projectImage)
-				m_disassemblyView = new ImageMemoryView(projectImage, this);
+				m_disassemblyView = new TraceMemoryView(projectImage, this, *m_data);
 			else
 				m_disassemblyView = nullptr;
 
 			m_disassemblyPanel->SetDataView(m_disassemblyView);
+			SyncImageView();
 		}
 
 		// sync address
@@ -455,7 +472,12 @@ namespace tools
 
 	void ProjectTraceTab::SyncImageView()
 	{
-
+		if (m_disassemblyView != nullptr)
+		{
+			const auto useGlobalStats = GetGlobalStatsFlags();
+			m_disassemblyView->SetTraceFrame(m_currentEntry, !useGlobalStats);
+			m_disassemblyPanel->Refresh();
+		}
 	}
 
 	void ProjectTraceTab::SyncRegisterView()

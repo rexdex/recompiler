@@ -43,19 +43,32 @@ namespace trace
 	// context of code execution, usually a thread, sometimes
 	struct Context
 	{
-		ContextType m_type;
-		uint32 m_id;
-		uint32 m_threadId;
-		char m_name[32];
-		LocationInfo m_first;
-		LocationInfo m_last;
-		uint32 m_rootCallFrame;
+		// general info
+		ContextType m_type;		// type of the execution context, mostly THREAD, sometimes IRQ or APC
+		uint32 m_id;			// unique ID of this context
+		uint32 m_threadId;		// in case of thread this is the thread ID
+		char m_name[32];		// user-given name
+		LocationInfo m_first;	// first executed object
+		LocationInfo m_last;	// last executed object
+
+		//--
+
+		// callstack for this execution context
+		uint32 m_rootCallFrame;	
+
+		//--
+
+		// lateral code trace pages
+		uint32 m_firstCodePage;
+		uint32 m_numCodePages;
 
 		inline Context()
 			: m_type(ContextType::Thread)
 			, m_id(0)
 			, m_threadId(0)
 			, m_rootCallFrame(0)
+			, m_firstCodePage(0)
+			, m_numCodePages(0)
 		{
 			memset(m_name, 0, sizeof(m_name));
 		}
@@ -91,6 +104,14 @@ namespace trace
 			, m_firstChildFrame(0)
 			, m_nextChildFrame(0)
 		{}
+	};
+
+	// code trace page
+	struct CodeTracePage
+	{
+		static const uint32_t NUM_ADDRESSES_PER_PAGE = 4096; // normal page
+		uint64_t m_baseAddress; // base address of data
+		uint64_t m_dataOffsets[NUM_ADDRESSES_PER_PAGE]; // offsets to entry lists in data blob
 	};
 
 	// decoded frame
@@ -154,6 +175,10 @@ namespace trace
 		typedef std::vector<CallFrame> TCallFrames;
 		inline const TCallFrames& GetCallFrames() const { return m_callFrames; }
 
+		// get code pages
+		typedef std::vector<CodeTracePage> TCodePages;
+		inline const TCodePages& GetCodeTracePages() const { return m_codeTracePages; }
+
 		//--
 
 		// purge frame cache
@@ -166,6 +191,23 @@ namespace trace
 
 		// decode frame
 		const DataFrame& GetFrame(const TraceFrameID id);
+
+		//--
+
+		// get code trace page (or null if not found) for given trace frame
+		const CodeTracePage* GetCodeTracePage(const TraceFrameID id) const;
+
+		// get code trace page (or null if not found) for given address
+		const CodeTracePage* GetCodeTracePage(const uint32_t contextId, const uint64_t address) const;
+
+		// in given code page enumerate entries before and after given sequence number
+		const bool GetCodeTracePageHistogram(const CodeTracePage& page, const TraceFrameID seq, const TraceFrameID minSeq, const TraceFrameID maxSeq, const uint64_t address, uint32& outBefore, uint32& outAfter) const;
+
+		//--
+
+		// get the inner most (with no more children) entry from call stack trace for given sequence ID
+		// this is the function we are in bascialy
+		const bool GetInnerMostCallFunction(const TraceFrameID seq, TraceFrameID& outFunctionEntrySeq, TraceFrameID& outFunctionLeaveSeq);
 
 		//--
 
@@ -189,6 +231,8 @@ namespace trace
 		static const uint32_t CHUNK_ENTRIES = 1;
 		static const uint32_t CHUNK_DATA_BLOB = 2;
 		static const uint32_t CHUNK_CALL_FRAMES = 3;
+		static const uint32_t CHUNK_CODE_TRACE = 4;
+		static const uint32_t CHUNK_MEMORY_TRACE = 5;
 
 		struct FileChunk
 		{
@@ -255,6 +299,9 @@ namespace trace
 
 		// call frames
 		std::vector<CallFrame> m_callFrames;
+
+		// code pages
+		std::vector<CodeTracePage> m_codeTracePages;
 
 		//--
 

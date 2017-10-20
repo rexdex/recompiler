@@ -8,7 +8,7 @@
 namespace tools
 {
 	class MemoryView;
-	class ImageMemoryView;
+	class TraceMemoryView;
 	class TraceInfoView;
 	class RegisterView;
 	class CallTreeView;
@@ -46,7 +46,7 @@ namespace tools
 		std::shared_ptr<ProjectImage> m_currentImage;
 
 		// current image disassembly
-		ImageMemoryView* m_disassemblyView;
+		TraceMemoryView* m_disassemblyView;
 		MemoryView* m_disassemblyPanel;
 
 		// ui refresh timer
@@ -86,6 +86,7 @@ namespace tools
 		void OnTraceSyncPos(wxCommandEvent& evt);
 		void OnCreateTimeMachine(wxCommandEvent& evt);
 		void OnToggleHexView(wxCommandEvent& evt);
+		void OnToggleGlobalStats(wxCommandEvent& evt);
 
 		void SyncImageView();
 		void SyncRegisterView();
@@ -95,6 +96,7 @@ namespace tools
 		void RefreshUI();
 
 		trace::RegDisplayFormat GetValueDisplayFormat() const;
+		bool GetGlobalStatsFlags() const;
 
 		bool OpenTimeMachine(const TraceFrameID id);
 

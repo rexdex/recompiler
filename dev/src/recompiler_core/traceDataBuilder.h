@@ -20,6 +20,7 @@ namespace trace
 		utils::big_vector<Context> m_contexts;
 		utils::big_vector<uint8_t> m_blob;
 		utils::big_vector<CallFrame> m_callFrames;
+		utils::big_vector<CodeTracePage> m_codeTracePages;
 
 	private:
 		virtual void StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name) override final;
@@ -78,8 +79,63 @@ namespace trace
 			}
 		};
 
+		struct CodeTraceBuilderPage
+		{
+			static const uint32_t NUM_ADDRESSES_PER_PAGE = trace::CodeTracePage::NUM_ADDRESSES_PER_PAGE;
+
+			uint64_t m_baseMemoryAddress;
+			std::vector<TraceFrameID> m_seqChain[NUM_ADDRESSES_PER_PAGE];
+
+			inline CodeTraceBuilderPage(uint64_t baseMemoryAddress)
+				: m_baseMemoryAddress(baseMemoryAddress)
+			{}
+
+			inline void RegisterAddress(const RawTraceFrame& rawFrame)
+			{
+				const auto offset = rawFrame.m_ip - m_baseMemoryAddress;
+				m_seqChain[offset].push_back(rawFrame.m_seq);
+			}
+		};
+
+		struct CodeTraceBuilder
+		{
+			std::unordered_map<uint64_t, CodeTraceBuilderPage*> m_pages;
+
+			inline ~CodeTraceBuilder()
+			{
+				for (auto it : m_pages)
+					delete it.second;
+			}
+
+			inline CodeTraceBuilderPage* GetPage(const uint64_t address)
+			{
+				// get top part of the address
+				const auto pageIndex = address / CodeTraceBuilderPage::NUM_ADDRESSES_PER_PAGE;
+
+				// find existing page with the data
+				const auto it = m_pages.find(pageIndex);
+				if (it != m_pages.end())
+					return (*it).second;
+
+				// create new page
+				auto* page = new CodeTraceBuilderPage(pageIndex * CodeTraceBuilderPage::NUM_ADDRESSES_PER_PAGE);
+				m_pages[pageIndex] = page;
+				return page;
+			}
+
+			inline void RegisterAddress(const RawTraceFrame& rawFrame)
+			{
+				if (rawFrame.m_ip)
+				{
+					auto* page = GetPage(rawFrame.m_ip);
+					page->RegisterAddress(rawFrame);
+				}
+			}
+		};
+
 		utils::big_vector<DeltaContext*> m_deltaContextData;
 		utils::big_vector<CallStackBuilder*> m_callstackBuilders;
+		utils::big_vector<CodeTraceBuilder*> m_codeTraceBuilders;
 
 		//--
 
@@ -110,6 +166,8 @@ namespace trace
 		// process frame and extract call stack
 		bool ExtractCallstackData(ILogOutput& log, CallStackBuilder& builder, const RawTraceFrame& frame, const uint32_t contextSeq);
 
+		// extract built code trace pages
+		void EmitCodeTracePages(const CodeTraceBuilder& codeTraceBuilder, uint32& outFirstCodePage, uint32& outNumCodePages);
 	};
 
 } // trace

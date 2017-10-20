@@ -1926,6 +1926,14 @@
 						<longhelp></longhelp>
 						<bitmap>icons/stepforward_world.png</bitmap>
 					</object>
+					<object class="separator" />
+					<object class="tool" name="toggleGlobalStats">
+						<label>Global stats</label>
+						<tooltip>Show global (not function-local) stats for various stuff</tooltip>
+						<longhelp></longhelp>
+						<bitmap>icons/world.png</bitmap>
+						<toggle>1</toggle>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -1956,18 +1964,6 @@
 										<style>wxTAB_TRAVERSAL</style>
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxEXPAND</flag>
-												<border>5</border>
-												<object class="wxToolBar" name="m_toolBar20">
-													<style>wxTB_HORIZONTAL</style>
-													<bitmapsize></bitmapsize>
-													<margins></margins>
-													<packing>1</packing>
-													<separation>5</separation>
-												</object>
-											</object>
 											<object class="sizeritem">
 												<option>1</option>
 												<flag>wxEXPAND | wxALL</flag>

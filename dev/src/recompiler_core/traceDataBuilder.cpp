@@ -4,8 +4,9 @@
 #include "decodingMemoryMap.h"
 #include "decodingInstruction.h"
 #include "decodingInstructionInfo.h"
+#include <algorithm>
 
-//#pragma optimize("",off)
+#pragma optimize("",off)
 
 namespace trace
 {
@@ -53,6 +54,9 @@ namespace trace
 
 		// create the call stack context
 		m_callstackBuilders.AllocAt(writerId) = new CallStackBuilder((uint32_t)callEntryIndex);
+
+		// create the context builder
+		m_codeTraceBuilders.AllocAt(writerId) = new CodeTraceBuilder();
 	}
 
 	void DataBuilder::EndContext(ILogOutput& log, const uint32 writerId, const uint64 ip, const TraceFrameID seq, const uint32 numFrames)
@@ -73,6 +77,11 @@ namespace trace
 			entry.m_leaveLocation = context.m_last;
 		}
 		callstackBuilder->m_callFrames.clear();
+
+		// emit the code trace data
+		auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
+		if (codeTraceBuilder)
+			EmitCodeTracePages(*codeTraceBuilder, context.m_firstCodePage, context.m_numCodePages);
 	}
 
 	void DataBuilder::ConsumeFrame(ILogOutput& log, const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame)
@@ -116,6 +125,10 @@ namespace trace
 		// extract call structure
 		auto* callstackBuilder = m_callstackBuilders[writerId];
 		ExtractCallstackData(log, *callstackBuilder, frame, deltaContext->m_localSeq);
+
+		// extract code horizontal trace
+		auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
+		codeTraceBuilder->RegisterAddress(frame);
 
 		// update local sequence number
 		deltaContext->m_prevSeq = seq;
@@ -376,6 +389,50 @@ namespace trace
 		// valid
 		return true;
 	}
+
+	void DataBuilder::EmitCodeTracePages(const CodeTraceBuilder& codeTraceBuilder, uint32& outFirstCodePage, uint32& outNumCodePages)
+	{
+		// get pages from map, we need sorted pages later
+		std::vector<const CodeTraceBuilderPage*> pages;
+		for (auto it : codeTraceBuilder.m_pages)
+			pages.push_back(it.second);
+
+		// sort pages by base address
+		std::sort(pages.begin(), pages.end(), [](const CodeTraceBuilderPage* a, const CodeTraceBuilderPage* b) { return a->m_baseMemoryAddress < b->m_baseMemoryAddress; });
+
+		// pack pages
+		outFirstCodePage = (uint32_t)m_codeTracePages.size();
+		for (const auto* page : pages)
+		{
+			// initialize page
+			CodeTracePage tracePage;
+			memset(&tracePage, 0, sizeof(tracePage));
+			tracePage.m_baseAddress = page->m_baseMemoryAddress;
+
+			// export address chains
+			for (uint32 i = 0; i < CodeTracePage::NUM_ADDRESSES_PER_PAGE; ++i)
+			{
+				const auto& seqChain = page->m_seqChain[i];
+				if (!seqChain.empty())
+				{
+					// write to blob (as everything else :P)
+					tracePage.m_dataOffsets[i] = m_blob.size();
+
+					// write count
+					WriteToBlob<uint32_t>((uint32_t)seqChain.size());
+
+					// write elements
+					auto sortedSeqChain = seqChain;
+					std::sort(sortedSeqChain.begin(), sortedSeqChain.end());
+					WriteToBlob(sortedSeqChain.data(), (uint32_t)(sortedSeqChain.size() * sizeof(sortedSeqChain[0])));
+				}
+			}
+
+			// write page data
+			m_codeTracePages.push_back(tracePage);
+		}
+		outNumCodePages = (uint32_t) m_codeTracePages.size() - outFirstCodePage;
+	}	
 
 	//--
 

@@ -936,13 +936,6 @@ namespace tools
 				bool drawCode = true;
 				bool drawHitCount = false;
 
-				// draw hit count only if enabled and nonzero
-				uint32 hitCount = 0;
-				if (m_style.m_drawHitCount && (numLinesDrawn == (numLines - 1)))
-				{
-					hitCount = m_view->GetAddressHitCount(memoryOffset);
-				}
-
 				// override the intial style if the first char is special
 				EDrawingStyle style = eDrawingStyle_Normal;
 				if (lineText[0] == ';')
@@ -1071,13 +1064,13 @@ namespace tools
 				}
 
 				// print address text
-				if (m_style.m_drawHitCount)
+				// NOTE: if entry is multi-line the hit count is drawn at the last entry
+				if (m_style.m_drawHitCount && (numLinesDrawn == (numLines - 1)))
 				{
-					if (hitCount)
+					char hitCountText[10];
+					if (m_view->GetAddressHitCount(memoryOffset, hitCountText))
 					{
-						char offsetText[10];
-						sprintf_s(offsetText, 10, "%u", hitCount);
-						dc.DrawText(offsetText, textX, textY);
+						dc.DrawText(hitCountText, textX, textY);
 					}
 				}
 
