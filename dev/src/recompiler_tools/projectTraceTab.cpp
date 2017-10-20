@@ -547,6 +547,53 @@ namespace tools
 				return true;
 			}
 
+			case NavigationType::HorizontalNext:
+			case NavigationType::HorizontalPrev:
+			{
+				// can we use current trace, if not recompute
+				auto it = std::find(m_horizontalTraceFrames.begin(), m_horizontalTraceFrames.end(), m_currentEntry);
+				if (it == m_horizontalTraceFrames.end())
+				{
+					const auto frame = m_data->GetFrame(m_currentEntry);
+					const auto& context = m_data->GetContextList()[frame.GetLocationInfo().m_contextId];
+
+					// get the code page matching the initial sequence point
+					const auto* codePage = m_data->GetCodeTracePage(m_currentEntry);
+					if (!codePage)
+						return false;
+
+					// get the list of sequence points
+					const auto codeAddress = m_data->GetFrame(m_currentEntry).GetAddress();
+					if (!m_data->GetCodeTracePageHorizonstalSlice(*codePage, m_currentEntry, context.m_first.m_seq, context.m_last.m_seq, codeAddress, m_horizontalTraceFrames))
+						return false;
+
+					// find again
+					it = std::find(m_horizontalTraceFrames.begin(), m_horizontalTraceFrames.end(), m_currentEntry);
+					if (it == m_horizontalTraceFrames.end())
+						return false;
+				}
+
+				// get next/previous
+				if (type == NavigationType::HorizontalNext)
+				{
+					++it;
+					if (it == m_horizontalTraceFrames.end())
+						return false;
+
+					const auto newSeq = *it;
+					return NavigateToFrame(newSeq);
+				}
+				else
+				{
+					if (it == m_horizontalTraceFrames.begin())
+						return false;
+
+					--it;
+					const auto newSeq = *it;
+					return NavigateToFrame(newSeq);
+				}	
+			}
+
 			case NavigationType::RunForward:
 			{
 				ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);

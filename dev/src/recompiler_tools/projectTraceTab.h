@@ -67,6 +67,9 @@ namespace tools
 		CallTreeView* m_callStackView;
 		CallTreeList* m_callTreeView;
 
+		// horizontal trace
+		std::vector<TraceFrameID> m_horizontalTraceFrames;
+
 		//--
 
 		void OnRefreshTimer(wxTimerEvent & evt);
