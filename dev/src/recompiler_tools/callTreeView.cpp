@@ -13,6 +13,7 @@ namespace tools
 		EVT_ERASE_BACKGROUND(CallTreeView::OnEraseBackground)
 		EVT_LEFT_DOWN(CallTreeView::OnMouseClick)
 		EVT_LEFT_UP(CallTreeView::OnMouseClick)
+		EVT_MOTION(CallTreeView::OnMouseClick)
 		EVT_MOUSEWHEEL(CallTreeView::OnMouseWheel)
 	END_EVENT_TABLE()
 
@@ -26,10 +27,12 @@ namespace tools
 		return wxColor(retR, retG, retB);
 	}
 
-	CallTreeView::CallTreeView(wxWindow* parent)
+	CallTreeView::CallTreeView(wxWindow* parent, ICallTreeViewNavigationHelper* navigator)
 		: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 		, m_data(nullptr)
 		, m_ticksPerPixel(1024)
+		, m_navigator(navigator)
+		, m_currentPosition(0)
 		, m_offset(0)
 	{
 		SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -79,8 +82,32 @@ namespace tools
 		utils::ClearPtr(m_groups);
 	}
 
+	void CallTreeView::EnsureVisible(const TraceFrameID seq)
+	{
+		const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+		const auto sizeX = GetClientSize().x;
+
+		const auto pos = (int)(seq / m_ticksPerPixel) - (int)scrollX;
+		if (pos < 50)
+		{
+			const auto delta = 50 - pos;
+			SetScrollPos(wxHORIZONTAL, scrollX - delta, true);
+		}
+		else if (pos > (sizeX-50))
+		{
+			const auto delta = pos - (sizeX - 50);
+			SetScrollPos(wxHORIZONTAL, scrollX + delta, true);
+		}
+	}
+
 	void CallTreeView::SetPosition(const TraceFrameID seq)
 	{
+		if (m_currentPosition != seq)
+		{
+			m_currentPosition = seq;
+			EnsureVisible(seq);
+			Refresh();
+		}
 	}
 
 	void CallTreeView::ExtractTraceData(trace::DataFile& data)
@@ -297,13 +324,13 @@ namespace tools
 		const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
 		const auto scrollY = this->GetScrollPos(wxVERTICAL);
 		const auto sizeX = GetClientSize().x;
-		const auto sizeY = GetClientSize().x;
+		const auto sizeY = GetClientSize().y;
 		const auto minPos = wxPoint(scrollX, scrollY);
 		const auto maxPos = wxPoint(scrollX+sizeX, scrollY+sizeY);
 
 		// draw background
 		{
-			wxBrush backgroundBrush(wxColor(40, 40, 40));
+			wxBrush backgroundBrush(wxColor(80, 80, 80), wxBRUSHSTYLE_SOLID);
 			dc.SetBrush(backgroundBrush);
 			dc.Clear();
 		}
@@ -354,6 +381,13 @@ namespace tools
 				}
 			}
 		}
+
+		// draw the current frame
+		{
+			auto pos = m_currentPosition / m_ticksPerPixel;
+			dc.SetPen(wxPen(wxColor(0, 0, 0), 3));
+			dc.DrawLine(pos, scrollY - 100, pos, scrollY + sizeY + 100);
+		}
 	}
 
 	void CallTreeView::OnEraseBackground(wxEraseEvent& evt)
@@ -362,7 +396,12 @@ namespace tools
 
 	void CallTreeView::OnMouseClick(wxMouseEvent& evt)
 	{
-
+		if (evt.LeftIsDown())
+		{
+			const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+			const uint64 pos = (scrollX + evt.GetPosition().x) * m_ticksPerPixel;
+			m_navigator->NavigateToFrame(pos);
+		}
 	}
 
 	void CallTreeView::ZoomOut(const uint64_t zoomCenterPos)

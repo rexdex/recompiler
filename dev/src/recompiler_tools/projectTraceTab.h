@@ -3,6 +3,7 @@
 #include "projectWindow.h"
 #include "projectMemoryView.h"
 #include "timeMachineView.h"
+#include "callTreeView.h"
 #include "../recompiler_core/traceUtils.h"
 
 namespace tools
@@ -14,7 +15,7 @@ namespace tools
 	class CallTreeView;
 
 	/// tab for the project trace 
-	class ProjectTraceTab : public ProjectTab, public IImageMemoryNavigationHelper, public ITimeMachineViewNavigationHelper
+	class ProjectTraceTab : public ProjectTab, public IImageMemoryNavigationHelper, public ITimeMachineViewNavigationHelper, public ICallTreeViewNavigationHelper
 	{
 		DECLARE_EVENT_TABLE();
 

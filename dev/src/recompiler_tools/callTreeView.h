@@ -14,13 +14,22 @@ namespace tools
 		Ticks,
 	};
 
+	// call tree navigation
+	class ICallTreeViewNavigationHelper
+	{
+	public:
+		virtual ~ICallTreeViewNavigationHelper() {};
+
+		virtual bool NavigateToFrame(const TraceFrameID id) = 0;
+	};
+
 	// call tree, displays call stack of the whole trace
 	class CallTreeView : public wxScrolledWindow
 	{
 		DECLARE_EVENT_TABLE();
 
 	public:
-		CallTreeView(wxWindow* parent);
+		CallTreeView(wxWindow* parent, ICallTreeViewNavigationHelper* navigator);
 		virtual ~CallTreeView();
 
 		/// clear all data
@@ -32,11 +41,17 @@ namespace tools
 		/// sync the cursor position
 		void SetPosition(const TraceFrameID seq);
 
+		/// ensure that given frame is visible
+		void EnsureVisible(const TraceFrameID seq);
+
 	private:
 		static const uint32 LINE_HEIGHT = 20;
 
+		uint64_t m_currentPosition;
 		uint64_t m_ticksPerPixel;
 		int64_t m_offset;
+
+		ICallTreeViewNavigationHelper* m_navigator;
 
 		trace::DataFile* m_data;
 

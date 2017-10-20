@@ -116,7 +116,7 @@ namespace tools
 		// callstack
 		{
 			auto* panel = XRCCTRL(*this, "HistoryPanel", wxPanel);
-			m_callStackView = new CallTreeView(panel);
+			m_callStackView = new CallTreeView(panel, this);
 			m_callStackView->ExtractTraceData(*m_data);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_callStackView, 1, wxEXPAND, 0);
@@ -462,6 +462,7 @@ namespace tools
 	{
 		const auto displayFormat = GetValueDisplayFormat();
 		m_traceInfoView->SetFrame(m_currentEntry, displayFormat);
+		m_callStackView->SetPosition(m_currentEntry);
 	}
 
 } // tools
