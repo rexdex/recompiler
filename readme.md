@@ -8,17 +8,17 @@ The idea is simple: *what if you could take the Xbox360 game and run it on your 
 
 - **Memory Layout** - Xbox360 uses BigEndian byte ordering, x86 CPUs use LittleEndian. To be compatible with incoming data that is being read from files and read/written into the memory all memory based operands must be byteswapped. This may pose a significant performance issue.
 
-- **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some cleaver guys in Russia though that figured how :)
+- **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some clever guys in Russia though that figured how :)
 
-- **Different and outdated GPU architecture** - If we want to see any graphics rendered the GPU needs to be emulated. Ther are two hard nuts to crack: first, the shaders we see will be complied into the GPU compatible format, no HLSL on input, sorry. Those shaders will have to be reverse engineered as well. Secondly, the Xbox360 GPU was using ~10MB of internal memory called EDRAM that was serving as a temporary storage of render target for the duration of rendering. Although some card today still use similar concept this is never exposed directly to the user. Since there a lot of differnt ways people used the EDRAM on Xbox this part has to be emulated. To be honest probably differently for every game.
+- **Different and outdated GPU architecture** - If we want to see any graphics rendered the GPU needs to be emulated. There are two hard nuts to crack: first, the shaders we see will be complied into the GPU compatible format, no HLSL on input, sorry. Those shaders will have to be reverse engineered as well. Secondly, the Xbox360 GPU was using ~10MB of internal memory called EDRAM that was serving as a temporary storage of render target for the duration of rendering. Although some cards today still use similar concept this is never exposed directly to the user. Since there is a lot of differnet ways people used the EDRAM on Xbox this part has to be emulated. To be honest probably differently for every game.
 
-- **Inlining of graphics/kernel functions** - Some of the functions used while compiling the executable were inlined directly into the compiled code making it much harder to write a simple API level wrapper. This kills the dream of making "function level" wrapper where we could just go and wrap the "d3d->DrawPrimitive" call directly. Nope, this is not going ot happen.
+- **Inlining of graphics/kernel functions** - Some of the functions used while compiling the executable were inlined directly into the compiled code making it much harder to write a simple API level wrapper. This kills the dream of making "function level" wrapper where we could just go and wrap the "d3d->DrawPrimitive" call directly. Nope, this is not going to happen.
 
-Forunatelly, every problem is solvable and the answard is ***YES*** in principle. If you want to know how, keep reading :)
+Fortunately, every problem is solvable and the answer is ***YES*** in principle. If you want to know how, keep reading :)
 
 ## Current state of the project
 
-Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet attempted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcace content or pirated game. Xbox360 is not yet abandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
+Currently the published branch of the project allows to run simple Xbox360 demo apps (samples). I've not yet attempted to run it with any real game as it probably would not work with anything big and serious. Also, on the legal side, this is a fine line because getting anything bigger is tricky as it requires going basically to the Torrent Sites and digging through old Xbox Live Arcade content or pirated game. Xbox360 is not yet abandonware :) For the same reason there are no source executables given, you need to get one "from somewhere". Sorry :(
 
 Stuff currently implemented:
 
@@ -27,7 +27,7 @@ Stuff currently implemented:
 + XEX image loading, decryption and decompression
 + PowerPC instruction disassembly 
 + Program blocks reconstruction
-+ Generation C++ equivalent code for whole executable ("recompilation")
++ Generation of C++ equivalent code for whole executable ("recompilation")
 + 96% of PowerPC CPU instructions implemented
  
 ***Runtime*** (host):
@@ -117,7 +117,7 @@ Any way, after dealing with those two bumps on the road and unpacking the "inter
 .reloc   0x002A0200-0x002B2EF4 r__
 ```
 
-The only section that contains executable code is the .text section and only that section requires disassembly. Rest of the sections must still be loaded into the memory when we try to execute the code since data may be read/written into those addresses. For now I did not implement any data relocation so the unpacked image must be loaded exactly under it's base address. Fortunatelly on 64-bit systems this is achievable fairly easy.
+The only section that contains executable code is the .text section and only that section requires disassembly. Rest of the sections must still be loaded into the memory when we try to execute the code since data may be read/written into those addresses. For now I did not implement any data relocation so the unpacked image must be loaded exactly under it's base address. Fortunately on 64-bit systems this is achievable fairly easily.
 
 ## Disassembly
 
@@ -125,11 +125,11 @@ Disassembling the PowerPC instructions is a pleasure. After we identify the .tex
 
 Basically in this project I've tried 3 ways to approach the subject:
 
-- Script based (for faster iteration) - I've written a LUA script that was doing the disassembly. It was fast to iterate in small samples but very slow to run and disassemble milions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way too much time.
+- Script based (for faster iteration) - I've written a Lua script that was doing the disassembly. It was fast to iterate in small samples but very slow to run and disassemble milions of instructions in normal executables was taking minutes. Even to check if an instruction is valid instruction was taking way too much time.
 
-- Data driven pattern matching - Basically an big XML with binary "rules" that were matching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "metadata" out of the code (like register dependnecies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just it's name. So, the template-based diassembler was producing an instruction named "bc" but I still had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
+- Data driven pattern matching - Basically a big XML with binary "rules" that were matching bit patterns and emitting instructions. This was much faster but because of the corner cases in the PowerPC instruction encoding it got messy in the end and required me to do a lot of copy-pasting. Performance wise it was fast and could work if not for a one little detail: it's not enough just to disassemble the code, we still need to extract some "metadata" out of the code (like register dependnecies, calculated jump addresses, etc). This still requires us to know a little bit about the instruction that just it's name. So, the template-based diassembler was producing an instruction named "bc" but I still had to write manual code to understand that it's a "conditional branch" and even more code to be able to evaluate this condition.
 
-- Finally I ended up with an abstract CPUInstruction class that is implemented for every instruction that CPU implements + a big ass C++ switch() to do the disassemblly. This is actually very nice and maintaintable solution.
+- Finally I ended up with an abstract CPUInstruction class that is implemented for every instruction that CPU implements + a big ass C++ switch() to do the disassembly. This is actually very nice and maintaintable solution.
 
 The ***biggest*** and most valuable resources on this topic were the official PowerPC instruction set documentation: [Power ISA Version 2.07](http://fileadmin.cs.lth.se/cs/education/EDAN25/PowerISA_V2.07_PUBLIC.pdf)
 
@@ -139,7 +139,7 @@ I had lots of bugs in the disassembler. Of course I could write an unit test for
 
 ## XBox360 specific instructions
 
-Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similary to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delegated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunatelly, the opcodes for those special instructions are not avaiable on the internet (or are buried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like this:
+Xbox360 has a special version of the PowerPC CPU that has 128 VMX registers (instead of 32 ones in the standard CPU). Those registers are used for vectorized math operations (similar to SSE). There's no way to address 128 registers in normal PowerPC instructions because there are only 5 bits delegated to indicate the register index in every instruction and this pattern is CPU-wide. Unfortunately, the opcodes for those special instructions are not avaiable on the internet (or are buried deeply). I ended up reversing the opcodes manually by observing the bit patters in the generated listing files. There's a simple tool I've wrote for that [XPrint](https://github.com/rexdex/recompiler/blob/master/dev/tools/xprint/XOpPrint.cpp). Typical output of a decoded instruction bit pattern looks like this:
 
 ```
 Instruction 'vxor128' (3 params)
