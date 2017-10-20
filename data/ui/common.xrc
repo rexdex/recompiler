@@ -1935,7 +1935,7 @@
 				<object class="wxSplitterWindow" name="Splitter1">
 					<style>wxSP_3D</style>
 					<sashpos>0</sashpos>
-					<gravity>1</gravity>
+					<gravity>0.7</gravity>
 					<minsize>0</minsize>
 					<orientation>horizontal</orientation>
 					<object class="wxPanel" name="m_panel31">

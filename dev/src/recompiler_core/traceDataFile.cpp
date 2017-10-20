@@ -341,7 +341,7 @@ namespace trace
 		{
 			log.SetTaskName("Loading call frames...");
 			auto& info = header.m_chunks[CHUNK_CALL_FRAMES];
-			if (!ReadDataChunk(log, file, ret->m_dataBlob, info.m_dataOffset, info.m_dataSize))
+			if (!ReadDataChunk(log, file, ret->m_callFrames, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
 

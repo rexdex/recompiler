@@ -49,6 +49,7 @@ namespace trace
 		callFrame.m_enterLocation = context.m_first;
 		callFrame.m_parentFrame = 0;
 		const auto callEntryIndex = m_callFrames.push_back(callFrame);
+		context.m_rootCallFrame = (uint32_t)callEntryIndex;
 
 		// create the call stack context
 		m_callstackBuilders.AllocAt(writerId) = new CallStackBuilder((uint32_t)callEntryIndex);
@@ -274,8 +275,8 @@ namespace trace
 		{
 			auto& lastChildFrame = m_callFrames[builder.m_lastChildFrames[topFrameIndex]];
 			lastChildFrame.m_nextChildFrame = (uint32_t)callEntryIndex;
-			builder.m_lastChildFrames[topFrameIndex] = (uint32_t)callEntryIndex;
 		}
+		builder.m_lastChildFrames[topFrameIndex] = (uint32_t)callEntryIndex;
 	}
 
 	bool DataBuilder::ExtractCallstackData(ILogOutput& log, CallStackBuilder& builder, const RawTraceFrame& frame, const uint32_t contextSeq)

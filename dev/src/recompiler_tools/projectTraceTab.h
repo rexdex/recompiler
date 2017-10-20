@@ -11,6 +11,7 @@ namespace tools
 	class ImageMemoryView;
 	class TraceInfoView;
 	class RegisterView;
+	class CallTreeView;
 
 	/// tab for the project trace 
 	class ProjectTraceTab : public ProjectTab, public IImageMemoryNavigationHelper, public ITimeMachineViewNavigationHelper
@@ -62,6 +63,9 @@ namespace tools
 
 		// time machine tabs
 		wxAuiNotebook* m_timeMachineTabs;
+
+		// call stack view
+		CallTreeView* m_callStackView;
 
 		//--
 

@@ -11,6 +11,7 @@
 #include "../recompiler_core/image.h"
 #include "../recompiler_core/traceDataFile.h"
 #include "registerView.h"
+#include "callTreeView.h"
 
 #pragma optimize ("",off)
 
@@ -44,6 +45,7 @@ namespace tools
 		, m_refreshTimer(this)
 		, m_traceInfoView(nullptr)
 		, m_timeMachineTabs(nullptr)
+		, m_callStackView(nullptr)
 	{
 		// load the ui
 		wxXmlResource::Get()->LoadPanel(this, tabs, wxT("TraceTab"));
@@ -108,7 +110,16 @@ namespace tools
 				view->InitializeRegisters(*m_data->GetCPU(), platform::CPURegisterType::Wide);
 				tabs->AddPage(view, "Wide");
 				m_registerViews.push_back(view);
-			}			
+			}
+		}
+
+		// callstack
+		{
+			auto* panel = XRCCTRL(*this, "HistoryPanel", wxPanel);
+			m_callStackView = new CallTreeView(panel);
+			m_callStackView->ExtractTraceData(*m_data);
+			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+			panel->GetSizer()->Add(m_callStackView, 1, wxEXPAND, 0);
 		}
 	}
 

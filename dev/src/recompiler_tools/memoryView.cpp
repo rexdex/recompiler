@@ -1,4 +1,3 @@
-this
 #include "build.h"
 #include "memoryView.h"
 #include "progressDialog.h"

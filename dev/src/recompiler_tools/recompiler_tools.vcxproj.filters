@@ -98,6 +98,9 @@
     <ClCompile Include="treelistctrl.cpp">
       <Filter>widgets\treelist</Filter>
     </ClCompile>
+    <ClCompile Include="callTreeView.cpp">
+      <Filter>widgets\calltree</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build.h" />
@@ -198,6 +201,9 @@
     <ClInclude Include="treelistctrl.h">
       <Filter>widgets\treelist</Filter>
     </ClInclude>
+    <ClInclude Include="callTreeView.h">
+      <Filter>widgets\calltree</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="app">
@@ -271,6 +277,9 @@
     </Filter>
     <Filter Include="widgets\canvas">
       <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\calltree">
+      <UniqueIdentifier>{a31bbdf8-2841-4e95-80af-b22466d91785}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
