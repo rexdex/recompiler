@@ -92,7 +92,7 @@ namespace runtime
 		}
 
 		// determine range of valid code
-		uint64 minCodeAddress = imageInfo->m_entryAddress;
+		uint64 minCodeAddress = imageInfo->m_imageLoadAddress;
 		uint64 maxCodeAddress = imageInfo->m_entryAddress;
 		for (uint32 i = 0; i < imageInfo->m_numBlocks; ++i)
 		{
