@@ -9,7 +9,7 @@ namespace tools
 	class TraceMemoryView : public ImageMemoryView
 	{
 	public:
-		TraceMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator, trace::DataFile& traceData);
+		TraceMemoryView(const std::shared_ptr<Project>& project, const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator, trace::DataFile& traceData);
 		virtual ~TraceMemoryView();
 
 		// set active trace sequence frame
@@ -17,8 +17,10 @@ namespace tools
 
 	private:
 		virtual bool GetAddressHitCount(const uint32 offset, char* outHitCountText) const override;
+		virtual bool GetAddressMarkers(const uint32 offset, uint32& outMarkers, uint32& outLineOffset) const override;
 
 		TraceFrameID m_seq;
+		uint64 m_codeAddress;
 
 		TraceFrameID m_functionMinSeq;
 		TraceFrameID m_functionMaxSeq;

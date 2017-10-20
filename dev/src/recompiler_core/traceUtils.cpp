@@ -129,6 +129,24 @@ namespace trace
 		if (frame.GetType() != FrameType::CpuInstruction)
 			return "-";
 
+		// get the data placement
+		const auto* rootReg = reg;
+		while (rootReg->GetParent())
+			rootReg = rootReg->GetParent();
+
+		// get data
+		const auto* rawData = frame.GetRegData(rootReg);
+		if (!rawData)
+			return std::string();
+
+		// format
+		return GetRegisterValueText(reg, rawData, requestedFormat);
+	}
+
+	std::string GetRegisterValueText(const platform::CPURegister* reg, const void* rawDataPtr, const RegDisplayFormat requestedFormat /*= RegDisplayFormat::Auto*/)
+	{
+		auto* rawData = (const uint8_t*)rawDataPtr;
+
 		// change format if required
 		auto format = (requestedFormat == RegDisplayFormat::Auto) ? GetBestFormat(reg) : requestedFormat;
 
@@ -141,11 +159,6 @@ namespace trace
 			bitOffset += rootReg->GetParent()->GetBitOffset();
 			rootReg = rootReg->GetParent();
 		}
-
-		// get data
-		const auto* rawData = frame.GetRegData(rootReg);
-		if (!rawData)
-			return std::string();
 
 		// apply bit offset
 		const auto numBytes = bitSize / 8;

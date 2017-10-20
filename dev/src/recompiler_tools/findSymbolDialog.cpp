@@ -16,11 +16,11 @@ namespace tools
 		EVT_LIST_ITEM_SELECTED(XRCID("SymbolList"), FindSymbolDialog::OnListSelected)
 		EVT_LIST_ITEM_ACTIVATED(XRCID("SymbolList"), FindSymbolDialog::OnListActivated)
 		EVT_TIMER(12345, FindSymbolDialog::OnTimer)
-		END_EVENT_TABLE()
+	END_EVENT_TABLE()
 
-		wxString CFindSymbolDialogFilter;
+	wxString CFindSymbolDialogFilter;
 
-	FindSymbolDialog::FindSymbolDialog(decoding::Environment& env, wxWindow* parent)
+	FindSymbolDialog::FindSymbolDialog(const decoding::Environment& env, wxWindow* parent)
 		: m_updateTimer(this, 12345)
 		, m_env(&env)
 	{
@@ -39,6 +39,9 @@ namespace tools
 		m_symbolName->Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(FindSymbolDialog::OnTextKeyEvent), NULL, this);
 		m_symbolName->SetValue(CFindSymbolDialogFilter);
 		m_symbolName->SelectAll();
+
+		// focus on the text
+		m_symbolName->SetFocus();
 
 		// refresh list
 		UpdateSymbolList();

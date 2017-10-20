@@ -110,12 +110,9 @@ namespace tools
 
 	void CallTreeView::SetPosition(const TraceFrameID seq)
 	{
-		if (m_currentPosition != seq)
-		{
-			m_currentPosition = seq;
-			EnsureVisible(seq);
-			Refresh();
-		}
+		m_currentPosition = seq;
+		EnsureVisible(seq);
+		Refresh();
 	}
 
 	void CallTreeView::ExtractTraceData(trace::DataFile& data)

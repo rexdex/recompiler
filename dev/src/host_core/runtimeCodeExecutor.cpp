@@ -20,13 +20,13 @@ namespace runtime
 
 	bool CodeExecutor::RunPure()
 	{
-		auto register shiftedCodeTable = m_code->GetCodeTable() - m_code->GetCodeStartAddress();
+		auto register shiftedCodeTable = m_code->GetCodeTable();
 		auto register ip = m_ip;
 		auto register counter = 1000;
 
 		while (ip && counter--)
 		{
-			const auto func = shiftedCodeTable[ip];
+			const auto func = shiftedCodeTable[ip - m_code->GetCodeStartAddress()];
 			ip = func(ip, *m_regs);
 		}
 

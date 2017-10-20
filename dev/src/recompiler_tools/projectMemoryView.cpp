@@ -17,8 +17,9 @@
 
 namespace tools
 {
-	ImageMemoryView::ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator)
+	ImageMemoryView::ImageMemoryView(const std::shared_ptr<Project>& project, const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator)
 		: m_projectImage(projectImage)
+		, m_project(project)
 		, m_imageData(projectImage->GetEnvironment().GetImage().get())
 		, m_decodingContext(projectImage->GetEnvironment().GetDecodingContext())
 		, m_navigator(navigator)
@@ -130,15 +131,13 @@ namespace tools
 
 	bool ImageMemoryView::GetAddressMarkers(const uint32 address, uint32& outMarkers, uint32& outLineOffset) const
 	{
-		const decoding::MemoryFlags flags = m_decodingContext->GetMemoryMap().GetMemoryInfo(m_base + address);
-
-		// visited code marker
-		if (flags.IsExecutable() && flags.WasVisited())
-			outMarkers |= 1;
+		const auto absoluteAddress = m_base + address;
+		const decoding::MemoryFlags flags = m_decodingContext->GetMemoryMap().GetMemoryInfo(absoluteAddress);
 
 		// breakpoint marker
-		if (flags.HasBreakpoint())
-			outMarkers |= 2;
+		const bool hasBreakpoint = m_project->GetBreakpoints().HasBreakpoint(absoluteAddress);
+		if (hasBreakpoint)
+			outMarkers |= (1 << 0);// eDrawingMarker_Breakpoint);
 
 		// draw markers
 		return true;
@@ -509,56 +508,6 @@ namespace tools
 		
 		// done
 		return true;
-	}
-
-	bool ImageMemoryView::Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift)
-	{
-		// no range
-		if (startOffset == endOffset)
-			return false;
-
-		// get the source section of the image
-		const image::Section* section = m_imageData->FindSectionForOffset(startOffset);
-		if (section == nullptr || section != m_imageData->FindSectionForOffset(endOffset - 1))
-			return false;
-		
-		// calculate start and ending address
-		const uint32 startAddress = m_imageData->GetBaseAddress() + startOffset;
-		const uint32 endAddress = m_imageData->GetBaseAddress() + endOffset;
-
-		// back navigation?
-		if (bShift)
-		{
-			std::vector<uint64> sourceAddresses;
-			m_decodingContext->GetAddressMap().GetAddressReferencers(startAddress, sourceAddresses);
-
-			if (sourceAddresses.size() > 1)
-			{
-				wxMenu menu;
-
-				for (uint32 i = 0; i < sourceAddresses.size(); ++i)
-				{
-					const auto menuId = 16000 + i;
-					menu.Append(16000 + i, wxString::Format("0x%08llx", sourceAddresses[i]));
-				}
-
-				menu.Bind(wxEVT_MENU, [this, sourceAddresses](const wxCommandEvent& evt)
-				{
-					const auto it = evt.GetId() - 16000;
-					return m_navigator->NavigateToAddress(sourceAddresses[it], true);
-				});
-
-				view->PopupMenu(&menu);
-			}
-		}
-		else
-		{
-			const uint32 branchTargetAddress = m_decodingContext->GetAddressMap().GetReferencedAddress(startAddress);
-			if (branchTargetAddress)
-				return m_navigator->NavigateToAddress(branchTargetAddress, true);
-		}
-
-		return false;
 	}
 
 	bool ImageMemoryView::Navigate(class MemoryView* view, const NavigationType type)

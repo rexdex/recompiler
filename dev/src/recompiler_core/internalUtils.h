@@ -184,6 +184,9 @@ extern RECOMPILER_API std::wstring GetAppDirectoryPath();
 /// Get magic file path
 extern RECOMPILER_API std::wstring GetFileNameID(const int index);
 
+/// Extract file name path
+extern RECOMPILER_API std::wstring GetFileName(const std::wstring& path);
+
 //---------------------------------------------------------------------------
 
 // convert ansi to unicode

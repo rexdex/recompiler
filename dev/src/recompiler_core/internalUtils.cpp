@@ -5,6 +5,7 @@
 #if defined(_WIN64) || defined(_WIN32)
 	#include <Windows.h>
 #endif
+#include <algorithm>
 
 //---------------------------------------------------------------------------
 
@@ -731,6 +732,15 @@ std::wstring GetFileNameID(const int index)
 	static wchar_t tempPath[MAX_PATH];
 	swprintf_s(tempPath, L"%d", index);
 	return tempPath;
+}
+
+std::wstring GetFileName(const std::wstring& path)
+{
+	const auto* part = std::max<const wchar_t*>(wcsrchr(path.c_str(), '/'), wcsrchr(path.c_str(), '\\'));
+	if (!part)
+		return path;
+
+	return part + 1;
 }
 
 //---------------------------------------------------------------------------

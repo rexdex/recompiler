@@ -96,6 +96,7 @@ namespace tools
 {
 	class Project;
 	class ProjectImage;
+	class MemoryView;
 
 	enum class ValueViewMode
 	{
@@ -120,7 +121,21 @@ namespace tools
 		GlobalStepBack,
 		GlobalStepIn,
 
-		Back,
+		HorizontalPrev,
+		HorizontalNext,
+
+		ToggleBreakpoint,
+		RunForward,
+		RunBackward,
+
+		SyncPos, 
+
+		HistoryBack,
+		HistoryForward,
+
+		Follow,
+		ReverseFollow,
+
 		Advance,
 	};
 
@@ -130,6 +145,8 @@ namespace tools
 	public:
 		virtual ~INavigationHelper() {};
 
+		virtual std::shared_ptr<ProjectImage> GetCurrentImage() { return nullptr; }
+		virtual MemoryView* GetCurrentMemoryView() { return nullptr; }
 		virtual bool NavigateToFrame(const TraceFrameID id) { return false; };
 		virtual bool NavigateToAddress(const uint64 id, const bool addToHistory) { return false; };
 		virtual bool Navigate(const NavigationType type) { return false; };

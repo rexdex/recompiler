@@ -111,6 +111,7 @@
     <ClCompile Include="progressDialog.cpp" />
     <ClCompile Include="project.cpp" />
     <ClCompile Include="projectMemoryView.cpp" />
+    <ClCompile Include="horizontalView.cpp" />
     <ClCompile Include="registerView.cpp" />
     <ClCompile Include="startWindow.cpp" />
     <ClCompile Include="timeMachineView.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="progressDialog.h" />
     <ClInclude Include="project.h" />
     <ClInclude Include="projectMemoryView.h" />
+    <ClInclude Include="horizontalView.h" />
     <ClInclude Include="registerView.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="startWindow.h" />

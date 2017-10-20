@@ -47,6 +47,9 @@ namespace trace
 	extern RECOMPILER_API double GetRegisterValueFloat(const platform::CPURegister* reg, const DataFrame& frame);
 
 	// get printable register value
+	extern RECOMPILER_API std::string GetRegisterValueText(const platform::CPURegister* reg, const void* data, const RegDisplayFormat format = RegDisplayFormat::Auto);
+
+	// get printable register value
 	extern RECOMPILER_API std::string GetRegisterValueText(const platform::CPURegister* reg, const DataFrame& frame, const RegDisplayFormat format = RegDisplayFormat::Auto);
 
 	//---------------------------------------------------------------------------

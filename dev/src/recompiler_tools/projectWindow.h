@@ -77,11 +77,37 @@ namespace tools
 		void OnExitApp(wxCommandEvent& event);
 		void OnOpenLog(wxCommandEvent& event);
 
+		void OnFindSymbol(wxCommandEvent& evt);
+		void OnGoToAddress(wxCommandEvent& evt);
+
+		void OnImageHistoryNext(wxCommandEvent& evt);
+		void OnImageHistoryPrevious(wxCommandEvent& evt);
+		void OnImageFollowAddress(wxCommandEvent& evt);
+		void OnImageUnfollowAddress(wxCommandEvent& evt);
+
+		void OnTraceHorizontalPrev(wxCommandEvent& evt);
+		void OnTraceHorizontalNext(wxCommandEvent& evt);
+		void OnTraceToLocalStart(wxCommandEvent& evt);
+		void OnTraceToLocalEnd(wxCommandEvent& evt);
+		void OnTraceToGlobalStart(wxCommandEvent& evt);
+		void OnTraceToGlobalEnd(wxCommandEvent& evt);
+		void OnTraceFreeRunForward(wxCommandEvent& evt);
+		void OnTraceFreeRunBackward(wxCommandEvent& evt);
+		void OnTraceToggleBreakpoint(wxCommandEvent& evt);
+		void OnTraceGlobalPrev(wxCommandEvent& evt);
+		void OnTraceLocalPrev(wxCommandEvent& evt);
+		void OnTraceLocalNext(wxCommandEvent& evt);
+		void OnTraceGlobalNext(wxCommandEvent& evt);
+		void OnTraceSyncPos(wxCommandEvent& evt);
+
 		void CreateLayout();
 		void UpdateUI();
 
 		void ToggleCommand(const unsigned int id, const bool state);
 		void EnableCommand(const unsigned int id, const bool state);
+
+		INavigationHelper* GetNavigatorHelperForCurrentTab();
+		bool NavigateCurrentTab(const NavigationType type);
 		
 		//---
 

@@ -54,9 +54,6 @@ namespace tools
 		//! Show context memory for given line range
 		virtual bool ShowContextMenu(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const wxPoint& point) { return false; }
 
-		//! Activate selection (enter key)
-		virtual bool Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift) { return false; }
-
 		//! Navigate back
 		virtual bool Navigate(class MemoryView* view, const NavigationType navigatinType) { return false; }
 
@@ -227,104 +224,6 @@ namespace tools
 	{
 		DECLARE_EVENT_TABLE();
 
-		friend class CMemoryViewContext;
-
-	protected:
-		//! The view on the memory
-		IMemoryDataView*			m_view;
-
-		//! Range of memory represented
-		int							m_startOffset;
-		int							m_endOffset;
-
-		//! First visible line in the current block and first visible memory offect (current)
-		int							m_firstVisibleLine;
-
-		//! Range of selected offsets (in lines)
-		int							m_selectionStart;
-		int							m_selectionEnd;
-
-		//! Line allocator
-		MemoryLineAllocator		m_lineAllocator;
-
-		//! Memory <-> Line mapping
-		LineMemoryMapping			m_lineMapping;
-
-		//! Cache for lines
-		MemoryLineCache			m_lineCache;
-
-		//! Last selection cursor offset
-		uint32						m_selectionCursorOffset;
-
-		//! Highlighted address (not selection)
-		uint32						m_highlightedOffset;
-
-		//! Mouse modes
-		bool						m_selectionDragMode;
-		bool						m_contextMenuMode;
-
-		//! Drawing styles
-		enum EDrawingStyle
-		{
-			eDrawingStyle_Normal,
-			eDrawingStyle_Comment,
-			eDrawingStyle_Error,
-			eDrawingStyle_Label,
-			eDrawingStyle_Address,
-			eDrawingStyle_Validation,
-			eDrawingStyle_String,
-
-			eDrawingStyle_MAX,
-		};
-
-		//! Drawing modes
-		enum EDrawingMode
-		{
-			eDrawingMode_Normal,
-			eDrawingMode_Highlighted,
-			eDrawingMode_Selected,
-
-			eDrawingMode_MAX,
-		};
-
-		//! Line markers
-		enum EDrawingMarkers
-		{
-			eDrawingMarker_Visited,
-			eDrawingMarker_Breakpoint,
-
-			eDrawingMarker_MAX,
-		};
-
-		//! Drawing style
-		struct DrawingStyle
-		{
-			wxFont		m_font;
-			wxBrush		m_backBrush[eDrawingStyle_MAX][eDrawingMode_MAX];
-			wxPen		m_backPen[eDrawingStyle_MAX][eDrawingMode_MAX];
-			wxPen		m_textPen[eDrawingStyle_MAX][eDrawingMode_MAX];
-
-			wxBrush		m_markerBrush[eDrawingMarker_MAX];
-			wxPen		m_markerPens[eDrawingMarker_MAX];
-
-			uint32		m_lineHeight;
-			uint32		m_lineSeparation;
-			uint32		m_addressOffset;
-			uint32		m_hitcountSize;
-			uint32		m_dataOffset;
-			uint32		m_textOffset;
-
-			uint32		m_markerWidth;
-			uint32		m_tabSize;
-
-			bool		m_drawHitCount;
-
-			DrawingStyle();
-		};
-
-		//! Drawing style data
-		DrawingStyle		m_style;
-
 	public:
 		MemoryView(wxWindow* parent);
 		virtual ~MemoryView();
@@ -387,10 +286,8 @@ namespace tools
 		//! find line at given pixel coordinates
 		int GetLineAtPixel(const wxPoint& point) const;
 
-		//! Navigate to selection (enter key pressed)
-		void NavigateSelection();
+		//---
 
-	private:
 		void OnMouseDown(wxMouseEvent& event);
 		void OnMouseUp(wxMouseEvent& event);
 		void OnMouseMove(wxMouseEvent& event);
@@ -403,12 +300,107 @@ namespace tools
 		void OnSize(wxSizeEvent& event);
 		void OnCaptureLost(wxMouseCaptureLostEvent& event);
 
-		void OnContextMenu(wxCommandEvent& context);
+		//---
 
-		void OnMarkCode(wxCommandEvent& event);
-
-	private:
 		virtual void OnSyncUpdate();
+
+		//---
+
+		//! The view on the memory
+		IMemoryDataView*			m_view;
+
+		//! Range of memory represented
+		int							m_startOffset;
+		int							m_endOffset;
+
+		//! First visible line in the current block and first visible memory offect (current)
+		int							m_firstVisibleLine;
+
+		//! Range of selected offsets (in lines)
+		int							m_selectionStart;
+		int							m_selectionEnd;
+
+		//! Line allocator
+		MemoryLineAllocator		m_lineAllocator;
+
+		//! Memory <-> Line mapping
+		LineMemoryMapping			m_lineMapping;
+
+		//! Cache for lines
+		MemoryLineCache			m_lineCache;
+
+		//! Last selection cursor offset
+		uint32						m_selectionCursorOffset;
+
+		//! Highlighted address (not selection)
+		uint32						m_highlightedOffset;
+
+		//! Mouse modes
+		bool						m_selectionDragMode;
+		bool						m_contextMenuMode;
+
+		//! Drawing styles
+		enum EDrawingStyle
+		{
+			eDrawingStyle_Normal,
+			eDrawingStyle_Comment,
+			eDrawingStyle_Error,
+			eDrawingStyle_Label,
+			eDrawingStyle_Address,
+			eDrawingStyle_Validation,
+			eDrawingStyle_String,
+
+			eDrawingStyle_MAX,
+		};
+
+		//! Drawing modes
+		enum EDrawingMode
+		{
+			eDrawingMode_Normal,
+			eDrawingMode_Highlighted,
+			eDrawingMode_Selected,
+
+			eDrawingMode_MAX,
+		};
+
+		//! Line markers
+		enum EDrawingMarkers
+		{
+			eDrawingMarker_Breakpoint,
+			eDrawingMarker_TraceCurrent,
+			eDrawingMarker_Visited,
+
+			eDrawingMarker_MAX,
+		};
+
+		//! Drawing style
+		struct DrawingStyle
+		{
+			wxFont		m_font;
+			wxBrush		m_backBrush[eDrawingStyle_MAX][eDrawingMode_MAX];
+			wxPen		m_backPen[eDrawingStyle_MAX][eDrawingMode_MAX];
+			wxPen		m_textPen[eDrawingStyle_MAX][eDrawingMode_MAX];
+
+			wxBrush		m_markerBrush[eDrawingMarker_MAX];
+			wxPen		m_markerPens[eDrawingMarker_MAX];
+
+			uint32		m_lineHeight;
+			uint32		m_lineSeparation;
+			uint32		m_addressOffset;
+			uint32		m_hitcountSize;
+			uint32		m_dataOffset;
+			uint32		m_textOffset;
+
+			uint32		m_markerWidth;
+			uint32		m_tabSize;
+
+			bool		m_drawHitCount;
+
+			DrawingStyle();
+		};
+
+		//! Drawing style data
+		DrawingStyle		m_style;
 	};
 
 } // tools

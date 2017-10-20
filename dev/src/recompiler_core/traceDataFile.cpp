@@ -3,9 +3,8 @@
 #include "platformCPU.h"
 #include "traceRawReader.h"
 #include "traceDataBuilder.h"
+#include "internalUtils.h"
 #include <algorithm>
-
-#pragma optimize("",off)
 
 namespace trace
 {
@@ -24,8 +23,31 @@ namespace trace
 		if (m_type != FrameType::CpuInstruction)
 			return nullptr;
 
+		while (reg->GetParent())
+			reg = reg->GetParent();
+
 		const auto dataOffset = reg ? reg->GetTraceDataOffset() : -1;
 		return (dataOffset != -1) ? (m_data.data() + dataOffset) : nullptr;
+	}
+
+	const bool DataFrame::GetRegData(const platform::CPURegister* reg, const size_t bufferSize, void* outData) const
+	{
+		if (m_type != FrameType::CpuInstruction)
+			return false;
+
+		while (reg->GetParent())
+			reg = reg->GetParent();
+
+		const auto dataOffset = reg ? reg->GetTraceDataOffset() : -1;
+		if (dataOffset == -1)
+			return false;
+
+		const auto dataSize = std::max<uint32>(1, reg->GetBitSize() / 8);
+		if (bufferSize < dataSize)
+			return false;
+
+		memcpy(outData, m_data.data() + dataOffset, dataSize);
+		return true;
 	}
 
 	//---
@@ -63,6 +85,122 @@ namespace trace
 
 		// return frame data
 		return frame ? *frame : *m_emptyFrame;
+	}
+
+	const TraceFrameID DataFile::GetNextInContextFrame(const TraceFrameID id) const
+	{
+		// invalid id
+		if (id == INVALID_TRACE_FRAME_ID)
+			return id;
+
+		// get the entry info
+		const auto& entryInfo = m_entries[id];
+		return entryInfo.m_nextThread;
+	}
+
+	const TraceFrameID DataFile::GetPreviousInContextFrame(const TraceFrameID id) const
+	{
+		// invalid id
+		if (id == INVALID_TRACE_FRAME_ID)
+			return id;
+
+		// get the entry info
+		const auto& entryInfo = m_entries[id];
+		return entryInfo.m_prevThread;
+	}
+
+	const TraceFrameID DataFile::VisitForwards(ILogOutput& log, const TraceFrameID seq, const std::function<bool(const LocationInfo& info)>& pred) const
+	{
+		// invalid id
+		if (seq == INVALID_TRACE_FRAME_ID)
+			return seq;
+
+		// get context info
+		const auto& baseEntryInfo = m_entries[seq];
+		const auto& baseBlobInfo = *(const BlobInfo*)(m_dataBlob.data() + baseEntryInfo.m_offset);
+		const auto firstContextFrame = baseBlobInfo.m_localSeq;
+		const auto numContextFrames = m_contexts[baseEntryInfo.m_context].m_last.m_contextSeq - firstContextFrame;
+
+		// get the entry info
+		auto curSeq = seq;
+		while (curSeq != INVALID_TRACE_FRAME_ID)
+		{
+			// canceled
+			if (log.IsTaskCanceled())
+				return INVALID_TRACE_FRAME_ID;
+
+			// unpack data
+			const auto& entryInfo = m_entries[curSeq];
+			const auto& blobInfo = *(const BlobInfo*)(m_dataBlob.data() + entryInfo.m_offset);
+
+			// setup the location info
+			LocationInfo info;
+			info.m_ip = blobInfo.m_ip;
+			info.m_seq = curSeq;
+			info.m_time = blobInfo.m_time;
+			info.m_contextId = entryInfo.m_context;
+			info.m_contextSeq = blobInfo.m_localSeq;
+
+			// ask predicator, maybe it's the droid we are looking for
+			if (pred(info))
+				break;
+
+			// go back
+			curSeq = entryInfo.m_nextThread;
+
+			// update progress, we can only move forward so cut the forward part of the progress bar
+			log.SetTaskProgress(blobInfo.m_localSeq - firstContextFrame, numContextFrames);
+		}
+
+		// return the last sequence
+		return curSeq;
+	}
+
+	const TraceFrameID DataFile::VisitBackwards(ILogOutput& log, const TraceFrameID seq, const std::function<bool(const LocationInfo& info)>& pred) const
+	{
+		// invalid id
+		if (seq == INVALID_TRACE_FRAME_ID)
+			return seq;
+
+		// get context info
+		const auto& baseEntryInfo = m_entries[seq];
+		const auto& baseBlobInfo = *(const BlobInfo*)(m_dataBlob.data() + baseEntryInfo.m_offset);
+		const auto firstContextFrame = baseBlobInfo.m_localSeq;
+		const auto numContextFrames = m_contexts[baseEntryInfo.m_context].m_last.m_contextSeq - firstContextFrame;
+
+		// get the entry info
+		auto curSeq = seq;
+		while (curSeq != INVALID_TRACE_FRAME_ID)
+		{
+			// canceled
+			if (log.IsTaskCanceled())
+				return INVALID_TRACE_FRAME_ID;
+
+			// unpack data
+			const auto& entryInfo = m_entries[curSeq];
+			const auto& blobInfo = *(const BlobInfo*)(m_dataBlob.data() + entryInfo.m_offset);
+
+			// setup the location info
+			LocationInfo info;
+			info.m_ip = blobInfo.m_ip;
+			info.m_seq = curSeq;
+			info.m_time = blobInfo.m_time;
+			info.m_contextId = entryInfo.m_context;
+			info.m_contextSeq = blobInfo.m_localSeq;
+
+			// ask predicator, maybe it's the droid we are looking for
+			if (pred(info))
+				break;
+
+			// go back
+			curSeq = entryInfo.m_prevThread;
+
+			// update progress, we can only move backward so cut the later part of the progress bar
+			log.SetTaskProgress(blobInfo.m_localSeq, firstContextFrame);
+		}
+
+		// return the last sequence
+		return curSeq;
 	}
 
 	const CodeTracePage* DataFile::GetCodeTracePage(const uint32_t contextId, const uint64_t entryAddress) const
@@ -144,6 +282,37 @@ namespace trace
 						outAfter += 1;
 					else
 						outBefore += 1;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	const bool DataFile::GetCodeTracePageHorizonstalSlice(const CodeTracePage& page, const TraceFrameID seq, const TraceFrameID minSeq, const TraceFrameID maxSeq, const uint64_t address, std::vector<TraceFrameID>& outSequenceList) const
+	{
+		// validate address
+		if (address < page.m_baseAddress || address >= page.m_baseAddress + CodeTracePage::NUM_ADDRESSES_PER_PAGE)
+			return false;
+
+		// get offset to data
+		const auto sequenceIdOffset = page.m_dataOffsets[address - page.m_baseAddress];
+		if (!sequenceIdOffset)
+			return false;
+
+		// load count
+		const auto* readPtr = (const uint32_t*)(m_dataBlob.data() + sequenceIdOffset);
+		const auto count = *readPtr++;
+
+		// find the entries
+		{
+			const auto* seqReadPtr = (const TraceFrameID*)readPtr;
+			for (uint32 i = 0; i < count; ++i)
+			{
+				const auto testSeq = *seqReadPtr++;
+				if (testSeq >= minSeq && testSeq <= maxSeq)
+				{
+					outSequenceList.push_back(testSeq);
 				}
 			}
 		}
@@ -355,6 +524,10 @@ namespace trace
 		header.m_magic = MAGIC; // allows us to read the file
 		file.write((char*)&header, sizeof(header));
 
+		// set file path
+		m_filePath = filePath;
+		m_displayName = UnicodeToAnsi(GetFileName(filePath));
+
 		// saved
 		log.Log("Trace: Saved %1.2fMB of data", (double)(uint64)file.tellp() / (1024.0*1024.0));
 		return true;
@@ -493,6 +666,10 @@ namespace trace
 			if (!ReadDataChunk(log, file, ret->m_codeTracePages, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+
+		// set file path
+		ret->m_filePath = filePath;
+		ret->m_displayName = UnicodeToAnsi(GetFileName(filePath));
 
 		// loaded
 		ret->PostLoad();

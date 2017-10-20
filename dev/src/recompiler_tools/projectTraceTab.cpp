@@ -7,13 +7,17 @@
 #include "traceInfoView.h"
 #include "traceMemoryView.h"
 #include "timeMachineView.h"
+#include "registerView.h"
+#include "callTreeView.h"
+#include "callTreeList.h"
+#include "horizontalView.h"
+#include "progressDialog.h"
 
 #include "../recompiler_core/decodingEnvironment.h"
 #include "../recompiler_core/image.h"
 #include "../recompiler_core/traceDataFile.h"
-#include "registerView.h"
-#include "callTreeView.h"
-#include "callTreeList.h"
+#include "../recompiler_core/decodingAddressMap.h"
+#include "../recompiler_core/decodingContext.h"
 
 #pragma optimize ("",off)
 
@@ -21,13 +25,14 @@ namespace tools
 {
 	BEGIN_EVENT_TABLE(ProjectTraceTab, ProjectTab)
 		EVT_TIMER(wxID_ANY, ProjectTraceTab::OnRefreshTimer)
-		EVT_MENU(XRCID("navigateFind"), ProjectTraceTab::OnFindSymbol)
+		//EVT_MENU(XRCID("navigateFind"), ProjectTraceTab::OnFindSymbol)
 		EVT_MENU(XRCID("navigateGoTo"), ProjectTraceTab::OnGoToAddress)
 		EVT_MENU(XRCID("traceToLocalStart"), ProjectTraceTab::OnTraceToLocalStart)
 		EVT_MENU(XRCID("traceToLocalEnd"), ProjectTraceTab::OnTraceToLocalEnd)
 		EVT_MENU(XRCID("traceToGlobalStart"), ProjectTraceTab::OnTraceToGlobalStart)
 		EVT_MENU(XRCID("traceToGlobalEnd"), ProjectTraceTab::OnTraceToGlobalEnd)
-		EVT_MENU(XRCID("traceRun"), ProjectTraceTab::OnTraceFreeRun)
+		EVT_MENU(XRCID("traceRunForward"), ProjectTraceTab::OnTraceFreeRunForward)
+		EVT_MENU(XRCID("traceRunBackward"), ProjectTraceTab::OnTraceFreeRunBackward)
 		EVT_MENU(XRCID("traceAbsolutePrev"), ProjectTraceTab::OnTraceGlobalPrev)
 		EVT_MENU(XRCID("traceLocalPrev"), ProjectTraceTab::OnTraceLocalPrev)
 		EVT_MENU(XRCID("traceLocalNext"), ProjectTraceTab::OnTraceLocalNext)
@@ -36,6 +41,9 @@ namespace tools
 		EVT_MENU(XRCID("timeMachineCreate"), ProjectTraceTab::OnCreateTimeMachine)
 		EVT_MENU(XRCID("showValuesAsHex"), ProjectTraceTab::OnToggleHexView)
 		EVT_MENU(XRCID("toggleGlobalStats"), ProjectTraceTab::OnToggleGlobalStats)
+		EVT_MENU(XRCID("horizontalViewFunction"), ProjectTraceTab::OnShowHorizontalTraceFunction)
+		EVT_MENU(XRCID("horizontalViewContext"), ProjectTraceTab::OnShowHorizontalTraceContext)
+		EVT_MENU(XRCID("horizontalViewGlobal"), ProjectTraceTab::OnShowHorizontalTraceGlobal)
 	END_EVENT_TABLE()
 
 	ProjectTraceTab::ProjectTraceTab(ProjectWindow* parent, wxWindow* tabs, std::unique_ptr<trace::DataFile>& traceData)
@@ -145,11 +153,6 @@ namespace tools
 		RefreshState();
 	}
 
-	void ProjectTraceTab::OnFindSymbol(wxCommandEvent& evt)
-	{
-
-	}
-
 	void ProjectTraceTab::OnGoToAddress(wxCommandEvent& evt)
 	{
 		if (m_currentImage)
@@ -185,9 +188,16 @@ namespace tools
 			wxMessageBox(wxT("Already at the end of file"), wxT("Navigation"), wxICON_WARNING, this);
 	}
 
-	void ProjectTraceTab::OnTraceFreeRun(wxCommandEvent& evt)
+	void ProjectTraceTab::OnTraceFreeRunForward(wxCommandEvent& evt)
 	{
+		if (!Navigate(NavigationType::RunForward))
+			wxMessageBox(wxT("Unable to find next breakpoint"), wxT("Navigation"), wxICON_WARNING, this);
+	}
 
+	void ProjectTraceTab::OnTraceFreeRunBackward(wxCommandEvent& evt)
+	{
+		if (!Navigate(NavigationType::RunBackward))
+			wxMessageBox(wxT("Unable to find previous breakpoint"), wxT("Navigation"), wxICON_WARNING, this);
 	}
 
 	void ProjectTraceTab::OnTraceGlobalPrev(wxCommandEvent& evt)
@@ -216,13 +226,60 @@ namespace tools
 
 	void ProjectTraceTab::OnTraceSyncPos(wxCommandEvent& evt)
 	{
-		const auto& frame = m_data->GetFrame(m_currentEntry);
-		if (frame.GetType() == trace::FrameType::CpuInstruction)
+		if (!Navigate(NavigationType::SyncPos))
+			wxBell();
+	}
+
+	bool ProjectTraceTab::OpenHorizontalTrace(const TraceFrameID seq, const SliceMode mode)
+	{
+		TraceFrameID firstEntry = 0;
+		TraceFrameID lastEntry = m_data->GetNumDataFrames();
+		wxString title = "Global";
+
+		// constrain to range of trace
+		if (mode == SliceMode::Function)
 		{
-			const auto address = frame.GetAddress();
-			NavigateToAddress(address, false);
-			SyncTraceView();
+			if (!m_data->GetInnerMostCallFunction(seq, firstEntry, lastEntry))
+				return false;
+			title = "Function";
 		}
+		else if (mode == SliceMode::Context)
+		{
+			const auto frame = m_data->GetFrame(seq);
+			const auto& context = m_data->GetContextList()[frame.GetLocationInfo().m_contextId];
+			firstEntry = context.m_first.m_seq;
+			lastEntry = context.m_last.m_seq;
+			title = "Scope";
+		}
+
+		// get the code page matching the initial sequence point
+		const auto* codePage = m_data->GetCodeTracePage(seq);
+		if (!codePage)
+			return false;
+
+		// get the list of sequence points
+		const auto codeAddress = m_data->GetFrame(seq).GetAddress();
+		std::vector<TraceFrameID> sequenceList;
+		if (!m_data->GetCodeTracePageHorizonstalSlice(*codePage, seq, firstEntry, lastEntry, codeAddress, sequenceList))
+			return false;
+
+		// get display mode
+		const auto displayMode = GetValueDisplayFormat();
+
+		// create the horizontal list
+		auto* view = new HorizontalRegisterView(m_timeMachineTabs, this);
+		const auto name = wxString::Format("Slice %hs at 0x%08llX (%llu)", title.c_str().AsChar(), codeAddress, seq);
+		if (!view->FillTable(GetProjectWindow()->GetProject().get(), *m_data, seq, sequenceList))
+		{
+			delete view;
+			return false;
+		}
+
+		view->UpdateValueTexts(displayMode);
+
+		// add page
+		m_timeMachineTabs->AddPage(view, name, true);
+		return true;
 	}
 
 	bool ProjectTraceTab::OpenTimeMachine(const TraceFrameID id)
@@ -235,12 +292,16 @@ namespace tools
 		const auto numPages = m_timeMachineTabs->GetPageCount();
 		for (uint32_t i = 0; i < numPages; ++i)
 		{
-			auto* page = static_cast<TimeMachineView*>(m_timeMachineTabs->GetPage(i));
-			if (page->GetRootTraceIndex() == id)
+			const auto pageTitle = m_timeMachineTabs->GetPageText(i);
+			if (pageTitle.StartsWith("TimeMachine "))
 			{
-				m_timeMachineTabs->SetSelection(i);
-				page->SetFocus();
-				return true;
+				auto* page = static_cast<TimeMachineView*>(m_timeMachineTabs->GetPage(i));
+				if (page->GetRootTraceIndex() == id)
+				{
+					m_timeMachineTabs->SetSelection(i);
+					page->SetFocus();
+					return true;
+				}
 			}
 		}
 
@@ -255,7 +316,7 @@ namespace tools
 			return false;
 
 		auto* view = new TimeMachineView(m_timeMachineTabs, trace, this);
-		m_timeMachineTabs->AddPage(view, wxString::Format("%llu (0x%08llX)", id, frame.GetAddress()), true);
+		m_timeMachineTabs->AddPage(view, wxString::Format("TimeMachine %llu (0x%08llX)", id, frame.GetAddress()), true);
 		return true;
 	}
 
@@ -294,6 +355,21 @@ namespace tools
 		OpenTimeMachine(m_currentEntry);
 	}
 
+	void ProjectTraceTab::OnShowHorizontalTraceFunction(wxCommandEvent& evt)
+	{
+		OpenHorizontalTrace(m_currentEntry, SliceMode::Function);
+	}
+
+	void ProjectTraceTab::OnShowHorizontalTraceContext(wxCommandEvent& evt)
+	{
+		OpenHorizontalTrace(m_currentEntry, SliceMode::Context);
+	}
+
+	void ProjectTraceTab::OnShowHorizontalTraceGlobal(wxCommandEvent& evt)
+	{
+		OpenHorizontalTrace(m_currentEntry, SliceMode::Global);
+	}
+
 	void ProjectTraceTab::RefreshState()
 	{
 
@@ -306,12 +382,87 @@ namespace tools
 
 	bool ProjectTraceTab::Navigate(const NavigationType type)
 	{
+		const auto image = GetCurrentImage();
+
 		switch (type)
 		{
-			case NavigationType::Back:
+			case NavigationType::HistoryBack:
 			{
 				const auto newAddress = m_addressHistory.NavigateBack();
 				return NavigateToAddress(newAddress, false);
+			}
+
+			case NavigationType::HistoryForward:
+			{
+				const auto newAddress = m_addressHistory.NavigateForward();
+				return NavigateToAddress(newAddress, false);
+			}
+
+			case NavigationType::ToggleBreakpoint:
+			{
+				const auto currentAddress = m_disassemblyPanel->GetCurrentRVA();
+				GetProjectWindow()->GetProject()->GetBreakpoints().ToggleBreakpoint(currentAddress);
+				return true;
+			}
+
+			case NavigationType::Follow:
+			{
+				// get the source section of the image
+				uint64 lowAddres = 0, highAddress = 0;
+				if (!m_disassemblyPanel->GetSelectionAddresses(lowAddres, highAddress))
+					return false;
+
+				if (!image)
+					return false;
+
+				const auto* section = image->GetEnvironment().GetImage()->FindSectionForAddress(lowAddres);
+				if (section == nullptr)
+					return false;
+
+				const uint32 branchTargetAddress = image->GetEnvironment().GetDecodingContext()->GetAddressMap().GetReferencedAddress(lowAddres);
+				if (branchTargetAddress)
+					return NavigateToAddress(branchTargetAddress, true);
+
+				return false;
+			}
+
+			case NavigationType::ReverseFollow:
+			{
+				// get the source section of the image
+				uint64 lowAddres = 0, highAddress = 0;
+				if (!m_disassemblyPanel->GetSelectionAddresses(lowAddres, highAddress))
+					return false;
+
+				if (!image)
+					return false;
+
+				const auto* section = image->GetEnvironment().GetImage()->FindSectionForAddress(lowAddres);
+				if (section == nullptr)
+					return false;
+
+				// back navigation?
+				std::vector<uint64> sourceAddresses;
+				image->GetEnvironment().GetDecodingContext()->GetAddressMap().GetAddressReferencers(lowAddres, sourceAddresses);
+				if (sourceAddresses.size() > 1)
+				{
+					wxMenu menu;
+
+					for (uint32 i = 0; i < sourceAddresses.size(); ++i)
+					{
+						const auto menuId = 16000 + i;
+						menu.Append(16000 + i, wxString::Format("0x%08llx", sourceAddresses[i]));
+					}
+
+					menu.Bind(wxEVT_MENU, [this, sourceAddresses](const wxCommandEvent& evt)
+					{
+						const auto it = evt.GetId() - 16000;
+						return NavigateToAddress(sourceAddresses[it], true);
+					});
+
+					PopupMenu(&menu);
+				}
+
+				return true;
 			}
 
 			case NavigationType::LocalStepIn:
@@ -386,9 +537,72 @@ namespace tools
 				else
 					return false;
 			}
+
+			case NavigationType::SyncPos:
+			{
+				const auto& frame = m_data->GetFrame(m_currentEntry);
+				m_currentEntry = 0;
+				m_currentAddress = 0;
+				NavigateToFrame(frame.GetIndex());
+				return true;
+			}
+
+			case NavigationType::RunForward:
+			{
+				ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
+
+				const auto* breakpointList = &GetProjectWindow()->GetProject()->GetBreakpoints();
+
+				TraceFrameID curSeq = m_currentEntry;
+				TraceFrameID newSeq = INVALID_TRACE_FRAME_ID;
+				dlg.RunLongTask([this, curSeq, &newSeq, breakpointList](ILogOutput& log)
+				{
+					newSeq = m_data->VisitForwards(log, curSeq, [curSeq, breakpointList](const trace::LocationInfo& info)
+					{
+						if (info.m_seq == curSeq)
+							return false;
+						return breakpointList->HasBreakpoint(info.m_ip);
+					});
+					return 0;
+				});
+
+				return NavigateToFrame(newSeq);
+			}
+
+			case NavigationType::RunBackward:
+			{
+				ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
+
+				const auto* breakpointList = &GetProjectWindow()->GetProject()->GetBreakpoints();
+
+				TraceFrameID curSeq = m_currentEntry;
+				TraceFrameID newSeq = INVALID_TRACE_FRAME_ID;
+				dlg.RunLongTask([this, curSeq, &newSeq, breakpointList](ILogOutput& log)
+				{
+					newSeq = m_data->VisitBackwards(log, curSeq, [curSeq, breakpointList](const trace::LocationInfo& info)
+					{
+						if (info.m_seq == curSeq)
+							return false;
+						return breakpointList->HasBreakpoint(info.m_ip);
+					});
+					return 0;
+				});
+
+				return NavigateToFrame(newSeq);
+			}
 		}
 
 		return false;
+	}
+
+	std::shared_ptr<ProjectImage> ProjectTraceTab::GetCurrentImage()
+	{
+		return m_currentImage;
+	}	
+
+	MemoryView* ProjectTraceTab::GetCurrentMemoryView()
+	{
+		return m_disassemblyPanel;
 	}
 
 	bool ProjectTraceTab::NavigateToAddress(const uint64 address, const bool addToHistory)
@@ -412,7 +626,7 @@ namespace tools
 			// change the disassembly to new image
 			delete m_disassemblyView;
 			if (projectImage)
-				m_disassemblyView = new TraceMemoryView(projectImage, this, *m_data);
+				m_disassemblyView = new TraceMemoryView(GetProjectWindow()->GetProject(), projectImage, this, *m_data);
 			else
 				m_disassemblyView = nullptr;
 
@@ -422,6 +636,7 @@ namespace tools
 
 		// sync address
 		m_currentAddress = address;
+		m_addressHistory.UpdateAddress(address, addToHistory);
 		
 		// sync address
 		if (m_currentImage)
@@ -489,6 +704,17 @@ namespace tools
 		auto* curPage = (RegisterView*)m_registerViewsTabs->GetCurrentPage();
 		if (curPage)
 			curPage->UpdateRegisters(curFrame, nextFrame, displayFormat);
+
+		const auto numPages = m_timeMachineTabs->GetPageCount();
+		for (uint32_t i = 0; i < numPages; ++i)
+		{
+			const auto pageTitle = m_timeMachineTabs->GetPageText(i);
+			if (pageTitle.StartsWith("Slice "))
+			{
+				auto* page = static_cast<HorizontalRegisterView*>(m_timeMachineTabs->GetPage(i));
+				page->UpdateValueTexts(displayFormat);
+			}
+		}
 	}
 
 	void ProjectTraceTab::SyncTraceView()

@@ -142,6 +142,9 @@ namespace trace
 		// NOTE: register MUST be in the trace
 		const uint8* GetRegData(const platform::CPURegister* reg) const;
 
+		// copy the register data, can fail if the buffer is to small
+		const bool GetRegData(const platform::CPURegister* reg, const size_t bufferSize, void* outData) const;
+
 	private:
 		FrameType m_type; // trace entry data
 		LocationInfo m_location; // where is that frame
@@ -179,6 +182,12 @@ namespace trace
 		typedef std::vector<CodeTracePage> TCodePages;
 		inline const TCodePages& GetCodeTracePages() const { return m_codeTracePages; }
 
+		// get full path to file
+		inline const std::wstring& GetFullPath() const { return m_filePath; }
+
+		// get short trace name
+		inline const std::string& GetDisplayName() const { return m_displayName; }
+
 		//--
 
 		// purge frame cache
@@ -190,12 +199,26 @@ namespace trace
 		void ManageCache();
 
 		// decode frame
-		const DataFrame& GetFrame(const TraceFrameID id);
+		const DataFrame& GetFrame(const TraceFrameID seq);
+		
+		// get index of next frame for given frame ID
+		const TraceFrameID GetNextInContextFrame(const TraceFrameID seq) const;
+
+		// get index of next frame for given frame ID
+		const TraceFrameID GetPreviousInContextFrame(const TraceFrameID seq) const;
+
+		// visit frames in the same context as given frame, stops when visitor function returns true
+		// NOTE: this is slow operation, log provided for progress feedback
+		const TraceFrameID VisitForwards(ILogOutput& log, const TraceFrameID seq, const std::function<bool(const LocationInfo& info)>& pred) const;
+
+		// visit frames in the same context as given frame, stops when visitor function returns true
+		// NOTE: this is slow operation, log provided for progress feedback
+		const TraceFrameID VisitBackwards(ILogOutput& log, const TraceFrameID seq, const std::function<bool(const LocationInfo& info)>& pred) const;
 
 		//--
 
 		// get code trace page (or null if not found) for given trace frame
-		const CodeTracePage* GetCodeTracePage(const TraceFrameID id) const;
+		const CodeTracePage* GetCodeTracePage(const TraceFrameID seq) const;
 
 		// get code trace page (or null if not found) for given address
 		const CodeTracePage* GetCodeTracePage(const uint32_t contextId, const uint64_t address) const;
@@ -203,10 +226,13 @@ namespace trace
 		// in given code page enumerate entries before and after given sequence number
 		const bool GetCodeTracePageHistogram(const CodeTracePage& page, const TraceFrameID seq, const TraceFrameID minSeq, const TraceFrameID maxSeq, const uint64_t address, uint32& outBefore, uint32& outAfter) const;
 
+		// get list of trace sequences visiting give address
+		const bool GetCodeTracePageHorizonstalSlice(const CodeTracePage& page, const TraceFrameID seq, const TraceFrameID minSeq, const TraceFrameID maxSeq, const uint64_t address, std::vector<TraceFrameID>& outSequenceList) const;
+
 		//--
 
 		// get the inner most (with no more children) entry from call stack trace for given sequence ID
-		// this is the function we are in bascialy
+		// this is the function we are in basically
 		const bool GetInnerMostCallFunction(const TraceFrameID seq, TraceFrameID& outFunctionEntrySeq, TraceFrameID& outFunctionLeaveSeq);
 
 		//--
@@ -322,6 +348,11 @@ namespace trace
 		// cached frames
 		typedef std::unordered_map<TraceFrameID, DataFrame*> TFrameCache;
 		TFrameCache m_cache;
+
+		//--
+
+		mutable std::wstring m_filePath;
+		mutable std::string m_displayName;
 
 		//--
 

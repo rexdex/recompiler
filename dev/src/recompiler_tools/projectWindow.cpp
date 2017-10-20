@@ -7,6 +7,9 @@
 #include "app.h"
 #include "progressDialog.h"
 #include "projectTraceTab.h"
+#include "gotoAddressDialog.h"
+#include "../recompiler_core/traceDataFile.h"
+#include "findSymbolDialog.h"
 
 namespace tools
 {
@@ -31,6 +34,25 @@ namespace tools
 		EVT_MENU(XRCID("fileClose"), ProjectWindow::OnProjectClose)
 		EVT_MENU(XRCID("fileExit"), ProjectWindow::OnExitApp)
 		EVT_MENU(XRCID("openLog"), ProjectWindow::OnOpenLog)
+		EVT_MENU(XRCID("imageFindSynbol"), ProjectWindow::OnFindSymbol)
+		EVT_MENU(XRCID("imageGoTo"), ProjectWindow::OnGoToAddress)
+		EVT_MENU(XRCID("imageNextAddress"), ProjectWindow::OnImageHistoryNext)
+		EVT_MENU(XRCID("imagePrevAddress"), ProjectWindow::OnImageHistoryPrevious)
+		EVT_MENU(XRCID("imageFollowAddress"), ProjectWindow::OnImageFollowAddress)
+		EVT_MENU(XRCID("imageReverseFollowAddress"), ProjectWindow::OnImageUnfollowAddress)
+		EVT_MENU(XRCID("traceRunForward"), ProjectWindow::OnTraceFreeRunForward)
+		EVT_MENU(XRCID("traceRunBackward"), ProjectWindow::OnTraceFreeRunBackward)
+		EVT_MENU(XRCID("traceToggleBreakpoint"), ProjectWindow::OnTraceToggleBreakpoint)
+		EVT_MENU(XRCID("traceLocalNext"), ProjectWindow::OnTraceLocalNext)
+		EVT_MENU(XRCID("traceLocalPrev"), ProjectWindow::OnTraceLocalPrev)
+		EVT_MENU(XRCID("traceAbsoluteNext"), ProjectWindow::OnTraceGlobalNext)
+		EVT_MENU(XRCID("traceAbsolutePrev"), ProjectWindow::OnTraceGlobalPrev)
+		EVT_MENU(XRCID("traceToGlobalStart"), ProjectWindow::OnTraceToGlobalStart)
+		EVT_MENU(XRCID("traceToGlobalEnd"), ProjectWindow::OnTraceToGlobalEnd)
+		EVT_MENU(XRCID("traceToLocalStart"), ProjectWindow::OnTraceToLocalStart)
+		EVT_MENU(XRCID("traceToLocalEnd"), ProjectWindow::OnTraceToLocalEnd)
+		EVT_MENU(XRCID("traceHorizontalBack"), ProjectWindow::OnTraceHorizontalPrev)
+		EVT_MENU(XRCID("traceHorizontalNext"), ProjectWindow::OnTraceHorizontalNext)
 	END_EVENT_TABLE()
 
 	ProjectWindow::ProjectWindow(const std::shared_ptr<Project>& project, App* app)
@@ -51,6 +73,9 @@ namespace tools
 
 		// create the internal layout
 		CreateLayout();
+
+		// refresh the menu state
+		UpdateUI();
 	}
 
 	void ProjectWindow::OnActivate(wxActivateEvent& event)
@@ -64,11 +89,29 @@ namespace tools
 			event.Veto();
 	}
 
+	void ProjectWindow::OnTabClosed(wxAuiNotebookEvent& event)
+	{
+		if (m_tabs->GetSelection() == 0)
+		{
+			if (!m_app->SwitchToProject(nullptr))
+				event.Veto();
+		}
+	}
+
+	void ProjectWindow::OnTabChanged(wxAuiNotebookEvent& event)
+	{
+		UpdateUI();
+	}
+
 	void ProjectWindow::CreateLayout()
 	{
 		// create document tabs
 		m_tabs = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE | wxAUI_NB_CLOSE_BUTTON | wxAUI_NB_CLOSE_ON_ALL_TABS);
 		m_layout.AddPane(m_tabs, wxAuiPaneInfo().Name(wxT("$Content")).Caption(wxT("Documents")).CenterPane().PaneBorder(false).CloseButton(false));
+
+		// events :)
+		m_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, [this](wxAuiNotebookEvent& evt) { OnTabChanged(evt); });
+		m_tabs->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, [this](wxAuiNotebookEvent& evt) { OnTabClosed(evt); });
 
 		// create the main project tab
 		{
@@ -151,10 +194,18 @@ namespace tools
 
 	void ProjectWindow::UpdateUI()
 	{
+		// generic
 		EnableCommand(XRCID("fileSave"), true);
 
-		EnableCommand(XRCID("codeBuild"), (m_project != nullptr));
-		EnableCommand(XRCID("codeRun"), (m_project != nullptr));
+		// get current page
+		const wxString pageTile = (m_tabs->GetSelection() == -1) ? wxEmptyString : m_tabs->GetPageText(m_tabs->GetSelection());
+		const auto isTrace = (pageTile.StartsWith("Trace"));
+		const auto isImage = (pageTile.StartsWith("Image"));
+
+		// enable/disable top-level menus
+		// TODO: less hacky :)
+		GetMenuBar()->EnableTop(2, isTrace | isImage);
+		GetMenuBar()->EnableTop(3, isTrace);
 	}
 
 	bool ProjectWindow::NavigateToStaticAddress(const uint64 address)
@@ -218,9 +269,12 @@ namespace tools
 		if (!data)
 			return nullptr;
 
+		const auto name = wxString::Format("Trace [%s]", data->GetDisplayName().c_str());
+
 		auto* projectTraceTab = new ProjectTraceTab(this, m_tabs, data);
 		projectTraceTab->Navigate(NavigationType::GlobalEnd);
-		m_tabs->AddPage(projectTraceTab, wxString::Format("Trace"), focus);
+		m_tabs->AddPage(projectTraceTab, name, focus);
+		UpdateUI();
 
 		return projectTraceTab;
 	}
@@ -275,6 +329,180 @@ namespace tools
 	void ProjectWindow::OnOpenLog(wxCommandEvent& event)
 	{
 		m_app->ShowLog();
+	}
+
+	//--
+
+	INavigationHelper* ProjectWindow::GetNavigatorHelperForCurrentTab()
+	{
+		if (m_tabs->GetSelection() != -1)
+		{
+			const auto tabs = m_tabs->GetPageText(m_tabs->GetSelection());
+			if (tabs.StartsWith("Image "))
+			{
+				auto* tab = (ProjectImageTab*)m_tabs->GetCurrentPage();
+				return tab;
+			}
+			else if (tabs.StartsWith("Trace"))
+			{
+				auto* tab = (ProjectTraceTab*)m_tabs->GetCurrentPage();
+				return tab;
+			}
+		}
+
+		return nullptr;
+	}
+
+	void ProjectWindow::OnFindSymbol(wxCommandEvent& evt)
+	{
+		auto* navigator = GetNavigatorHelperForCurrentTab();
+		if (nullptr != navigator)
+		{
+			auto image = navigator->GetCurrentImage();
+			if (image)
+			{
+				FindSymbolDialog dlg(image->GetEnvironment(), this);
+				if (0 == dlg.ShowModal())
+				{
+					const auto address = dlg.GetSelectedSymbolAddress();
+					navigator->NavigateToAddress(address, true);
+				}
+			}
+		}
+	}
+
+	bool ProjectWindow::NavigateCurrentTab(const NavigationType type)
+	{
+		auto* navigator = GetNavigatorHelperForCurrentTab();
+		if (nullptr == navigator)
+			return false;
+
+		return navigator->Navigate(type);
+	}
+
+	void ProjectWindow::OnGoToAddress(wxCommandEvent& evt)
+	{
+		auto* navigator = GetNavigatorHelperForCurrentTab();
+		if (nullptr != navigator)
+		{
+			auto image = navigator->GetCurrentImage();
+			auto memory = navigator->GetCurrentMemoryView();
+			if (image)
+			{
+				GotoAddressDialog dlg(this, image, memory);
+				const auto newAddr = dlg.GetNewAddress();
+				navigator->NavigateToAddress(newAddr, true);
+			}
+		}
+	}
+
+	void ProjectWindow::OnImageHistoryNext(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::HistoryForward))
+			wxBell();
+	}
+
+	void ProjectWindow::OnImageHistoryPrevious(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::HistoryBack))
+			wxBell();
+	}
+
+	void ProjectWindow::OnImageFollowAddress(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::Follow))
+			wxBell();
+	}
+
+	void ProjectWindow::OnImageUnfollowAddress(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::ReverseFollow))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceHorizontalPrev(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::HorizontalPrev))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceHorizontalNext(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::HorizontalNext))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceToLocalStart(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::LocalStart))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceToLocalEnd(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::LocalEnd))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceToGlobalStart(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::GlobalStart))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceToGlobalEnd(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::GlobalEnd))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceFreeRunForward(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::RunForward))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceFreeRunBackward(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::RunBackward))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceToggleBreakpoint(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::ToggleBreakpoint))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceGlobalPrev(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::GlobalStepBack))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceLocalPrev(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::LocalStepBack))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceLocalNext(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::LocalStepIn))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceGlobalNext(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::GlobalStepIn))
+			wxBell();
+	}
+
+	void ProjectWindow::OnTraceSyncPos(wxCommandEvent& evt)
+	{
+		if (!NavigateCurrentTab(NavigationType::SyncPos))
+			wxBell();
+
 	}
 
 } // tools

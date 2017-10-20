@@ -33,6 +33,112 @@
 					<bitmap>icons/text_align_justify.png</bitmap>
 				</object>
 			</object>
+			<object class="wxMenu" name="imageMenu">
+				<label>_Image</label>
+				<object class="wxMenuItem" name="imageFindSynbol">
+					<label>Find symbol...\tF3</label>
+					<help></help>
+					<bitmap>icons/find.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="imageGoTo">
+					<label>Go to address...\tCtrl+G</label>
+					<help></help>
+					<bitmap>icons/car.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="imagePrevAddress">
+					<label>Previous address from history\tBack</label>
+					<help></help>
+				</object>
+				<object class="wxMenuItem" name="imageNextAddress">
+					<label>Next address from history\tShift+Back</label>
+					<help></help>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="imageFollowAddress">
+					<label>Follow address\tEnter</label>
+					<help></help>
+				</object>
+				<object class="wxMenuItem" name="imageReverseFollowAddress">
+					<label>Reverse follow address\tShift+Enter</label>
+					<help></help>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceToggleBreakpoint">
+					<label>Toggle breakpoint at address\tF9</label>
+					<help></help>
+					<bitmap>icons/stop.png</bitmap>
+				</object>
+			</object>
+			<object class="wxMenu" name="traceMenu">
+				<label>T_race</label>
+				<object class="wxMenuItem" name="traceRunForward">
+					<label>Run till next breakpoint\tF5</label>
+					<help></help>
+					<bitmap>icons/resultset_next.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceRunBackward">
+					<label>Rewind backwards until previous breakpoint\tShift+F5</label>
+					<help></help>
+					<bitmap>icons/resultset_previous.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceLocalNext">
+					<label>Step forward in current context\tF11</label>
+					<help></help>
+					<bitmap>icons/stepforward.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceLocalPrev">
+					<label>Step back in current context\tShift+F11</label>
+					<help></help>
+					<bitmap>icons/stepback.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceAbsoluteNext">
+					<label>Step forward (all threads)\tF8</label>
+					<help></help>
+					<bitmap>icons/stepforward_world.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceAbsolutePrev">
+					<label>Step back (all theads)\tShift+F8</label>
+					<help></help>
+					<bitmap>icons/stepback_world.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceToGlobalStart">
+					<label>Rewind to file start\tCtrl+Shift+Home</label>
+					<help></help>
+					<bitmap>icons/to_global_start.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceToGlobalEnd">
+					<label>Rewind to file end\tCtrl+Shift+End</label>
+					<help></help>
+					<bitmap>icons/to_global_start.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceToLocalStart">
+					<label>Rewind to context start\tCtrl+Home</label>
+					<help></help>
+					<bitmap>icons/to_local_start.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceToLocalEnd">
+					<label>Rewind to context end\tCtrl+End</label>
+					<help></help>
+					<bitmap>icons/to_local_end.png</bitmap>
+				</object>
+				<object class="separator" />
+				<object class="wxMenuItem" name="traceHorizontalBack">
+					<label>Rewind to previous iteration\tCtrl+Left</label>
+					<help></help>
+					<bitmap>icons/arrow_left.png</bitmap>
+				</object>
+				<object class="wxMenuItem" name="traceHorizontalNext">
+					<label>Rewind to next iteration\tCtrl+Right</label>
+					<help></help>
+					<bitmap>icons/arrow_right.png</bitmap>
+				</object>
+			</object>
 		</object>
 	</object>
 	<object class="wxDialog" name="OperationLog">
@@ -431,6 +537,21 @@
 				<border>5</border>
 				<object class="wxPanel" name="RegListPanel">
 					<style>wxTAB_TRAVERSAL</style>
+				</object>
+			</object>
+		</object>
+	</object>
+	<object class="wxPanel" name="HorizontalView">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>500,300</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxListCtrl" name="DataList">
+					<style>wxLC_REPORT</style>
 				</object>
 			</object>
 		</object>
@@ -1851,12 +1972,6 @@
 					<margins></margins>
 					<packing>1</packing>
 					<separation>5</separation>
-					<object class="tool" name="navigateFind">
-						<label>Find</label>
-						<tooltip>Find symbol in this image</tooltip>
-						<longhelp></longhelp>
-						<bitmap>icons/find.png</bitmap>
-					</object>
 					<object class="tool" name="navigateGoTo">
 						<label>Goto</label>
 						<tooltip>Go to an address in this image</tooltip>
@@ -1876,8 +1991,15 @@
 						<longhelp></longhelp>
 						<bitmap>icons/to_global_end.png</bitmap>
 					</object>
-					<object class="tool" name="traceRun">
-						<label>Go</label>
+					<object class="separator" />
+					<object class="tool" name="traceRunBackward">
+						<label>Run back</label>
+						<tooltip>Run back till next breakpoint in the trace</tooltip>
+						<longhelp></longhelp>
+						<bitmap>icons/resultset_previous.png</bitmap>
+					</object>
+					<object class="tool" name="traceRunForward">
+						<label>Run forward</label>
 						<tooltip>Run till next breakpoint in the trace</tooltip>
 						<longhelp></longhelp>
 						<bitmap>icons/resultset_next.png</bitmap>
@@ -2058,11 +2180,31 @@
 																	<packing>1</packing>
 																	<separation>5</separation>
 																	<object class="tool" name="timeMachineCreate">
-																		<label>Explore</label>
+																		<label>Time machine</label>
 																		<tooltip>Explore the instruction execution in time machine</tooltip>
 																		<longhelp></longhelp>
 																		<bitmap>icons/clock.png</bitmap>
 																	</object>
+																	<object class="separator" />
+																	<object class="tool" name="horizontalViewFunction">
+																		<label>Function slice</label>
+																		<tooltip>Explore horizontal view of this instruction in current function</tooltip>
+																		<longhelp></longhelp>
+																		<bitmap>icons/table.png</bitmap>
+																	</object>
+																	<object class="tool" name="horizontalViewContext">
+																		<label>Context slice</label>
+																		<tooltip>Explore horizontal view of this instruction in current context</tooltip>
+																		<longhelp></longhelp>
+																		<bitmap>icons/table.png</bitmap>
+																	</object>
+																	<object class="tool" name="horizontalViewGlobal">
+																		<label>Global slice</label>
+																		<tooltip>Explore horizontal view of this instruction in whole trace file</tooltip>
+																		<longhelp></longhelp>
+																		<bitmap>icons/table.png</bitmap>
+																	</object>
+																	<object class="separator" />
 																</object>
 															</object>
 															<object class="sizeritem">
@@ -2094,7 +2236,7 @@
 								<object class="wxNotebook" name="m_notebook11">
 									<object class="notebookpage">
 										<label>Call trace</label>
-										<selected>0</selected>
+										<selected>1</selected>
 										<object class="wxPanel" name="m_panel50">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
@@ -2135,6 +2277,13 @@
 													</object>
 												</object>
 											</object>
+										</object>
+									</object>
+									<object class="notebookpage">
+										<label>Memory view</label>
+										<selected>0</selected>
+										<object class="wxPanel" name="m_panel54">
+											<style>wxTAB_TRAVERSAL</style>
 										</object>
 									</object>
 								</object>

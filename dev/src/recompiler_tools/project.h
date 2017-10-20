@@ -14,6 +14,34 @@ namespace tools
 		std::wstring m_customRoot;
 	};
 
+	/// breakpoint list (global)
+	class ProjectBreakpointList
+	{
+	public:
+		ProjectBreakpointList();
+
+		/// clear breakpoint list
+		void Clear();
+
+		/// set breakpoint on address
+		void SetBreakpoint(const uint64 addr, const bool isSet);
+
+		/// check if address contains breakpoint
+		const bool HasBreakpoint(const uint64 addr) const;
+
+		/// toggle breakpoint, returns new state
+		const bool ToggleBreakpoint(const uint64 addr);
+
+		/// get all breakpoint
+		typedef std::vector<uint64_t> TBreakpoints;
+		inline const TBreakpoints& GetAllBreakpoints() const { return m_breakpoints; }
+
+		//--
+
+	private:
+		TBreakpoints m_breakpoints;
+	};
+
 	/// Editable project
 	class Project
 	{
@@ -37,6 +65,10 @@ namespace tools
 
 		// get project settings
 		inline ProjectSettings& GetSettings() { return m_settings; }
+
+		// get project breakpoint settings
+		inline ProjectBreakpointList& GetBreakpoints() { return m_breakpoints; }
+		inline const ProjectBreakpointList& GetBreakpoints() const { return m_breakpoints; }
 
 		//---
 
@@ -91,6 +123,9 @@ namespace tools
 
 		// general project settings
 		ProjectSettings m_settings;
+
+		// global breakpoint settings
+		ProjectBreakpointList m_breakpoints;
 
 		// local modification flag
 		bool m_isModified;

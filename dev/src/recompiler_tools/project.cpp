@@ -1,6 +1,7 @@
 #include "build.h"
 #include "project.h"
 #include "projectImage.h"
+#include "eventDispatcher.h"
 
 #include "../recompiler_core/platformDefinition.h"
 #include "../recompiler_core/platformLibrary.h"
@@ -10,6 +11,67 @@
 
 namespace tools
 {
+
+	//---------------------------------------------------------------------------
+
+	ProjectBreakpointList::ProjectBreakpointList()
+	{}
+
+	void ProjectBreakpointList::Clear()
+	{
+		m_breakpoints.clear();
+	}
+
+	void ProjectBreakpointList::SetBreakpoint(const uint64 addr, const bool isSet)
+	{
+		const auto it = std::find(m_breakpoints.begin(), m_breakpoints.end(), addr);
+		if (isSet)
+		{
+			if (it == m_breakpoints.end())
+			{
+				m_breakpoints.push_back(addr);
+				EventDispatcher::GetInstance().PostEvent("BreakpointsChanged");
+			}
+		}
+		else
+		{
+			if (it != m_breakpoints.end())
+			{
+				m_breakpoints.erase(it);
+				EventDispatcher::GetInstance().PostEvent("BreakpointsChanged");
+			}
+		}
+	}
+
+	const bool ProjectBreakpointList::HasBreakpoint(const uint64 addr) const
+	{
+		const auto it = std::find(m_breakpoints.begin(), m_breakpoints.end(), addr);
+		return m_breakpoints.end() != it;
+	}
+
+	const bool ProjectBreakpointList::ToggleBreakpoint(const uint64 addr)
+	{
+		const auto newState = !HasBreakpoint(addr);
+		SetBreakpoint(addr, newState);
+		return newState;
+	}
+
+	static inline IBinaryFileWriter &operator<<(IBinaryFileWriter& file, const ProjectBreakpointList& s)
+	{
+		const auto list = s.GetAllBreakpoints();
+		file << list;
+		return file;
+	}
+
+	static inline IBinaryFileReader &operator >> (IBinaryFileReader& file, ProjectBreakpointList& s)
+	{
+		ProjectBreakpointList::TBreakpoints list;
+		file >> list;
+
+		for (const auto& addr : list)
+			s.SetBreakpoint(addr, true);
+		return file;
+	}
 
 	//---------------------------------------------------------------------------
 
@@ -112,6 +174,12 @@ namespace tools
 					return false;
 				}
 			}
+		}
+
+		// save breakpoints settings
+		{
+			FileChunk chunk(*writer, "Breakpoints");
+			*writer << m_breakpoints;
 		}
 
 		// saved
@@ -278,6 +346,13 @@ namespace tools
 					}
 				}
 			}
+		}
+
+		// load breakpoints settings
+		{
+			FileChunk chunk(*reader, "Breakpoints");
+			if (reader)
+				*reader >> ret->m_breakpoints;
 		}
 
 		// return created project

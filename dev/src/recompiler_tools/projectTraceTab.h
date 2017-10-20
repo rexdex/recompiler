@@ -35,8 +35,6 @@ namespace tools
 		virtual bool Navigate(const NavigationType type) override;
 
 	private:
-		Project* m_project;
-
 		// native trace file
 		std::unique_ptr<trace::DataFile> m_data;
 
@@ -72,13 +70,13 @@ namespace tools
 		//--
 
 		void OnRefreshTimer(wxTimerEvent & evt);
-		void OnFindSymbol(wxCommandEvent& evt);
 		void OnGoToAddress(wxCommandEvent& evt);
 		void OnTraceToLocalStart(wxCommandEvent& evt);
 		void OnTraceToLocalEnd(wxCommandEvent& evt);
 		void OnTraceToGlobalStart(wxCommandEvent& evt);
 		void OnTraceToGlobalEnd(wxCommandEvent& evt);
-		void OnTraceFreeRun(wxCommandEvent& evt);
+		void OnTraceFreeRunForward(wxCommandEvent& evt);
+		void OnTraceFreeRunBackward(wxCommandEvent& evt);
 		void OnTraceGlobalPrev(wxCommandEvent& evt);
 		void OnTraceLocalPrev(wxCommandEvent& evt);
 		void OnTraceLocalNext(wxCommandEvent& evt);
@@ -87,6 +85,9 @@ namespace tools
 		void OnCreateTimeMachine(wxCommandEvent& evt);
 		void OnToggleHexView(wxCommandEvent& evt);
 		void OnToggleGlobalStats(wxCommandEvent& evt);
+		void OnShowHorizontalTraceFunction(wxCommandEvent& evt);
+		void OnShowHorizontalTraceContext(wxCommandEvent& evt);
+		void OnShowHorizontalTraceGlobal(wxCommandEvent& evt);
 
 		void SyncImageView();
 		void SyncRegisterView();
@@ -98,8 +99,18 @@ namespace tools
 		trace::RegDisplayFormat GetValueDisplayFormat() const;
 		bool GetGlobalStatsFlags() const;
 
-		bool OpenTimeMachine(const TraceFrameID id);
+		enum class SliceMode
+		{
+			Function,
+			Context,
+			Global,
+		};
 
+		bool OpenTimeMachine(const TraceFrameID id);
+		bool OpenHorizontalTrace(const TraceFrameID id, const SliceMode mode);
+
+		virtual std::shared_ptr<ProjectImage> GetCurrentImage() override;
+		virtual MemoryView* GetCurrentMemoryView() override;
 		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) override;
 	};
 

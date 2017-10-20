@@ -49,6 +49,7 @@ namespace tools
 		void RefreshSymbolList();
 		void RefreshFunctionList();
 
+		void OnFindSymbol(wxCommandEvent& evt);
 		void OnSelectSection(wxCommandEvent& evt);
 		void OnGotoAddress(wxCommandEvent& evt);
 		void OnGotoEntryAddress(wxCommandEvent& evt);
@@ -67,6 +68,9 @@ namespace tools
 		void OnSelectFunction(wxListEvent& evt);
 		void OnRefreshFunctionList(wxCommandEvent& evt);
 		void OnBuildCode(wxCommandEvent& evt);
+
+		virtual std::shared_ptr<ProjectImage> GetCurrentImage() override;
+		virtual MemoryView* GetCurrentMemoryView() override;
 	};
 
 } // tool

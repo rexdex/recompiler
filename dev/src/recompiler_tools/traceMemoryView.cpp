@@ -8,9 +8,10 @@
 
 namespace tools
 {
-	TraceMemoryView::TraceMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator, trace::DataFile& traceData)
-		: ImageMemoryView(projectImage, navigator)
+	TraceMemoryView::TraceMemoryView(const std::shared_ptr<Project>& project, const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator, trace::DataFile& traceData)
+		: ImageMemoryView(project, projectImage, navigator)
 		, m_seq(INVALID_TRACE_FRAME_ID)
+		, m_codeAddress(0)
 		, m_data(&traceData)
 		, m_functionMinSeq(INVALID_TRACE_FRAME_ID)
 		, m_functionMaxSeq(INVALID_TRACE_FRAME_ID)
@@ -29,6 +30,7 @@ namespace tools
 		{
 			m_seq = seq;
 			m_data->GetInnerMostCallFunction(seq, m_functionMinSeq, m_functionMaxSeq);
+			m_codeAddress = m_data->GetFrame(seq).GetAddress();
 		}
 
 		m_functionLocal = functionLocal;
@@ -91,6 +93,21 @@ namespace tools
 		sprintf_s(outHitCountText, 16, "%6u %6u", info.m_prev, info.m_next + info.m_prev);
 		return true;
 	}
+
+	bool TraceMemoryView::GetAddressMarkers(const uint32 offset, uint32& outMarkers, uint32& outLineOffset) const
+	{
+		auto drawMarkers = ImageMemoryView::GetAddressMarkers(offset, outMarkers, outLineOffset);
+
+		const auto address = GetBaseAddress() + offset;
+		if (address == m_codeAddress)
+		{
+			outMarkers |= 2; // eDrawingMarker_TraceCurrent
+			drawMarkers = true;
+		}
+
+		return drawMarkers;
+	}
+
 
 
 } // tools

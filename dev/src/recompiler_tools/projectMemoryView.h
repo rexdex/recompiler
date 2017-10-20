@@ -9,7 +9,7 @@ namespace tools
 	class ImageMemoryView : public IMemoryDataView
 	{
 	public:
-		ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator);
+		ImageMemoryView(const std::shared_ptr<Project>& project, const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator);
 		virtual ~ImageMemoryView();
 
 	protected:
@@ -21,7 +21,6 @@ namespace tools
 		virtual bool GetAddressText(const uint32 offset, IMemoryLinePrinter& printer) const;
 		virtual bool GetAddressMarkers(const uint32 offset, uint32& outMarkers, uint32& outLineOffset) const;
 		virtual bool ShowContextMenu(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const wxPoint& point);
-		virtual bool Navigate(class MemoryView* view, const uint32 startOffset, const uint32 endOffset, const bool bShift);
 		virtual bool Navigate(class MemoryView* view, const NavigationType type);
 		virtual void SelectionCursorMoved(class MemoryView* view, const uint32 newOffset, const bool createHistoryEntry);
 		virtual bool GetDirtyMemoryRegion(uint32& outStartOffset, uint32& outEndOffset) const;
@@ -29,6 +28,7 @@ namespace tools
 
 	private:
 		// project
+		const std::shared_ptr<Project>& m_project;
 		const std::shared_ptr<ProjectImage> m_projectImage;
 
 		// decoded image

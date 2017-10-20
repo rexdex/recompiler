@@ -8,11 +8,11 @@ namespace tools
 		DECLARE_EVENT_TABLE();
 
 	public:
-		FindSymbolDialog(decoding::Environment& env, wxWindow* parent);
+		FindSymbolDialog(const decoding::Environment& env, wxWindow* parent);
 		~FindSymbolDialog();
 
 		inline const char* GetSelectedSymbolName() const { return m_selectedSymbolName.c_str().AsChar(); }
-		inline const uint32 GetSelectedSymbolAddress() const { return m_selectedSymbolAddress; }
+		inline const uint64 GetSelectedSymbolAddress() const { return m_selectedSymbolAddress; }
 
 	private:
 		void OnTimer(wxTimerEvent& event);
@@ -45,9 +45,9 @@ namespace tools
 
 		// selected symbol
 		wxString			m_selectedSymbolName;
-		uint32				m_selectedSymbolAddress;
+		uint64				m_selectedSymbolAddress;
 
-		decoding::Environment*	m_env;
+		const decoding::Environment*	m_env;
 	};
 
 } // tools
