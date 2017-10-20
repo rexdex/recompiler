@@ -44,11 +44,8 @@
     <ClCompile Include="projectDynamicTraceData.cpp">
       <Filter>project</Filter>
     </ClCompile>
-    <ClCompile Include="canvas.cpp">
-      <Filter>widgets\canvas</Filter>
-    </ClCompile>
     <ClCompile Include="timeMachineView.cpp">
-      <Filter>widgets\timemachine</Filter>
+      <Filter>widgets\timemachineView</Filter>
     </ClCompile>
     <ClCompile Include="choiceDialog.cpp">
       <Filter>dialogs\choice</Filter>
@@ -153,11 +150,8 @@
       <Filter>project</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="canvas.h">
-      <Filter>widgets\canvas</Filter>
-    </ClInclude>
     <ClInclude Include="timeMachineView.h">
-      <Filter>widgets\timemachine</Filter>
+      <Filter>widgets\timemachineView</Filter>
     </ClInclude>
     <ClInclude Include="choiceDialog.h">
       <Filter>dialogs\choice</Filter>
@@ -236,9 +230,6 @@
     <Filter Include="widgets\codeView">
       <UniqueIdentifier>{70b603ee-9252-4f24-9107-1780d21af46a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="widgets\timemachine">
-      <UniqueIdentifier>{38976b6e-fe69-475c-8593-0ab78d97a747}</UniqueIdentifier>
-    </Filter>
     <Filter Include="tabs">
       <UniqueIdentifier>{68ee44ab-d299-47ff-8242-157afb33fae9}</UniqueIdentifier>
     </Filter>
@@ -287,14 +278,17 @@
     <Filter Include="widgets\treelist">
       <UniqueIdentifier>{db390724-bc70-488d-a702-4a50b10721ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="widgets\canvas">
-      <UniqueIdentifier>{93d4936f-f5ce-4e86-aea4-17c5a8cd9323}</UniqueIdentifier>
-    </Filter>
     <Filter Include="widgets\calltree">
       <UniqueIdentifier>{a31bbdf8-2841-4e95-80af-b22466d91785}</UniqueIdentifier>
     </Filter>
     <Filter Include="widgets\traceMemoryView">
       <UniqueIdentifier>{05ba8577-0376-492a-a246-695fdb551de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\regHorizontalView">
+      <UniqueIdentifier>{83394787-4427-442f-b2fc-9990469310d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\timemachineView">
+      <UniqueIdentifier>{38976b6e-fe69-475c-8593-0ab78d97a747}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

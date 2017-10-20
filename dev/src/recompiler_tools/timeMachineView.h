@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 
-#include "canvas.h"
 #include "../recompiler_core/timemachine.h"
 
 //-----------------------------------------------------------------------------
@@ -10,8 +9,10 @@
 namespace tools
 {
 	/// Displays code casual history
-	class TimeMachineView : public canvas::CanvasPanel
+	class TimeMachineView : public wxScrolledWindow
 	{
+		DECLARE_EVENT_TABLE();
+
 	public:
 		TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, INavigationHelper* navigator);
 		virtual ~TimeMachineView();
@@ -26,11 +27,16 @@ namespace tools
 		void ShowAllNodes();
 
 	private:
+		static const uint32_t AREA_SIZE = 65536;
+
 		INavigationHelper* m_navigator;
 
 		timemachine::Trace*		m_trace;
 
 		struct LayoutInfo;
+
+		// Draw font
+		wxFont m_drawFont;
 
 		// Slot information
 		struct SlotInfo
@@ -167,6 +173,7 @@ namespace tools
 
 		// Mouse mode
 		int32							m_mouseMode;
+		wxPoint							m_mouseLastPos;
 
 		// Clear all nodes
 		void ClearNodes();
@@ -178,8 +185,7 @@ namespace tools
 		void PrepareNodePlacement();
 
 		// Finalize layout
-		void DoShowRootNode(const int w, const int h);
-		void DoShowAllNodes(const int w, const int h);
+		void DoShowRootNode();
 
 		// Selection
 		void DeselectAll();
@@ -203,11 +209,13 @@ namespace tools
 		// Update hover stuff
 		void UpdateHover(const wxPoint& mousePoint);
 
+		// text drawing
+		void DrawTextAligned(wxDC& dc, const wxString& str, const wxPoint& p, const int32_t horizontalMode=0, const int32_t verticalMode=0);
+
 		// CanvasPanel interface
-		virtual void OnPaintCanvas(int width, int height) override;
-		virtual void OnMouseClick(wxMouseEvent& event) override;
-		virtual void OnMouseMove(wxMouseEvent& event, wxPoint delta) override;
-		virtual void OnMouseTrack(wxMouseEvent& event) override;
+		void OnPaint(wxPaintEvent& evt);
+		void OnErase(wxEraseEvent& evt);
+		void OnMouse(wxMouseEvent& event);
 	};
 
 } // tools

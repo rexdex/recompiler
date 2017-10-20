@@ -90,7 +90,6 @@
     <ClCompile Include="buildDialog.cpp" />
     <ClCompile Include="callTreeList.cpp" />
     <ClCompile Include="callTreeView.cpp" />
-    <ClCompile Include="canvas.cpp" />
     <ClCompile Include="choiceDialog.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="configManager.cpp" />
@@ -128,7 +127,6 @@
     <ClInclude Include="buildDialog.h" />
     <ClInclude Include="callTreeList.h" />
     <ClInclude Include="callTreeView.h" />
-    <ClInclude Include="canvas.h" />
     <ClInclude Include="choiceDialog.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="configManager.h" />

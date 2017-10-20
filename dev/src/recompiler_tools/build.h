@@ -75,61 +75,6 @@
 #include "wx/process.h"
 #include "wx/datetime.h"
 
-// Windows
-#include <windows.h>
-#include <commctrl.h>
-#include <dbghelp.h>
-
-// Widgets require these libs to link with 
-#pragma comment (lib, "comctl32.lib")
-#pragma comment (lib, "rpcrt4.lib")
-#pragma comment (lib, "gdiplus.lib")
-#pragma comment (lib, "dbghelp.lib")
-
-// common shit
-class Project;
-
-// Warnings
-#pragma warning ( disable: 4275 )
-
-template< typename T >
-const T& TemplateMin( const T& a, const T& b )
-{
-	if ( a < b ) return a;
-	return b;
-}
-
-template< typename T >
-const T& TemplateMax( const T& a, const T& b )
-{
-	if ( a > b ) return a;
-	return b;
-}
-
-template< typename T >
-const T& TemplateClamp( const T& v, const T& a, const T& b )
-{
-	if ( v <= a ) return a;
-	if ( v >= b ) return b;
-	return v;
-}
-
-// Min max for GDI+
-#ifndef min 
-#define min TemplateMin
-#endif
-
-#ifndef max
-#define max TemplateMax
-#endif
-
-// GDI+
-#include <GdiPlus.h>
-
-// Undefine
-#undef min
-#undef max
-
 // Backend
 #include "../recompiler_core/build.h"
 
@@ -138,6 +83,14 @@ const T& TemplateClamp( const T& v, const T& a, const T& b )
 #include "app.h"
 #include "bitmaps.h"
 #include "logWindow.h"
+
+template< typename T >
+const T& TemplateClamp(const T& v, const T& a, const T& b)
+{
+	if (v <= a) return a;
+	if (v >= b) return b;
+	return v;
+}
 
 namespace tools
 {

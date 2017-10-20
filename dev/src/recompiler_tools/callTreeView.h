@@ -1,6 +1,5 @@
 #pragma once
 
-#include "canvas.h"
 #include "../recompiler_core/traceDataFile.h"
 #include "../xenon_launcher/xenonUtils.h"
 

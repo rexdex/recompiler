@@ -83,21 +83,28 @@ namespace tools
 
 	void CallTreeView::EnsureVisible(const TraceFrameID seq)
 	{
-		const auto scrollX = GetViewStart().x;
-		const auto sizeX = GetClientSize().x;
+		const auto scroll = GetViewStart();
+		const auto size = GetClientSize();
 
-		const auto pos = (int)(seq / m_ticksPerPixel) - (int)scrollX;
+		auto newScroll = scroll;
+
+		// horizontal alignment
+		const auto pos = (int)(seq / m_ticksPerPixel) - (int)scroll.x;
 		if (pos < 50)
 		{
 			const auto delta = 50 - pos;
-			Scroll(std::max(0, scrollX - delta), GetViewStart().y);
+			newScroll.x = std::max(0, scroll.x - delta);
 			Refresh();
 		}
-		else if (pos > (sizeX-50))
+		else if (pos > (size.x-50))
 		{
-			const auto delta = pos - (sizeX - 50);
-			Scroll(scrollX + delta, GetViewStart().y);
-			Refresh();
+			const auto delta = pos - (size.x - 50);
+			newScroll.x = scroll.x + delta;
+		}
+
+		if (newScroll != scroll)
+		{
+			Scroll(newScroll.x, newScroll.y);
 		}
 	}
 

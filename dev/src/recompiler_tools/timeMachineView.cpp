@@ -79,8 +79,14 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
+	BEGIN_EVENT_TABLE(TimeMachineView, wxScrolledWindow)
+		EVT_PAINT(TimeMachineView::OnPaint)
+		EVT_ERASE_BACKGROUND(TimeMachineView::OnErase)
+		EVT_MOUSE_EVENTS(TimeMachineView::OnMouse)
+	END_EVENT_TABLE();
+
 	TimeMachineView::TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, INavigationHelper* navigator)
-		: canvas::CanvasPanel(parent, 0)
+		: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 		, m_requestedLayoutChange(0)
 		, m_trace(trace)
 		, m_mouseMode(0)
@@ -88,11 +94,21 @@ namespace tools
 		, m_highlightNode(nullptr)
 		, m_navigator(navigator)
 	{
+		// get default font
+		m_drawFont = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT("Arial"));
+
+		// canvas style
+		SetBackgroundStyle(wxBG_STYLE_PAINT);
+		SetScrollPageSize(wxVERTICAL, 16);
+		SetScrollPageSize(wxHORIZONTAL, 16);
+		SetVirtualSize(AREA_SIZE, AREA_SIZE);
+		SetScrollRate(1, 1);
+
 		// create the root node layout
-		if (GetLayoutNode(m_trace->GetRoot()))
-		{
-			ShowRootNode();
-		}
+		auto* rootNode = GetLayoutNode(m_trace->GetRoot());
+		rootNode->m_position = wxPoint(AREA_SIZE / 2, AREA_SIZE / 2);
+		rootNode->m_basePositionY = AREA_SIZE / 2;
+		ShowRootNode();
 	}
 
 	TimeMachineView::~TimeMachineView()
@@ -123,7 +139,7 @@ namespace tools
 		m_requestedLayoutChange = 2;
 	}
 
-	void TimeMachineView::DoShowRootNode(const int w, const int h)
+	void TimeMachineView::DoShowRootNode()
 	{
 		// no nodes
 		if (m_nodes.empty())
@@ -133,27 +149,13 @@ namespace tools
 		PrepareLayout();
 
 		// find center of the root node
-		auto rootNode = GetLayoutNode(m_trace->GetRoot());
-		const wxPoint rootCenter = rootNode->m_position + (rootNode->m_size / 2);
+		const auto rootNode = GetLayoutNode(m_trace->GetRoot());
+		const auto rootCenter = rootNode->m_position + (rootNode->m_size / 2);
 
 		// offset to center node, reset zoom
-		SetOffset((w / 2) - rootCenter.x, (h / 2) - rootCenter.y);
-		SetScale(1.0f);
-
-		// redraw
-		CanvasPanel::Repaint();
-	}
-
-	void TimeMachineView::DoShowAllNodes(const int w, const int h)
-	{
-		// no nodes
-		if (m_nodes.empty())
-			return;
-
-		// make sure block layout is up to date
-		PrepareLayout();
-
-		// compute 
+		const auto size = GetClientSize();
+		const auto scrollPos = rootCenter - (size / 2);
+		Scroll(scrollPos);
 	}
 
 	void TimeMachineView::ClearNodes()
@@ -293,7 +295,7 @@ namespace tools
 			}
 
 			// redraw
-			Repaint();
+			Refresh();
 		}
 	}
 
@@ -439,7 +441,8 @@ namespace tools
 
 		// compute the vertical placement of the rows
 		std::map< int32, int32 > nodePlacementY;
-		nodePlacementY[0] = 0; // ROOT level is aways at 0
+		auto* rootNodeLayout = GetLayoutNode(m_trace->GetRoot());
+		nodePlacementY[0] = rootNodeLayout->m_position.y;
 
 		// place the nodes with depth > 0
 		for (int32 depth = 1; depth <= maxDepth; ++depth)
@@ -460,10 +463,12 @@ namespace tools
 		{
 			auto node = it.second;
 			const auto level = node->m_renderingLevel;
-
-			int offsetY = node->m_position.y - node->m_basePositionY;
-			node->m_basePositionY = nodePlacementY[level];
-			node->m_position.y = node->m_basePositionY + offsetY;
+			if (node != rootNodeLayout)
+			{
+				int offsetY = node->m_position.y - node->m_basePositionY;
+				node->m_basePositionY = nodePlacementY[level];
+				node->m_position.y = node->m_basePositionY + offsetY;
+			}
 		}
 	}
 
@@ -479,17 +484,21 @@ namespace tools
 		const uint32 innerMarginX = 30;
 		const uint32 innerMarginY = 40;
 
+		// temp DC
+		wxClientDC dc(this);
+		dc.SetFont(m_drawFont);
+
 		// refresh the size of the dirty nodes
 		for (auto it : nodes)
 		{
 			// measure size of the text
-			const wxSize textSize = canvas::CanvasPanel::GetTextExtent(it->m_caption);
+			const wxSize textSize = dc.GetTextExtent(it->m_caption);
 
 			// measure the required size of the block, based on the number of inputs/outputs and the values
 			uint32 inputRegionSize = 0;
 			for (const auto& jt : it->m_inputs)
 			{
-				const wxSize textSize = canvas::CanvasPanel::GetTextExtent(jt->m_name);
+				const wxSize textSize = dc.GetTextExtent(jt->m_name);
 				if (inputRegionSize) inputRegionSize += slotSeparation; // 
 				inputRegionSize += textSize.x;
 			}
@@ -498,7 +507,7 @@ namespace tools
 			uint32 outputRegionSize = 0;
 			for (const auto& jt : it->m_outputs)
 			{
-				const wxSize textSize = canvas::CanvasPanel::GetTextExtent(jt->m_name);
+				const wxSize textSize = dc.GetTextExtent(jt->m_name);
 				if (outputRegionSize) outputRegionSize += slotSeparation; // 
 				outputRegionSize += textSize.x;
 			}
@@ -528,7 +537,7 @@ namespace tools
 				uint32 slotX = innerMarginX / 2 + (blockSizeX - inputRegionSize) / 2;
 				for (uint32 i = 0; i < it->m_inputs.size(); ++i)
 				{
-					const wxSize textSize = canvas::CanvasPanel::GetTextExtent(it->m_inputs[i]->m_name);
+					const wxSize textSize = dc.GetTextExtent(it->m_inputs[i]->m_name);
 
 					it->m_inputs[i]->m_offset.x = slotX + textSize.x / 2;
 					it->m_inputs[i]->m_offset.y = inputY;
@@ -552,7 +561,7 @@ namespace tools
 				uint32 slotX = innerMarginX / 2 + (blockSizeX - outputRegionSize) / 2;
 				for (uint32 i = 0; i < it->m_outputs.size(); ++i)
 				{
-					const wxSize textSize = canvas::CanvasPanel::GetTextExtent(it->m_outputs[i]->m_name);
+					const wxSize textSize = dc.GetTextExtent(it->m_outputs[i]->m_name);
 
 					it->m_outputs[i]->m_offset.x = slotX + textSize.x / 2;
 					it->m_outputs[i]->m_offset.y = outputY;
@@ -576,20 +585,40 @@ namespace tools
 		PrepareNodePlacement();
 	}
 
-	void TimeMachineView::OnPaintCanvas(int width, int height)
+	void TimeMachineView::DrawTextAligned(wxDC& dc, const wxString& str, const wxPoint& p, const int32_t horizontalMode /*= 0*/, const int32_t verticalMode /*= 0*/)
 	{
+		const auto extens = dc.GetTextExtent(str);
+
+		auto pos = p;
+
+		if (horizontalMode == 0)
+			pos.x -= extens.x / 2;
+		else if (horizontalMode == 1)
+			pos.x -= extens.x;
+
+		if (verticalMode == 0)
+			pos.y -= extens.y / 2;
+		else if (verticalMode == 1)
+			pos.y -= extens.y;
+
+		dc.DrawText(str, pos);
+	}
+
+	void TimeMachineView::OnPaint(wxPaintEvent& evt)
+	{
+		wxBufferedPaintDC dc(this);
+		DoPrepareDC(dc);
+
 		// background
-		Clear(wxColour(80, 80, 80));
+		{
+			dc.SetBackground(wxBrush(wxColour(80, 80, 80)));
+			dc.Clear();
+		}
 
 		// layout change
 		if (m_requestedLayoutChange == 1)
 		{
-			DoShowRootNode(width, height);
-			m_requestedLayoutChange = 0;
-		}
-		else if (m_requestedLayoutChange == 2)
-		{
-			DoShowRootNode(width, height);
+			DoShowRootNode();
 			m_requestedLayoutChange = 0;
 		}
 
@@ -600,6 +629,7 @@ namespace tools
 		const uint32 nodeRectBevel = 8;
 
 		// draw connections
+		dc.SetPen(wxPen(wxColor(32, 32, 32), 2));
 		for (auto it : m_nodes)
 		{
 			const auto* node = it.second;
@@ -615,12 +645,25 @@ namespace tools
 					const auto otherRect = kt->GetRect();
 
 					// draw connection
-					DrawLine(RectCenter(rect), RectCenter(otherRect), wxColour(32, 32, 32), 2.0f);
+					const auto startPos = RectCenter(rect);
+					const auto endPos = RectCenter(otherRect);
+					dc.DrawLine(startPos, endPos);
 				}
 			}
 		}
 
 		// draw nodes
+		wxBrush nodeBrush(wxColor(128, 128, 128));
+		wxPen nodePenNormal(wxColor(0, 0, 0), 1);
+		wxPen nodePenSelected(wxColor(255, 255, 0), 3);
+
+		wxBrush socketBrush(wxColor(128, 128, 128));
+		wxPen socketPenNormal(wxColor(255, 255, 0), 1);
+		wxPen socketPenSelected(wxColor(255, 255, 0), 1);
+
+		wxBrush slotBrush(wxColor(200, 128, 128));
+		wxPen slotPen(wxColor(0, 0, 0));
+
 		for (auto it : m_nodes)
 		{
 			const auto* node = it.second;
@@ -629,8 +672,9 @@ namespace tools
 			{
 				// node background
 				const bool isSelected = IsSelected(it.first);
-				FillRoundedRect(node->GetRect(), wxColour(128, 128, 128), nodeRectBevel);
-				DrawRoundedRect(node->GetRect(), isSelected ? wxColour(255, 255, 128) : wxColour(0, 0, 0), nodeRectBevel, isSelected ? 3.0f : 1.0f);
+				dc.SetBrush(nodeBrush);
+				dc.SetPen(isSelected ? nodePenSelected : nodePenNormal);
+				dc.DrawRoundedRectangle(node->GetRect(), nodeRectBevel);
 
 				// draw input slots
 				for (auto jt : node->m_inputs)
@@ -642,14 +686,17 @@ namespace tools
 					{
 						const bool isHighligted = (jt == m_highlightSlot);
 						const auto boxRect = jt->GetUnconnectedBox();
-						DrawLine(RectCenter(rect), RectCenter(boxRect), wxColour(0, 0, 0), 1.0f);
-						FillCircle(boxRect, wxColour(128, 128, 128));
-						DrawCircle(boxRect, isHighligted ? wxColour(255, 255, 0) : wxColour(0, 0, 0));
+						dc.SetPen(nodePenNormal);
+						dc.DrawLine(RectCenter(rect), RectCenter(boxRect));
+						dc.SetPen(isHighligted ? socketPenSelected : socketPenNormal);
+						dc.SetBrush(socketBrush);
+						dc.DrawEllipse(boxRect);
 					}
 
 					// slot shape
-					FillCircle(rect, wxColour(200, 128, 128));
-					DrawCircle(rect, wxColour(0, 0, 0));
+					dc.SetBrush(slotBrush);
+					dc.SetPen(slotPen);
+					dc.DrawEllipse(rect);
 				}
 
 				// draw output slots
@@ -662,14 +709,17 @@ namespace tools
 					{
 						const bool isHighligted = (jt == m_highlightSlot);
 						const auto boxRect = jt->GetUnconnectedBox();
-						DrawLine(RectCenter(rect), RectCenter(boxRect), wxColour(0, 0, 0), 1.0f);
-						FillCircle(boxRect, wxColour(128, 128, 128));
-						DrawCircle(boxRect, isHighligted ? wxColour(255, 255, 0) : wxColour(0, 0, 0));
+						dc.SetPen(nodePenNormal);
+						dc.DrawLine(RectCenter(rect), RectCenter(boxRect));
+						dc.SetPen(isHighligted ? socketPenSelected : socketPenNormal);
+						dc.SetBrush(socketBrush);
+						dc.DrawEllipse(boxRect);
 					}
 
 					// slot shape
-					FillCircle(rect, wxColour(128, 200, 128));
-					DrawCircle(rect, wxColour(0, 0, 0));
+					dc.SetBrush(slotBrush);
+					dc.SetPen(slotPen);
+					dc.DrawEllipse(rect);
 				}
 			}
 
@@ -677,32 +727,38 @@ namespace tools
 			{
 				// block caption
 				// TODO: instruction class should determine the color
-				DrawText(node->GetTextPlacement() + wxPoint(1, 1), canvas::eFontType_Bold, node->m_caption.c_str().AsChar(), wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
-				DrawText(node->GetTextPlacement(), canvas::eFontType_Bold, node->m_caption.c_str().AsChar(), wxColour(255, 255, 255), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
+				dc.SetTextForeground(wxColor(0, 0, 0));
+				DrawTextAligned(dc, node->m_caption, node->GetTextPlacement() + wxPoint(1, 1));
+				dc.SetTextForeground(wxColor(255, 255, 25));
+				DrawTextAligned(dc, node->m_caption, node->GetTextPlacement());
 
 				// draw input captions
 				for (auto jt : node->m_inputs)
 				{
-					DrawText(jt->GetTextPlacement(), canvas::eFontType_Normal, jt->m_name.c_str().AsChar(), wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
+					dc.SetTextForeground(wxColor(0, 0, 0));
+					DrawTextAligned(dc, jt->m_name, jt->GetTextPlacement());
 
 					// slot is not connected
 					if (!jt->HasConnections())
 					{
 						const auto point = jt->GetUnconnectedTextPlacement();
-						DrawText(point, canvas::eFontType_Normal, "?", wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
+						dc.SetTextForeground(wxColor(0, 0, 0));
+						DrawTextAligned(dc, "?", point);
 					}
 				}
 
 				// output captions
 				for (auto jt : node->m_outputs)
 				{
-					DrawText(jt->GetTextPlacement(), canvas::eFontType_Normal, jt->m_name.c_str().AsChar(), wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
+					dc.SetTextForeground(wxColor(0, 0, 0));
+					DrawTextAligned(dc, jt->m_name, jt->GetTextPlacement());
 
 					// slot is not connected
 					if (!jt->HasConnections())
 					{
 						const auto point = jt->GetUnconnectedTextPlacement();
-						DrawText(point, canvas::eFontType_Normal, "?", wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Center);
+						dc.SetTextForeground(wxColor(0, 0, 0));
+						DrawTextAligned(dc, "?", point);
 					}
 				}
 			}
@@ -719,7 +775,8 @@ namespace tools
 						str += " <-- ";
 						str += jt->m_value;
 
-						DrawText(jt->GetValueTextPlacement(), canvas::eFontType_Normal, str.c_str().AsChar(), wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Left);
+						dc.SetTextForeground(wxColor(0, 0, 0));
+						DrawTextAligned(dc, str, jt->GetValueTextPlacement());
 					}
 				}
 
@@ -733,7 +790,8 @@ namespace tools
 						str += " --> ";
 						str += jt->m_value;
 
-						DrawText(jt->GetValueTextPlacement(), canvas::eFontType_Normal, str.c_str().AsChar(), wxColour(0, 0, 0), canvas::eVerticalAlign_Center, canvas::eHorizontalAlign_Left);
+						dc.SetTextForeground(wxColor(0, 0, 0));
+						DrawTextAligned(dc, str, jt->GetValueTextPlacement());
 					}
 				}
 			}
@@ -744,7 +802,8 @@ namespace tools
 				char traceIndex[64];
 				sprintf_s(traceIndex, "#%05llu", node->m_entry->GetTraceIndex());
 
-				DrawText(node->GetTraceTextPlacement(), canvas::eFontType_Normal, traceIndex, wxColour(0, 0, 0), canvas::eVerticalAlign_Top, canvas::eHorizontalAlign_Right);
+				dc.SetTextForeground(wxColor(0, 0, 0));
+				DrawTextAligned(dc, traceIndex, node->GetTraceTextPlacement(), 1, 1);
 			}
 
 			// Node code addr
@@ -753,13 +812,16 @@ namespace tools
 				char codeAddress[64];
 				sprintf_s(codeAddress, "0x%08llX", node->m_entry->GetCodeAddres());
 
-				DrawText(node->GetAddrTextPlacement(), canvas::eFontType_Normal, codeAddress, wxColour(0, 0, 0), canvas::eVerticalAlign_Top, canvas::eHorizontalAlign_Right);
+				dc.SetTextForeground(wxColor(0, 0, 0));
+				DrawTextAligned(dc, codeAddress, node->GetAddrTextPlacement(), 1, 1);
 			}
-
 		}
 	}
 
-	void TimeMachineView::OnMouseClick(wxMouseEvent& event)
+	void TimeMachineView::OnErase(wxEraseEvent& evt)
+	{}
+
+	void TimeMachineView::OnMouse(wxMouseEvent& event)
 	{
 		if (m_mouseMode == 0)
 		{
@@ -770,7 +832,7 @@ namespace tools
 					DeselectAll();
 
 				// find entry at point
-				const auto* node = GetEntryAtPos(ClientToCanvas(event.GetPosition()));
+				const auto* node = GetEntryAtPos(CalcUnscrolledPosition(event.GetPosition()));
 				if (node != nullptr)
 				{
 					Select(node, !IsSelected(node));
@@ -778,28 +840,30 @@ namespace tools
 					// start node movement 
 					if (IsSelected(node))
 					{
-						CaptureMouse(canvas::eMouseCapture_Capture);
+						CaptureMouse();
+						m_mouseLastPos = event.GetPosition();
 						m_mouseMode = 2;
 					}
 				}
 				else
 				{
 					// start background scrolling
-					CaptureMouse(canvas::eMouseCapture_Capture);
+					CaptureMouse();
+					m_mouseLastPos = event.GetPosition();
 					m_mouseMode = 1;
 				}
 			}
 
 			if (event.LeftDClick())
-			{
-				auto* slot = GetUnconnectedSlotAtPos(ClientToCanvas(event.GetPosition()));
+			{				
+				auto* slot = GetUnconnectedSlotAtPos(CalcUnscrolledPosition(event.GetPosition()));
 				if (slot != nullptr)
 				{
 					ExploreSlot(slot);
 				}
 				else
 				{
-					const auto* node = GetEntryAtPos(ClientToCanvas(event.GetPosition()));
+					const auto* node = GetEntryAtPos(CalcUnscrolledPosition(event.GetPosition()));
 					if (node != nullptr)
 					{
 						m_navigator->NavigateToFrame(node->GetTraceIndex());
@@ -809,67 +873,65 @@ namespace tools
 		}
 		else if (m_mouseMode == 1 && event.LeftUp())
 		{
-			CaptureMouse(canvas::eMouseCapture_None);
+			ReleaseMouse();
 			m_mouseMode = 0;
 		}
 		else if (m_mouseMode == 2 && event.LeftUp())
 		{
-			CaptureMouse(canvas::eMouseCapture_None);
+			ReleaseMouse();
 			m_mouseMode = 0;
 		}
-	}
 
-	void TimeMachineView::OnMouseMove(wxMouseEvent& event, wxPoint delta)
-	{
-		if (m_mouseMode == 1)
+		// moose movement ;)
+		else if (event.Dragging() && m_mouseMode == 1)
 		{
-			Scroll(delta.x, delta.y, true);
-			Repaint();
+			const auto delta = event.GetPosition() - m_mouseLastPos;
+			const auto pos = GetViewStart() - delta;
+			Scroll(pos);
+			Refresh();
 		}
-		else if (m_mouseMode == 2)
+		else if (event.Dragging() && m_mouseMode == 2)
 		{
 			for (auto* entry : m_selection)
 			{
 				LayoutInfo* layout = GetLayoutNode(entry);
 				if (layout)
 				{
+					const auto delta = event.GetPosition() - m_mouseLastPos;
 					layout->m_position += delta;
 				}
 			}
 
 			if (!m_selection.empty())
-				Repaint();
+				Refresh();
 		}
-	}
 
-	void TimeMachineView::UpdateHover(const wxPoint& mousePoint)
-	{
-		bool refresh = false;
-
-		// update slot hover
+		// tracking
+		else if (event.Moving())
 		{
-			auto newSlot = GetUnconnectedSlotAtPos(mousePoint);
-			refresh |= (newSlot != m_highlightSlot);
-			m_highlightSlot = newSlot;
+			bool refresh = false;
+
+			// update slot hover
+			{
+				auto newSlot = GetUnconnectedSlotAtPos(CalcUnscrolledPosition(event.GetPosition()));
+				refresh |= (newSlot != m_highlightSlot);
+				m_highlightSlot = newSlot;
+			}
+
+			// update node hover
+			{
+				auto newNode = GetEntryAtPos(CalcUnscrolledPosition(event.GetPosition()));
+				refresh |= (newNode != m_highlightNode);
+				m_highlightNode = newNode;
+			}
+
+			// redraw
+			if (refresh)
+				Refresh();
 		}
 
-		// update node hover
-		{
-			auto newNode = GetEntryAtPos(mousePoint);
-			refresh |= (newNode != m_highlightNode);
-			m_highlightNode = newNode;
-		}
-
-		// redraw
-		if (refresh)
-		{
-			Repaint();
-		}
-	}
-
-	void TimeMachineView::OnMouseTrack(wxMouseEvent& event)
-	{
-		UpdateHover(ClientToCanvas(event.GetPosition()));
+		// update mouse position
+		m_mouseLastPos = event.GetPosition();
 	}
 
 } // tools

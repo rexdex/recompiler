@@ -38,7 +38,6 @@ namespace tools
 		: m_startWindow(nullptr)
 		, m_logWindow(nullptr)
 		, m_projectWindow(nullptr)
-		, m_gdiplusToken(nullptr)
 	{
 		wxFileName f(wxStandardPaths::Get().GetExecutablePath());
 		f.ClearExt();
@@ -79,16 +78,9 @@ namespace tools
 
 	bool App::OnInit()
 	{
-		//	LoadLibraryA( "comctl32.dll" );
-		//InitCommonControls();
-
 		// app name
 		SetVendorName(wxT("Recompiler"));
 		SetAppName(wxT("Recompiler v1.0"));
-
-		/// initialize GDI+
-		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-		Gdiplus::GdiplusStartup((ULONG_PTR*)&m_gdiplusToken, &gdiplusStartupInput, NULL);
 
 		// initialize XML resources
 		wxInitAllImageHandlers();
