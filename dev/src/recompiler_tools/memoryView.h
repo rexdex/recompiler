@@ -24,25 +24,6 @@ namespace tools
 
 	//-----------------------------------------------------------------------------
 
-	/// Navigation type
-	enum class NavigationType
-	{
-		LocalStart,
-		LocalEnd,
-		LocalStepBack,
-		LocalStepIn,
-
-		GlobalStart,
-		GlobalEnd,
-		GlobalStepBack,
-		GlobalStepIn,
-
-		Back,
-		Advance,
-	};
-
-	//-----------------------------------------------------------------------------
-
 	/// Memory view interface
 	class IMemoryDataView
 	{

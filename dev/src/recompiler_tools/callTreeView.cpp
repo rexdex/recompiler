@@ -2,8 +2,6 @@
 #include "callTreeView.h"
 #include "../recompiler_core/traceDataFile.h"
 
-#pragma optimize("",off)
-
 namespace tools
 {
 	//---
@@ -27,7 +25,7 @@ namespace tools
 		return wxColor(retR, retG, retB);
 	}
 
-	CallTreeView::CallTreeView(wxWindow* parent, ICallTreeViewNavigationHelper* navigator)
+	CallTreeView::CallTreeView(wxWindow* parent, INavigationHelper* navigator)
 		: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 		, m_data(nullptr)
 		, m_ticksPerPixel(1024)
@@ -36,12 +34,13 @@ namespace tools
 		, m_offset(0)
 	{
 		SetBackgroundStyle(wxBG_STYLE_PAINT);
-		SetScrollRate(1, 1);
 		SetScrollPageSize(wxVERTICAL, LINE_HEIGHT);
 		SetScrollPageSize(wxHORIZONTAL, m_ticksPerPixel);
 
-		const wxColor colorStartThread("#adff2f");
-		const wxColor colorEndThread("#32cd32");
+		//const wxColor colorStartThread("#adadad");
+		//const wxColor colorEndThread("#323232");
+		const wxColor colorStartThread("#C880C8");
+		const wxColor colorEndThread("#7F7398");
 
 		const wxColor colorStartIRQ("#ffad2f");
 		const wxColor colorEndIRQ("#cd3232");
@@ -84,19 +83,21 @@ namespace tools
 
 	void CallTreeView::EnsureVisible(const TraceFrameID seq)
 	{
-		const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+		const auto scrollX = GetViewStart().x;
 		const auto sizeX = GetClientSize().x;
 
 		const auto pos = (int)(seq / m_ticksPerPixel) - (int)scrollX;
 		if (pos < 50)
 		{
 			const auto delta = 50 - pos;
-			SetScrollPos(wxHORIZONTAL, scrollX - delta, true);
+			Scroll(std::max(0, scrollX - delta), GetViewStart().y);
+			Refresh();
 		}
 		else if (pos > (sizeX-50))
 		{
 			const auto delta = pos - (sizeX - 50);
-			SetScrollPos(wxHORIZONTAL, scrollX + delta, true);
+			Scroll(scrollX + delta, GetViewStart().y);
+			Refresh();
 		}
 	}
 
@@ -133,6 +134,9 @@ namespace tools
 				group->m_lastId = group->GetLastSeq();
 			}
 		}
+
+		// layout the data
+		LayoutAll();
 	}
 
 	void CallTreeView::CreateCallStackBlocks(const trace::DataFile& data, DataGroup& group, const uint32_t lineIndex, const uint32_t callStackEntry)
@@ -183,16 +187,17 @@ namespace tools
 	{
 		if (m_ticksPerPixel != ticks)
 		{
-			const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+			const auto scrollX = GetViewStart().x;
 
 			const auto extraPixels = (zoomCenterPos / m_ticksPerPixel) - scrollX;
 			m_ticksPerPixel = ticks;
 			const auto newScrollX = (zoomCenterPos / m_ticksPerPixel) - extraPixels;
 
+			Freeze();
 			LayoutAll();
-			SetScrollPos(wxHORIZONTAL, newScrollX, true);
+			Scroll(newScrollX, GetViewStart().y);
+			Thaw();
 			Refresh();
-			SetScrollPos(wxHORIZONTAL, newScrollX, true);
 		}
 	}
 
@@ -218,6 +223,8 @@ namespace tools
 			renderBlock.m_firstBlock = &line.m_blocks[curBlock];
 			renderBlock.m_start = MapCoordinate(renderBlock.m_firstBlock->m_start);
 			renderBlock.m_end = MapCoordinate(renderBlock.m_firstBlock->m_end);
+			renderBlock.m_logicStart = renderBlock.m_firstBlock->m_start.m_seq;
+			renderBlock.m_logicEnd = renderBlock.m_firstBlock->m_end.m_seq;
 			curBlock += 1;
 
 			// set brush
@@ -229,19 +236,23 @@ namespace tools
 				renderBlock.m_brush = &m_renderBrushesAPC[lineIndex];
 
 			// glue more blocks
-			while (curBlock < numBlocks)
+			if (m_ticksPerPixel > 1)
 			{
-				const auto& nextBlock = line.m_blocks[curBlock];
-				const auto nextBlockStart = MapCoordinate(nextBlock.m_start);
-				if (nextBlockStart < renderBlock.m_end + MinRequiredSeparation)
+				while (curBlock < numBlocks)
 				{
-					renderBlock.m_end = MapCoordinate(nextBlock.m_end);
-					curBlock += 1;
-					numMergedBlocks += 1;
-				}
-				else
-				{
-					break;
+					const auto& nextBlock = line.m_blocks[curBlock];
+					const auto nextBlockStart = MapCoordinate(nextBlock.m_start);
+					if (nextBlockStart < renderBlock.m_end + MinRequiredSeparation)
+					{
+						renderBlock.m_logicEnd = nextBlock.m_end.m_seq;
+						renderBlock.m_end = MapCoordinate(nextBlock.m_end);
+						curBlock += 1;
+						numMergedBlocks += 1;
+					}
+					else
+					{
+						break;
+					}
 				}
 			}
 
@@ -267,13 +278,16 @@ namespace tools
 		xMax = std::max(xMax, maxRenderX);
 	}
 
-	void CallTreeView::LayoutGroups(const trace::ContextType type, uint32_t& yPos, uint32_t& xMax)
+	void CallTreeView::LayoutGroups(const trace::ContextType type, uint32_t& yPos, uint32_t& xMax, const char* name)
 	{
 		for (const auto* group : m_groups)
 		{
 			// skip groups that don't match
 			if (group->m_type != type)
 				continue;
+
+			// space for the group title
+			yPos += LINE_HEIGHT;
 
 			// pack lines
 			auto lineIndex = 0;
@@ -284,6 +298,9 @@ namespace tools
 				renderLine->m_yPosEnd = yPos + LINE_HEIGHT;
 				yPos += LINE_HEIGHT + 2;
 				m_renderLines.push_back(renderLine);
+
+				if (lineIndex == 0)
+					renderLine->m_text = name;
 
 				LayoutLine(type, *line, lineIndex, *renderLine, xMax);
 				lineIndex += 1;
@@ -299,67 +316,78 @@ namespace tools
 		// than threads, than IRQ groups, than APC
 		uint32_t y = 0;
 		uint32_t x = 0;
-		LayoutGroups(trace::ContextType::Thread, y, x); y += LINE_HEIGHT;
-		LayoutGroups(trace::ContextType::IRQ, y, x); y += LINE_HEIGHT;
-		LayoutGroups(trace::ContextType::APC, y, x); y += LINE_HEIGHT;
+
+		LayoutGroups(trace::ContextType::Thread, y, x, "Threads");
+		LayoutGroups(trace::ContextType::IRQ, y, x, "IRQ");
+		LayoutGroups(trace::ContextType::APC, y, x, "APC");
 
 		// update render size
 		m_layoutSize = wxSize(x, y);
 
 		// update scrollbar
+		SetScrollRate(1, 1);
 		SetVirtualSize(m_layoutSize.x, m_layoutSize.y);
 	}
 
 	void CallTreeView::OnPaint(wxPaintEvent& evt)
 	{
-		// restore rendering layout
-		if (m_renderLines.empty())
-			LayoutAll();
-
 		// setup drawing
 		wxBufferedPaintDC dc(this);
 		DoPrepareDC(dc);
 
 		// get the draw range
-		const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
-		const auto scrollY = this->GetScrollPos(wxVERTICAL);
-		const auto sizeX = GetClientSize().x;
-		const auto sizeY = GetClientSize().y;
-		const auto minPos = wxPoint(scrollX, scrollY);
-		const auto maxPos = wxPoint(scrollX+sizeX, scrollY+sizeY);
+		const auto size = GetClientSize();
+		const auto start = GetViewStart();
+		const auto end = start + size;
+
+		// colors
+		const auto backColor = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE);
+		const auto textColor = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT);
+		const auto shadowColor = wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW);
+		const auto selectColor = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 
 		// draw background
-		{
-			wxBrush backgroundBrush(wxColor(80, 80, 80), wxBRUSHSTYLE_SOLID);
-			dc.SetBrush(backgroundBrush);
-			dc.Clear();
-		}
+		dc.SetBackground(wxBrush(backColor));
+		dc.Clear();
 
 		// pen
 		wxPen solidPen(wxColor(0, 0, 0), 1);
+		wxPen writePen(wxColor(255, 255, 255), 1);
+		wxPen shadowPen(shadowColor, 1);
+		wxBrush selectionBrush(selectColor);
 
 		// draw lines
 		for (const auto& line : m_renderLines)
 		{
 			const auto height = line->m_yPosEnd - line->m_yPosStart;
 
+			// draw line caption
+			if (!line->m_text.empty())
+			{
+				dc.SetPen(writePen);
+				dc.DrawText(line->m_text, wxPoint(start.x + 10, line->m_yPosStart - LINE_HEIGHT));
+
+				dc.SetTextForeground(textColor);
+				dc.DrawLine(start.x, line->m_yPosStart - 4, end.x, line->m_yPosStart - 4);
+			}
+
 			// skip if not visible
-			if ((int)line->m_yPosEnd <= minPos.y)
+			if ((int)line->m_yPosEnd <= start.y)
 				continue;
 
 			// end when becomes invisible
-			if ((int)line->m_yPosStart > maxPos.y)
+			if ((int)line->m_yPosStart > end.y + LINE_HEIGHT)
 				break;
 
 			// render line blocks
 			for (const auto& block : line->m_blocks)
 			{
 				// skip if not visible
-				if ((int)block.m_end <= minPos.x)
+				if ((int)block.m_end <= start.x)
 					continue;
 
 				// end when becomes invisible
-				if ((int)block.m_start > maxPos.x)
+				if ((int)block.m_start > end.x)
 					break;
 
 				// draw block
@@ -367,14 +395,19 @@ namespace tools
 					const auto width = block.m_end - block.m_start;
 					const wxRect rect(block.m_start, line->m_yPosStart, width, height);
 
-					dc.SetBrush(*block.m_brush);
-					dc.SetPen(solidPen);
+					if (m_currentPosition >= block.m_logicStart && m_currentPosition <= block.m_logicEnd)
+						dc.SetBrush(selectionBrush);
+					else
+						dc.SetBrush(*block.m_brush);
+
+					dc.SetPen(shadowPen);
 					dc.DrawRectangle(rect);
 
 					// draw text
 					if (!block.m_caption.empty())
 					{
 						dc.SetClippingRegion(rect);
+						dc.SetTextForeground(textColor);
 						dc.DrawText(block.m_caption, wxPoint(block.m_start + 5, line->m_yPosStart + 2));
 						dc.DestroyClippingRegion();
 					}
@@ -386,7 +419,7 @@ namespace tools
 		{
 			auto pos = m_currentPosition / m_ticksPerPixel;
 			dc.SetPen(wxPen(wxColor(0, 0, 0), 3));
-			dc.DrawLine(pos, scrollY - 100, pos, scrollY + sizeY + 100);
+			dc.DrawLine(pos, start.y - 100, pos, end.y + 100);
 		}
 	}
 
@@ -398,7 +431,7 @@ namespace tools
 	{
 		if (evt.LeftIsDown())
 		{
-			const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+			const auto scrollX = GetViewStart().x;
 			const uint64 pos = (scrollX + evt.GetPosition().x) * m_ticksPerPixel;
 			m_navigator->NavigateToFrame(pos);
 		}
@@ -419,7 +452,7 @@ namespace tools
 
 	void CallTreeView::OnMouseWheel(wxMouseEvent& evt)
 	{
-		const auto scrollX = this->GetScrollPos(wxHORIZONTAL);
+		const auto scrollX = GetViewStart().x;
 		const uint64 pos = (scrollX + evt.GetPosition().x) * m_ticksPerPixel;
 
 		if (evt.GetWheelRotation() < 0)

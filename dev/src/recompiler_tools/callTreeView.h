@@ -14,22 +14,13 @@ namespace tools
 		Ticks,
 	};
 
-	// call tree navigation
-	class ICallTreeViewNavigationHelper
-	{
-	public:
-		virtual ~ICallTreeViewNavigationHelper() {};
-
-		virtual bool NavigateToFrame(const TraceFrameID id) = 0;
-	};
-
 	// call tree, displays call stack of the whole trace
 	class CallTreeView : public wxScrolledWindow
 	{
 		DECLARE_EVENT_TABLE();
 
 	public:
-		CallTreeView(wxWindow* parent, ICallTreeViewNavigationHelper* navigator);
+		CallTreeView(wxWindow* parent, INavigationHelper* navigator);
 		virtual ~CallTreeView();
 
 		/// clear all data
@@ -51,7 +42,7 @@ namespace tools
 		uint64_t m_ticksPerPixel;
 		int64_t m_offset;
 
-		ICallTreeViewNavigationHelper* m_navigator;
+		INavigationHelper* m_navigator;
 
 		trace::DataFile* m_data;
 
@@ -125,12 +116,15 @@ namespace tools
 			uint32 m_numBlocks; // number of merged blocks
 			uint64_t m_start; // pixels
 			uint64_t m_end; // pixels
+			uint64_t m_logicStart;
+			uint64_t m_logicEnd;
 			wxString m_caption;
 			const wxBrush* m_brush;
 		};
 
 		struct RenderLine
 		{
+			wxString m_text;
 			uint32_t m_yPosStart;
 			uint32_t m_yPosEnd;
 			std::vector<RenderBlock> m_blocks;
@@ -148,7 +142,7 @@ namespace tools
 		wxSize m_layoutSize;
 
 		void LayoutAll();
-		void LayoutGroups(const trace::ContextType type, uint32_t& yPos, uint32_t& xMax);
+		void LayoutGroups(const trace::ContextType type, uint32_t& yPos, uint32_t& xMax, const char* name);
 		void LayoutLine(const trace::ContextType type, const DataLine& line, const uint32_t lineIndex, RenderLine& outRenderLine, uint32_t& xMax);
 
 		uint32_t MapCoordinate(const trace::LocationInfo& info);

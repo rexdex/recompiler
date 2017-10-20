@@ -17,11 +17,11 @@
 
 namespace tools
 {
-	ImageMemoryView::ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, IImageMemoryNavigationHelper* imageTab)
+	ImageMemoryView::ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator)
 		: m_projectImage(projectImage)
 		, m_imageData(projectImage->GetEnvironment().GetImage().get())
 		, m_decodingContext(projectImage->GetEnvironment().GetDecodingContext())
-		, m_imageTab(imageTab)
+		, m_navigator(navigator)
 	{
 		m_base = m_imageData->GetBaseAddress();
 		m_size = m_imageData->GetMemorySize();
@@ -550,7 +550,7 @@ namespace tools
 				menu.Bind(wxEVT_MENU, [this, sourceAddresses](const wxCommandEvent& evt)
 				{
 					const auto it = evt.GetId() - 16000;
-					return m_imageTab->NavigateToAddress(sourceAddresses[it], true);
+					return m_navigator->NavigateToAddress(sourceAddresses[it], true);
 				});
 
 				view->PopupMenu(&menu);
@@ -560,7 +560,7 @@ namespace tools
 		{
 			const uint32 branchTargetAddress = m_decodingContext->GetAddressMap().GetReferencedAddress(startAddress);
 			if (branchTargetAddress)
-				return m_imageTab->NavigateToAddress(branchTargetAddress, true);
+				return m_navigator->NavigateToAddress(branchTargetAddress, true);
 		}
 
 		return false;
@@ -568,7 +568,7 @@ namespace tools
 
 	bool ImageMemoryView::Navigate(class MemoryView* view, const NavigationType type)
 	{
-		return m_imageTab->Navigate(type);
+		return m_navigator->Navigate(type);
 	}
 
 	void ImageMemoryView::SelectionCursorMoved(class MemoryView* view, const uint32 newOffset, const bool createHistoryEntry)

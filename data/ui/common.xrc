@@ -1957,6 +1957,18 @@
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
 											<object class="sizeritem">
+												<option>0</option>
+												<flag>wxEXPAND</flag>
+												<border>5</border>
+												<object class="wxToolBar" name="m_toolBar20">
+													<style>wxTB_HORIZONTAL</style>
+													<bitmapsize></bitmapsize>
+													<margins></margins>
+													<packing>1</packing>
+													<separation>5</separation>
+												</object>
+											</object>
+											<object class="sizeritem">
 												<option>1</option>
 												<flag>wxEXPAND | wxALL</flag>
 												<border>5</border>
@@ -2075,8 +2087,63 @@
 							</object>
 						</object>
 					</object>
-					<object class="wxPanel" name="HistoryPanel">
+					<object class="wxPanel" name="m_panel111">
 						<style>wxTAB_TRAVERSAL</style>
+						<object class="wxBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND | wxALL</flag>
+								<border>5</border>
+								<object class="wxNotebook" name="m_notebook11">
+									<object class="notebookpage">
+										<label>Call trace</label>
+										<selected>0</selected>
+										<object class="wxPanel" name="m_panel50">
+											<style>wxTAB_TRAVERSAL</style>
+											<object class="wxBoxSizer">
+												<orient>wxVERTICAL</orient>
+												<object class="sizeritem">
+													<option>1</option>
+													<flag>wxEXPAND</flag>
+													<border>5</border>
+													<object class="wxSplitterWindow" name="m_splitter9">
+														<style>wxSP_3D</style>
+														<sashpos>0</sashpos>
+														<gravity>0.7</gravity>
+														<minsize>0</minsize>
+														<orientation>vertical</orientation>
+														<object class="wxPanel" name="HistoryPanel">
+															<style>wxTAB_TRAVERSAL</style>
+														</object>
+														<object class="wxPanel" name="m_panel51">
+															<style>wxTAB_TRAVERSAL</style>
+															<object class="wxBoxSizer">
+																<orient>wxVERTICAL</orient>
+																<object class="sizeritem">
+																	<option>1</option>
+																	<flag>wxEXPAND | wxALL</flag>
+																	<border>5</border>
+																	<object class="wxNotebook" name="m_notebook13">
+																		<object class="notebookpage">
+																			<label>Call stacks</label>
+																			<selected>0</selected>
+																			<object class="wxPanel" name="HistoryTree">
+																				<style>wxTAB_TRAVERSAL</style>
+																			</object>
+																		</object>
+																	</object>
+																</object>
+															</object>
+														</object>
+													</object>
+												</object>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
 					</object>
 				</object>
 			</object>

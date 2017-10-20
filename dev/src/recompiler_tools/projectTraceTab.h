@@ -3,7 +3,6 @@
 #include "projectWindow.h"
 #include "projectMemoryView.h"
 #include "timeMachineView.h"
-#include "callTreeView.h"
 #include "../recompiler_core/traceUtils.h"
 
 namespace tools
@@ -13,9 +12,10 @@ namespace tools
 	class TraceInfoView;
 	class RegisterView;
 	class CallTreeView;
+	class CallTreeList;
 
 	/// tab for the project trace 
-	class ProjectTraceTab : public ProjectTab, public IImageMemoryNavigationHelper, public ITimeMachineViewNavigationHelper, public ICallTreeViewNavigationHelper
+	class ProjectTraceTab : public ProjectTab, public INavigationHelper
 	{
 		DECLARE_EVENT_TABLE();
 
@@ -29,7 +29,7 @@ namespace tools
 		//--
 
 		// navigate to trace entry
-		bool NavigateToFrame(const TraceFrameID seq);
+		virtual bool NavigateToFrame(const TraceFrameID seq) override;
 
 		// general navigation
 		virtual bool Navigate(const NavigationType type) override;
@@ -67,6 +67,7 @@ namespace tools
 
 		// call stack view
 		CallTreeView* m_callStackView;
+		CallTreeList* m_callTreeView;
 
 		//--
 

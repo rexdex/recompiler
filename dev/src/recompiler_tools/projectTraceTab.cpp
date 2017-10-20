@@ -12,6 +12,7 @@
 #include "../recompiler_core/traceDataFile.h"
 #include "registerView.h"
 #include "callTreeView.h"
+#include "callTreeList.h"
 
 #pragma optimize ("",off)
 
@@ -46,6 +47,7 @@ namespace tools
 		, m_traceInfoView(nullptr)
 		, m_timeMachineTabs(nullptr)
 		, m_callStackView(nullptr)
+		, m_callTreeView(nullptr)
 	{
 		// load the ui
 		wxXmlResource::Get()->LoadPanel(this, tabs, wxT("TraceTab"));
@@ -120,6 +122,14 @@ namespace tools
 			m_callStackView->ExtractTraceData(*m_data);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_callStackView, 1, wxEXPAND, 0);
+		}
+
+		// callstack tree
+		{
+			auto* panel = XRCCTRL(*this, "HistoryTree", wxPanel);
+			m_callTreeView = new CallTreeList(panel, this);
+			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+			panel->GetSizer()->Add(m_callTreeView, 1, wxEXPAND, 0);
 		}
 	}
 
@@ -208,6 +218,7 @@ namespace tools
 		{
 			const auto address = frame.GetAddress();
 			NavigateToAddress(address, false);
+			SyncTraceView();
 		}
 	}
 
@@ -463,6 +474,7 @@ namespace tools
 		const auto displayFormat = GetValueDisplayFormat();
 		m_traceInfoView->SetFrame(m_currentEntry, displayFormat);
 		m_callStackView->SetPosition(m_currentEntry);
+		m_callTreeView->ShowCallstacks(*m_data, m_currentEntry);
 	}
 
 } // tools

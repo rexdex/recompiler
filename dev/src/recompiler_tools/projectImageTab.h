@@ -9,7 +9,7 @@ namespace tools
 	class ImageMemoryView;
 
 	/// tab for the image
-	class ProjectImageTab : public ProjectTab, public IImageMemoryNavigationHelper
+	class ProjectImageTab : public ProjectTab, public INavigationHelper
 	{
 		DECLARE_EVENT_TABLE();
 

@@ -5,21 +5,11 @@ namespace tools
 {
 	//-----------------------------------------------------------------------------
 
-	/// navigation helper
-	class IImageMemoryNavigationHelper
-	{
-	public:
-		virtual ~IImageMemoryNavigationHelper() {};
-
-		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) { return false; };
-		virtual bool Navigate(const NavigationType type) { return false; };
-	};
-
 	/// Memory view for displaying the project data
 	class ImageMemoryView : public IMemoryDataView
 	{
 	public:
-		ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, IImageMemoryNavigationHelper* imageTab);
+		ImageMemoryView(const std::shared_ptr<ProjectImage>& projectImage, INavigationHelper* navigator);
 		virtual ~ImageMemoryView();
 
 	protected:
@@ -48,8 +38,8 @@ namespace tools
 		// parent decoding context
 		decoding::Context* m_decodingContext; // ref
 
-		// owner
-		IImageMemoryNavigationHelper* m_imageTab;
+		// navigation helper
+		INavigationHelper* m_navigator;
 
 		// base address
 		uint64 m_base;

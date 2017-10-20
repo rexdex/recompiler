@@ -79,7 +79,7 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
-	TimeMachineView::TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, ITimeMachineViewNavigationHelper* navigator)
+	TimeMachineView::TimeMachineView(wxWindow* parent, class timemachine::Trace* trace, INavigationHelper* navigator)
 		: canvas::CanvasPanel(parent, 0)
 		, m_requestedLayoutChange(0)
 		, m_trace(trace)

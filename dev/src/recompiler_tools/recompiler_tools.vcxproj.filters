@@ -101,6 +101,9 @@
     <ClCompile Include="callTreeView.cpp">
       <Filter>widgets\calltree</Filter>
     </ClCompile>
+    <ClCompile Include="callTreeList.cpp">
+      <Filter>widgets\calltree</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build.h" />
@@ -202,6 +205,9 @@
       <Filter>widgets\treelist</Filter>
     </ClInclude>
     <ClInclude Include="callTreeView.h">
+      <Filter>widgets\calltree</Filter>
+    </ClInclude>
+    <ClInclude Include="callTreeList.h">
       <Filter>widgets\calltree</Filter>
     </ClInclude>
   </ItemGroup>

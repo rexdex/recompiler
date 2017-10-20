@@ -151,4 +151,37 @@ namespace tools
 	};
 
 	static const uint64 INVALID_ADDRESS = ~(uint64)0;
-}
+
+	//-----------------------------------------------------------------------------
+
+	/// Navigation type
+	enum class NavigationType
+	{
+		LocalStart,
+		LocalEnd,
+		LocalStepBack,
+		LocalStepIn,
+
+		GlobalStart,
+		GlobalEnd,
+		GlobalStepBack,
+		GlobalStepIn,
+
+		Back,
+		Advance,
+	};
+
+	// call tree navigation
+	class INavigationHelper
+	{
+	public:
+		virtual ~INavigationHelper() {};
+
+		virtual bool NavigateToFrame(const TraceFrameID id) { return false; };
+		virtual bool NavigateToAddress(const uint64 id, const bool addToHistory) { return false; };
+		virtual bool Navigate(const NavigationType type) { return false; };
+	};
+
+	//-----------------------------------------------------------------------------
+
+} // tools
