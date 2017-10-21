@@ -52,17 +52,8 @@ Stuff currently implemented:
 + Basic GPU trace viewer that allows to inspect internal GPU state at each point
 + *Time Machine* tool that makes it possible to find previous instruction that touched given register or memory
 
-## How to run it?
-- You will need Visual Studio 2015 (sorry, Windows only)
-- Get the wxWidgets in 3.1.0 and compile the x64 DLL libs, place them in dev\external\wxWidgets-3.1.0\
-- Compile the whole solution from dev\src\recompile.sln 
-- Run the "framework\frontend" project
-- Open the project "projects\xenon\doplhin\dolphin.px"
-- Select the "Final" configuration
-- Click the "Build button"
-- Assuming you've installed the project in C:\recompiler run the "launcher\frontend" project with following parameters: "-platform=Recompiler.Xenon.Launcher.dll -image=C:\recompiler\projects\xenon\doplhin\Dolphin.px.Final.VS2015.dll -dvd=C:\recompiler\projects\xenon\doplhin\data -devkit=C:\recompiler\projects\xenon\doplhin\data"
-- To exit the app close the GPU output window
-=======
+## How to run it ?
+
 (NOTE: You require Visual Studio 2015 to build and use this project - at present it is entirely Windows-specific with regards to the code and the build process.)
 - Get `wxWidgets 3.1.0` and compile it to obtain the x64 DLLs. Place them in `dev\external\wxWidgets-3.1.0\`.
 - Open the solution `recompile.sln` under `dev\src` with Visual Studio. This is the top-level VS solution that we will use to build the project.
