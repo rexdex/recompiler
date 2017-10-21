@@ -1,3 +1,9 @@
+## Current release
+
+[![Build status](https://ci.appveyor.com/api/projects/status/0r57edi8jdaa3408?svg=true)](https://ci.appveyor.com/project/rexdex/recompiler)
+
+Note that it still requires Microsoft Visual Studio 2015 or newer to be installed. Moving to clang/llvm soon :)
+
 ## Porting Xbox360 executables to Windows
 
 ![DolphinDemoScreenshot](/_images/xbox_remcompiler.jpg)
