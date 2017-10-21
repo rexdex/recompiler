@@ -389,10 +389,10 @@ namespace xenon
 
 	void TagMemoryWrite(const void* ptr, const uint32 size, const char* txt, ...)
 	{
-		DEBUG_CHECK(GMemoryTraceWriter != nullptr);
 		auto* curThreadWriter = GMemoryTraceWriter;
 		if (!curThreadWriter)
 			return;
+
 
 		char textBuffer[512];
 		va_list args;
@@ -406,7 +406,6 @@ namespace xenon
 
 	void TagMemoryWrite(const uint64 addr, const uint32 size, const char* txt, ...)
 	{
-		DEBUG_CHECK(GMemoryTraceWriter != nullptr);
 		auto* curThreadWriter = GMemoryTraceWriter;
 		if (!curThreadWriter)
 			return;
