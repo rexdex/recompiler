@@ -1,6 +1,8 @@
 #include "build.h"
 #include "blockAllocator.h"
 
+#pragma optimize("",off)
+
 namespace utils
 {
 
@@ -194,13 +196,14 @@ namespace utils
 		for (uint32 i = 0; i < numPages; ++i)
 		{
 			const uint32 pageIndex = outAllocatedFirstPage + i;
-			auto& pageInfo = m_pages[i];
+			auto& pageInfo = m_pages[pageIndex];
 			pageInfo.m_numPages = numPages;
 			pageInfo.m_basePage = outAllocatedFirstPage;
 			pageInfo.m_flags = initialFlags;
 		}
 
 		// allocated
+		m_numFreePages -= numPages;
 		return true;
 	}
 
@@ -275,6 +278,9 @@ namespace utils
 			lastBlock->m_next = freeBlock;
 			freeBlock->m_next = nullptr;
 		}
+
+		// update stats
+		m_numFreePages += numPages;
 
 		// merge free blocks that are close to each other
 		MergeFreeBlocks();
