@@ -12,6 +12,7 @@
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
 #include "../host_core/runtimeTraceFile.h"
+#include "../host_core/runtimeTraceWriter.h"
 
 //-----------------------------------------------------------------------------
 
@@ -108,6 +109,8 @@ namespace xenon
 			case 2: cpu::mem::storeAddr<uint16>((const uint32_t)address, *(const uint16_t*)inPtr); break;
 			case 1: cpu::mem::storeAddr<uint8>((const uint32_t)address, *(const uint8_t*)inPtr); break;
 		}
+
+		xenon::TagMemoryWrite(address, size, "MappedMemWrite");
 	}
 
 	static void GlobalPortReadFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr)
@@ -327,6 +330,7 @@ namespace xenon
 		mainThreadParams.m_suspended = false;
 
 		// create main thread
+		CreateSystemTraceMemoryWriter();
 		m_kernel->CreateThread(mainThreadParams);
 
 		// main loop
@@ -362,6 +366,62 @@ namespace xenon
 		// exit
 		return 0;
 	}
+
+	//--
+
+	__declspec(thread) 	runtime::TraceWriter* GMemoryTraceWriter = nullptr;
+
+	runtime::TraceWriter* BindMemoryTraceWriter(runtime::TraceWriter* writer)
+	{
+		auto* cur = GMemoryTraceWriter;
+		GMemoryTraceWriter = writer;
+		return cur;
+	}
+
+	void CreateSystemTraceMemoryWriter()
+	{
+		if (!GMemoryTraceWriter)
+		{
+			auto* traceFile = GPlatform.GetTraceFile();
+			GMemoryTraceWriter = traceFile->CreateInterruptWriter("SYSTEM");
+		}
+	}
+
+	void TagMemoryWrite(const void* ptr, const uint32 size, const char* txt, ...)
+	{
+		DEBUG_CHECK(GMemoryTraceWriter != nullptr);
+		auto* curThreadWriter = GMemoryTraceWriter;
+		if (!curThreadWriter)
+			return;
+
+		char textBuffer[512];
+		va_list args;
+
+		va_start(args, txt);
+		vsprintf_s(textBuffer, txt, args);
+		va_end(args);
+
+		curThreadWriter->AddMemoryWrite((uint64)ptr, size, ptr, textBuffer);
+	}
+
+	void TagMemoryWrite(const uint64 addr, const uint32 size, const char* txt, ...)
+	{
+		DEBUG_CHECK(GMemoryTraceWriter != nullptr);
+		auto* curThreadWriter = GMemoryTraceWriter;
+		if (!curThreadWriter)
+			return;
+
+		char textBuffer[512];
+		va_list args;
+
+		va_start(args, txt);
+		vsprintf_s(textBuffer, txt, args);
+		va_end(args);
+
+		curThreadWriter->AddMemoryWrite(addr, size, (const void*)addr, textBuffer);
+	}
+
+	//--
 
 } // xenon
 

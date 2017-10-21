@@ -16,11 +16,14 @@ namespace trace
 
 		//--
 
+		void FlushData();
+
 		utils::big_vector<DataFile::Entry> m_entries;
 		utils::big_vector<Context> m_contexts;
 		utils::big_vector<uint8_t> m_blob;
 		utils::big_vector<CallFrame> m_callFrames;
 		utils::big_vector<CodeTracePage> m_codeTracePages;
+		utils::big_vector<MemoryTracePage> m_memoryTracePages;
 
 	private:
 		virtual void StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name) override final;
@@ -133,9 +136,77 @@ namespace trace
 			}
 		};
 
+		struct MemoryWriteInfo
+		{
+			TraceFrameID m_seq;
+			uint8_t m_data;
+
+			const bool operator==(const MemoryWriteInfo& other) const
+			{
+				return m_seq == other.m_seq;
+			}
+
+			const bool operator<(const MemoryWriteInfo& info) const
+			{
+				return m_seq < info.m_seq;
+			}
+		};
+
+		struct MemoryTraceBuilderPage
+		{
+			static const uint32_t NUM_ADDRESSES_PER_PAGE = trace::CodeTracePage::NUM_ADDRESSES_PER_PAGE;
+
+			uint64_t m_baseMemoryAddress;
+			std::vector<MemoryWriteInfo> m_seqChain[NUM_ADDRESSES_PER_PAGE];
+
+			inline MemoryTraceBuilderPage(uint64_t baseMemoryAddress)
+				: m_baseMemoryAddress(baseMemoryAddress)
+			{}
+
+			inline void RegisterWrite(const TraceFrameID seq, const uint64 address, const uint8_t value)
+			{
+				const auto offset = address - m_baseMemoryAddress;
+				m_seqChain[offset].push_back(MemoryWriteInfo{ seq, value });
+			}
+		};
+
+		struct MemoryTraceBuilder
+		{
+			std::unordered_map<uint64_t, MemoryTraceBuilderPage*> m_pages;
+
+			inline ~MemoryTraceBuilder()
+			{
+				for (auto it : m_pages)
+					delete it.second;
+			}
+
+			inline MemoryTraceBuilderPage* GetPage(const uint64_t address)
+			{
+				// get top part of the address
+				const auto pageIndex = address / CodeTraceBuilderPage::NUM_ADDRESSES_PER_PAGE;
+
+				// find existing page with the data
+				const auto it = m_pages.find(pageIndex);
+				if (it != m_pages.end())
+					return (*it).second;
+
+				// create new page
+				auto* page = new MemoryTraceBuilderPage(pageIndex * MemoryTraceBuilderPage::NUM_ADDRESSES_PER_PAGE);
+				m_pages[pageIndex] = page;
+				return page;
+			}
+
+			inline void RegisterWrite(const TraceFrameID seq, const uint64 address, const uint8_t value)
+			{
+				auto* page = GetPage(address);
+				page->RegisterWrite(seq, address, value);
+			}
+		};
+
 		utils::big_vector<DeltaContext*> m_deltaContextData;
 		utils::big_vector<CallStackBuilder*> m_callstackBuilders;
 		utils::big_vector<CodeTraceBuilder*> m_codeTraceBuilders;
+		MemoryTraceBuilder* m_memoryTraceBuilder;
 
 		//--
 
@@ -166,8 +237,16 @@ namespace trace
 		// process frame and extract call stack
 		bool ExtractCallstackData(ILogOutput& log, CallStackBuilder& builder, const RawTraceFrame& frame, const uint32_t contextSeq);
 
+		// given an instruction extract memory write data if it was a memory writing instruction
+		bool ExtractMemoryWritesFromInstructions(ILogOutput& log, const RawTraceFrame& frame);
+
+		//---
+
 		// extract built code trace pages
 		void EmitCodeTracePages(const CodeTraceBuilder& codeTraceBuilder, uint32& outFirstCodePage, uint32& outNumCodePages);
+
+		// emit memory write access
+		void EmitMemoryTracePages();
 	};
 
 } // trace

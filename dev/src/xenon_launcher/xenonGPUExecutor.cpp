@@ -27,6 +27,7 @@
 */
 
 #include "build.h"
+#include "xenonPlatform.h"
 #include "xenonLibNatives.h"
 #include "xenonGPUCommandBuffer.h"
 #include "xenonGPUExecutor.h"
@@ -146,6 +147,7 @@ void CXenonGPUExecutor::RequestTraceDump()
 
 void CXenonGPUExecutor::SignalVBlank()
 {
+
 	if (GSuppressGPUInterrupts)
 		return;
 
@@ -986,6 +988,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_EVENT_WRITE_EXT(CXenonGPUCommandBuffe
 	cpu::mem::storeAddr(writeAddr + 6, extents[3]);
 	cpu::mem::storeAddr(writeAddr + 8, extents[4]);
 	cpu::mem::storeAddr(writeAddr + 10, extents[5]);
+	xenon::TagMemoryWrite(writeAddr, 12, "GPU_EVENT_WRITE_EXT");
 	return true;
 }
 
@@ -1363,6 +1366,7 @@ void CXenonGPUExecutor::WriteRegister(const uint32 registerIndex, const uint32 r
 			// write
 			const uint32 writeAddr = GPlatform.GetMemory().TranslatePhysicalAddress(memAddr & ~0x3);
 			cpu::mem::storeAddr< uint32 >(writeAddr, registerData);
+			xenon::TagMemoryWrite(writeAddr, 4, "GPU_REG_WRITE");
 
 			// Add to trace
 			if (m_traceDumpFile)

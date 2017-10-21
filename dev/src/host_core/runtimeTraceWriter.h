@@ -24,6 +24,9 @@ namespace runtime
 		// add next frame to the trace
 		void AddFrame(const uint64 ip, const runtime::RegisterBank& regs);
 
+		// add memory write
+		void AddMemoryWrite(const uint64 addr, const uint32 size, const void* data, const char* writerText);
+
 	private:
 		static const uint32 LOCAL_WRITE_BUFFER_SIZE = 64 * 1024;
 		static const uint32 GUARD_AREA_SIZE = 4 * 1024;
@@ -35,6 +38,7 @@ namespace runtime
 		uint32_t m_writerId;
 
 		std::string m_name;
+		uint64 m_lastValidIp;
 
 		std::atomic<uint32_t>* m_sequenceNumber;
 

@@ -244,6 +244,12 @@ namespace xenon
 		// get thread stack
 		inline KernelStackMemory& GetStack() { return m_stack; }
 
+		// get thread data block
+		inline const void* GetBlockData() const { return m_block; }
+
+		// get size of thread data
+		inline const uint32 GetBlockSize() const { return m_blockSize; }
+
 		// get the thread data object address
 		inline const uint32 GetThreadDataAddr() const { return m_threadDataAddr;  }
 
@@ -263,6 +269,7 @@ namespace xenon
 		static const uint32 TLS_COUNT = 64;
 
 		void*				m_block;	// memory block
+		uint32				m_blockSize; // total size of thread data
 
 		uint32				m_tlsDataAddr;		// runtime TLS table
 		uint32				m_prcAddr;			// PRC table address

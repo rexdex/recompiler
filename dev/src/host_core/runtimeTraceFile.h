@@ -85,6 +85,7 @@ namespace runtime
 		std::atomic<bool> m_writeRequestExit;
 		std::unique_ptr<std::thread> m_writeThread;
 
+		void WriteBlockAsync(Block* block);
 		void WriteBlockAsync(const void* data, const size_t size);
 		void WriteBlockSync(const void* data, const size_t size);
 		void DetachWriters();

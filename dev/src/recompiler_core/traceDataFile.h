@@ -114,6 +114,14 @@ namespace trace
 		uint64_t m_dataOffsets[NUM_ADDRESSES_PER_PAGE]; // offsets to entry lists in data blob
 	};
 
+	// memory trace page
+	struct MemoryTracePage
+	{
+		static const uint32_t NUM_ADDRESSES_PER_PAGE = 4096; // normal page
+		uint64_t m_baseAddress; // base address of data
+		uint64_t m_dataOffsets[NUM_ADDRESSES_PER_PAGE]; // offsets to entry lists in data blob
+	};
+
 	// decoded frame
 	class RECOMPILER_API DataFrame
 	{
@@ -181,6 +189,10 @@ namespace trace
 		// get code pages
 		typedef std::vector<CodeTracePage> TCodePages;
 		inline const TCodePages& GetCodeTracePages() const { return m_codeTracePages; }
+
+		// get memory pages
+		typedef std::vector<MemoryTracePage> TMemoryPages;
+		inline const TMemoryPages& GetMemoryTracePages() const { return m_memoryTracePages; }
 
 		// get full path to file
 		inline const std::wstring& GetFullPath() const { return m_filePath; }
@@ -328,6 +340,9 @@ namespace trace
 
 		// code pages
 		std::vector<CodeTracePage> m_codeTracePages;
+
+		// memory pages
+		std::vector<MemoryTracePage> m_memoryTracePages;
 
 		//--
 

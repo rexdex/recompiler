@@ -64,6 +64,7 @@ static uint32 CreateFileImpl(uint32 handle_ptr, uint32 desired_access, uint32 ob
 		if (handle_ptr)
 		{
 			cpu::mem::storeAddr<uint32>(handle_ptr, file->GetHandle());
+			xenon::TagMemoryWrite(handle_ptr, 4, "NtCreateFile");
 		}
 	}
 	else
@@ -83,6 +84,7 @@ static uint32 CreateFileImpl(uint32 handle_ptr, uint32 desired_access, uint32 ob
 	{
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtCreateFile");
 	}
 
 	// cleanup
@@ -147,6 +149,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 				DEBUG_CHECK(length == 8);
 				info = 8;
 				cpu::mem::storeAddr<uint64>(file_info_ptr, 0);
+				xenon::TagMemoryWrite(file_info_ptr, 8, "NtQueryInformationFile");
 				result = xnative::X_STATUS_SUCCESS;
 			}
 			else if (fileInfoType == xnative::XFilePositionInformation)
@@ -158,6 +161,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 				if (file->GetOffset(fileOffset))
 				{
 					cpu::mem::storeAddr<uint64>(file_info_ptr, fileOffset);
+					xenon::TagMemoryWrite(file_info_ptr, 8, "NtQueryInformationFile");
 					result = xnative::X_STATUS_SUCCESS;
 				}
 			}
@@ -186,6 +190,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 					{
 						info = 4;
 						cpu::mem::storeAddr<uint32>(file_info_ptr, magic == _byteswap_ulong(0x0FF512ED));
+						xenon::TagMemoryWrite(file_info_ptr, 4, "NtQueryInformationFile");
 						result = xnative::X_STATUS_SUCCESS;
 					}
 				}
@@ -202,6 +207,7 @@ uint64 __fastcall XboxFiles_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs
 	{
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtQueryInformationFile");
 	}
 
 	RETURN_ARG(result);
@@ -281,6 +287,7 @@ uint64 __fastcall XboxFiles_NtWriteFile(uint64 ip, cpu::CpuRegs& regs)
 	{
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtWriteFile");
 	}
 
 	// signal event
@@ -352,6 +359,7 @@ uint64 __fastcall XboxFiles_NtReadFile(uint64 ip, cpu::CpuRegs& regs)
 			uint32 bytes_read = 0;
 			if (file->Read((void*)buffer, buffer_length, byte_offset, bytes_read))
 			{
+				xenon::TagMemoryWrite(buffer, buffer_length, "NtReadFile('%s' at offset %u)", file->GetEntry()->GetVirtualPath(), byte_offset);
 				info = (uint32)bytes_read;
 				result = xnative::X_STATUS_SUCCESS;
 				signal_event = true;
@@ -369,6 +377,7 @@ uint64 __fastcall XboxFiles_NtReadFile(uint64 ip, cpu::CpuRegs& regs)
 	{
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtWriteFile");
 	}
 
 	// signal event
@@ -465,6 +474,7 @@ uint64 __fastcall XboxFiles_NtSetInformationFile(uint64 ip, cpu::CpuRegs& regs)
 	{
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
 		cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
+		xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtSetInformationFile");
 	}
 
 	RETURN_ARG(result);

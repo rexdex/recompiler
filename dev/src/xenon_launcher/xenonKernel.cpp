@@ -93,6 +93,8 @@ namespace xenon
 		objectPtr |= 0x1;
 		cpu::mem::store<uint32>(&headerBE->WaitListFLink, (uint32)(objectPtr >> 32));
 		cpu::mem::store<uint32>(&headerBE->WaitListBLink, (uint32)(objectPtr >> 0));
+		xenon::TagMemoryWrite((uint64)&headerBE->WaitListFLink, 4, "KERNEL_SET_NATIVE_POINTER");
+		xenon::TagMemoryWrite((uint64)&headerBE->WaitListBLink, 4, "KERNEL_SET_NATIVE_POINTER");
 	}
 
 	//-----------------------------------------------------------------------------
@@ -139,9 +141,13 @@ namespace xenon
 	{
 		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, m_headAddr);
 		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, m_headAddr);
+		xenon::TagMemoryWrite(listEntryPtr, 8, "KERNEL_LIST_INSERT");
 
 		if (m_headAddr != INVALID)
+		{
 			cpu::mem::storeAddr<uint32>(m_headAddr + 4, listEntryPtr);
+			xenon::TagMemoryWrite(m_headAddr, 4, "KERNEL_LIST_INSERT");
+		}
 	}
 
 	bool KernelList::IsQueued(const uint32 listEntryPtr)
@@ -161,19 +167,29 @@ namespace xenon
 			m_headAddr = flink;
 
 			if (flink != 0)
+			{
 				cpu::mem::storeAddr<uint32>(flink + 4, 0);
+				xenon::TagMemoryWrite(flink + 4, 4, "KERNEL_LIST_REMOVE");
+			}
 		}
 		else
 		{
 			if (blink != 0)
+			{
 				cpu::mem::storeAddr<uint32>(blink + 0, flink);
+				xenon::TagMemoryWrite(blink + 0, 4, "KERNEL_LIST_REMOVE");
+			}
 
 			if (flink != 0)
+			{
 				cpu::mem::storeAddr<uint32>(flink + 4, blink);
+				xenon::TagMemoryWrite(flink + 4, 4, "KERNEL_LIST_REMOVE");
+			}
 		}
 
 		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, 0);
 		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, 0);
+		xenon::TagMemoryWrite(listEntryPtr + 0, 8, "KERNEL_LIST_REMOVE");
 	}
 
 	const uint32 KernelList::Pop()
@@ -266,7 +282,8 @@ namespace xenon
 		m_prcAddr = (uint32)&base[TLS_COUNT];
 		m_threadDataAddr = (uint32)&base[TLS_COUNT + PRC_DATA_SIZE];
 		m_scratchAddr = (uint32)&base[TLS_COUNT + PRC_DATA_SIZE + THREAD_DATA_SIZE];
-
+		m_blockSize = totalThreaDataSize;
+		
 		// setup prc data block
 		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x000, m_tlsDataAddr); // tls address
 		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x030, m_prcAddr); // prc address

@@ -517,6 +517,12 @@ namespace trace
 			if (!WriteDataChunk(log, file, m_codeTracePages, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Saving memory trace pages...");
+			auto& info = header.m_chunks[CHUNK_MEMORY_TRACE];
+			if (!WriteDataChunk(log, file, m_memoryTracePages, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// patch the header
 		const auto fileDataSize = file.tellp();
@@ -666,6 +672,12 @@ namespace trace
 			if (!ReadDataChunk(log, file, ret->m_codeTracePages, info.m_dataOffset, info.m_dataSize))
 				return false;
 		}
+		{
+			log.SetTaskName("Loading memory trace...");
+			auto& info = header.m_chunks[CHUNK_MEMORY_TRACE];
+			if (!ReadDataChunk(log, file, ret->m_memoryTracePages, info.m_dataOffset, info.m_dataSize))
+				return false;
+		}
 
 		// set file path
 		ret->m_filePath = filePath;
@@ -719,6 +731,7 @@ namespace trace
 		// build the data
 		DataBuilder builder(rawTrace, decodingContextQuery);
 		rawTrace.Scan(log, builder);
+		builder.FlushData();
 
 		// extract data
 		builder.m_blob.exportToVector(ret->m_dataBlob);
@@ -726,6 +739,7 @@ namespace trace
 		builder.m_contexts.exportToVector(ret->m_contexts);
 		builder.m_callFrames.exportToVector(ret->m_callFrames);
 		builder.m_codeTracePages.exportToVector(ret->m_codeTracePages);
+		builder.m_memoryTracePages.exportToVector(ret->m_memoryTracePages);
 
 		// done
 		return ret;

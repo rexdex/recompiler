@@ -5,6 +5,8 @@
 #include "decodingInstruction.h"
 #include "decodingInstructionInfo.h"
 #include <algorithm>
+#include "platformCPU.h"
+#include "traceUtils.h"
 
 #pragma optimize("",off)
 
@@ -14,9 +16,15 @@ namespace trace
 	DataBuilder::DataBuilder(const RawTraceReader& rawTrace, const TDecodingContextQuery& decodingContextQuery)
 		: m_rawTrace(&rawTrace)
 		, m_decodingContextQueryFunc(decodingContextQuery)
+		, m_memoryTraceBuilder(new MemoryTraceBuilder())
 	{
 		m_blob.push_back(0); // make sure the blob offset 0 will mean "invalid"
 		m_callFrames.push_back(CallFrame());
+	}
+
+	void DataBuilder::FlushData()
+	{
+		EmitMemoryTracePages();
 	}
 
 	void DataBuilder::StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name)
@@ -80,8 +88,7 @@ namespace trace
 
 		// emit the code trace data
 		auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
-		if (codeTraceBuilder)
-			EmitCodeTracePages(*codeTraceBuilder, context.m_firstCodePage, context.m_numCodePages);
+		EmitCodeTracePages(*codeTraceBuilder, context.m_firstCodePage, context.m_numCodePages);
 	}
 
 	void DataBuilder::ConsumeFrame(ILogOutput& log, const uint32 writerId, const TraceFrameID seq, const RawTraceFrame& frame)
@@ -102,33 +109,56 @@ namespace trace
 		blobInfo.m_time = frame.m_timeStamp;
 		WriteToBlob(&blobInfo, sizeof(blobInfo));
 
-		// write the delta compressed data
-		TraceFrameID baseFrameId = INVALID_TRACE_FRAME_ID;
-		DeltaCompress(*deltaContext, frame, baseFrameId);
-
-		// define entry
-		auto& entry = m_entries.AllocAt(seq);
-		entry.m_base = baseFrameId;
-		entry.m_prevThread = deltaContext->m_prevSeq;
-		entry.m_nextThread = INVALID_TRACE_FRAME_ID;
-		entry.m_type = (uint8_t)FrameType::CpuInstruction;
-		entry.m_offset = dataOffset;
-		entry.m_context = writerId;
-
-		// update the delta context
-		if (deltaContext->m_prevSeq != INVALID_TRACE_FRAME_ID)
+		// cpu frame
+		if (frame.m_type == (uint8)FrameType::CpuInstruction)
 		{
-			auto& prevEntry = m_entries[deltaContext->m_prevSeq];
-			prevEntry.m_nextThread = seq;
+			// write the delta compressed data
+			TraceFrameID baseFrameId = INVALID_TRACE_FRAME_ID;
+			DeltaCompress(*deltaContext, frame, baseFrameId);
+
+			// define entry
+			auto& entry = m_entries.AllocAt(seq);
+			entry.m_base = baseFrameId;
+			entry.m_prevThread = deltaContext->m_prevSeq;
+			entry.m_nextThread = INVALID_TRACE_FRAME_ID;
+			entry.m_type = (uint8_t)FrameType::CpuInstruction;
+			entry.m_offset = dataOffset;
+			entry.m_context = writerId;
+
+			// update the delta context
+			if (deltaContext->m_prevSeq != INVALID_TRACE_FRAME_ID)
+			{
+				auto& prevEntry = m_entries[deltaContext->m_prevSeq];
+				prevEntry.m_nextThread = seq;
+			}
+
+			// extract call structure
+			auto* callstackBuilder = m_callstackBuilders[writerId];
+			ExtractCallstackData(log, *callstackBuilder, frame, deltaContext->m_localSeq);
+
+			// extract code horizontal trace
+			auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
+			codeTraceBuilder->RegisterAddress(frame);
+
+			// extract memory writes from memory writing instructions :)
+			ExtractMemoryWritesFromInstructions(log, frame);
 		}
+		// external memory write
+		else if (frame.m_type == (uint8)FrameType::ExternalMemoryWrite)
+		{
+			// write the text length
+			const auto stringLength = (uint8_t)(frame.m_desc.length());
+			WriteToBlob(stringLength);
+			WriteToBlob(frame.m_desc.c_str(), stringLength);
 
-		// extract call structure
-		auto* callstackBuilder = m_callstackBuilders[writerId];
-		ExtractCallstackData(log, *callstackBuilder, frame, deltaContext->m_localSeq);
+			// write the address
+			WriteToBlob(frame.m_address);
+			WriteToBlob((uint32)frame.m_data.size());
 
-		// extract code horizontal trace
-		auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
-		codeTraceBuilder->RegisterAddress(frame);
+			// create memory access info
+			for (uint32_t i = 0; i < frame.m_data.size(); ++i)
+				m_memoryTraceBuilder->RegisterWrite(seq, frame.m_address + i, frame.m_data[i]);
+		}
 
 		// update local sequence number
 		deltaContext->m_prevSeq = seq;
@@ -390,6 +420,70 @@ namespace trace
 		return true;
 	}
 
+	bool DataBuilder::ExtractMemoryWritesFromInstructions(ILogOutput& log, const RawTraceFrame& frame)
+	{
+		const auto seq = frame.m_seq;
+		const auto codeAddress = frame.m_ip;
+
+		// jump to an import function - sometimes happens
+		auto* decodingContext = m_decodingContextQueryFunc(codeAddress);
+		if (!decodingContext)
+		{
+			log.Error("MemoryTrace: Instruction at %08llXh is outside range that can be decoded", codeAddress);
+			return false;
+		}
+
+		// decode instruction
+		decoding::Instruction op;
+		const auto opSize = decodingContext->DecodeInstruction(ILogOutput::DevNull(), codeAddress, op, false);
+		if (!opSize)
+		{
+			log.Error("MemoryTrace: Instruction at %08llXh is invalid", codeAddress);
+			return false;
+		}
+
+		// get additional info
+		decoding::InstructionExtendedInfo info;
+		if (!op.GetExtendedInfo(codeAddress, *decodingContext, info))
+		{
+			log.Error("MemoryTrace: Instruction at %08llXh has no extended information", codeAddress);
+			return false;
+		}
+
+		// we are interested only in memory-writing instructions
+		if (0 != (info.m_memoryFlags & decoding::InstructionExtendedInfo::eMemoryFlags_Write))
+		{
+			// compute where the memory was written
+			const auto dataFetch = [&frame](const platform::CPURegister* reg, void* outData)
+			{
+				const auto ofs = reg->GetTraceDataOffset();
+				memcpy(outData, (char*)frame.m_data.data() + ofs, reg->GetBitSize() / 8);
+				return true;
+			};
+
+			uint64_t memoryWriteAddress = 0;
+			if (info.ComputeMemoryAddress(dataFetch, memoryWriteAddress))
+			{
+				// get the register that with the value that is being written
+				const platform::CPURegister* reg0 = op.GetArg0().m_reg;
+
+				// get the written value
+				const auto writtenValue = trace::GetRegisterValueInteger(reg0, dataFetch, false);
+
+				// write it into the trace, byte at a time
+				const auto dataSize = info.m_memorySize;
+				const auto dataPtr = (const uint8_t*)&writtenValue;
+				for (uint32_t i = 0; i < dataSize; ++i)
+				{
+					m_memoryTraceBuilder->RegisterWrite(frame.m_seq, memoryWriteAddress, dataPtr[i]);
+				}
+			}
+		}
+
+		// no major errors
+		return true;
+	}
+
 	void DataBuilder::EmitCodeTracePages(const CodeTraceBuilder& codeTraceBuilder, uint32& outFirstCodePage, uint32& outNumCodePages)
 	{
 		// get pages from map, we need sorted pages later
@@ -432,7 +526,53 @@ namespace trace
 			m_codeTracePages.push_back(tracePage);
 		}
 		outNumCodePages = (uint32_t) m_codeTracePages.size() - outFirstCodePage;
-	}	
+	}
+
+	void DataBuilder::EmitMemoryTracePages()
+	{
+		// get pages from map, we need sorted pages later
+		std::vector<const MemoryTraceBuilderPage*> pages;
+		for (auto it : m_memoryTraceBuilder->m_pages)
+			pages.push_back(it.second);
+
+		// sort pages by base address
+		std::sort(pages.begin(), pages.end(), [](const MemoryTraceBuilderPage* a, const MemoryTraceBuilderPage* b) { return a->m_baseMemoryAddress < b->m_baseMemoryAddress; });
+
+		// pack pages
+		for (const auto* page : pages)
+		{
+			// initialize page
+			MemoryTracePage tracePage;
+			memset(&tracePage, 0, sizeof(tracePage));
+			tracePage.m_baseAddress = page->m_baseMemoryAddress;
+
+			// export address chains
+			for (uint32 i = 0; i < MemoryTracePage::NUM_ADDRESSES_PER_PAGE; ++i)
+			{
+				const auto& seqChain = page->m_seqChain[i];
+				if (!seqChain.empty())
+				{
+					// write to blob (as everything else :P)
+					tracePage.m_dataOffsets[i] = m_blob.size();
+
+					// write count
+					WriteToBlob<uint32_t>((uint32_t)seqChain.size());
+
+					// write elements
+					auto sortedSeqChain = seqChain;
+					std::sort(sortedSeqChain.begin(), sortedSeqChain.end());
+					for (const auto& entry : sortedSeqChain)
+					{
+						WriteToBlob(entry.m_seq);
+						WriteToBlob(entry.m_data);
+					}
+				}
+			}
+
+			// write page data
+			m_memoryTracePages.push_back(tracePage);
+		}
+	}
 
 	//--
 

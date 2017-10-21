@@ -13,6 +13,7 @@
 #include <memory>
 #include <istream>
 #include <fstream>
+#include <functional>
 
 #ifdef _LIB
 	#define RECOMPILER_API

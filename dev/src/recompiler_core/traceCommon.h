@@ -38,6 +38,28 @@ namespace common
 		{}
 	};
 
+	struct TraceMemoryBlock
+	{
+		static const uint32 MAGIC = 'MEMW';
+
+		uint32 m_magic; // identifier
+		uint32 m_seq; // sequence number (allows to have absolute order of operations)
+		uint64 m_ip; // previous address before the write occurred (usually the entry point to system function)
+		uint64 m_clock; // physical clock value
+		uint64 m_address; // write address 
+		uint32 m_textSize; // size of description text
+		uint32 m_size; // size of data
+
+		inline TraceMemoryBlock()
+			: m_magic(0)
+			, m_seq(0)
+			, m_ip(0)
+			, m_clock(0)
+			, m_textSize(0)
+			, m_size(0)
+		{}
+	};
+
 	struct TraceFrame
 	{
 		static const uint32 MAX_REGS = 512; // maximum supported registers

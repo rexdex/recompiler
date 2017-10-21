@@ -1495,6 +1495,7 @@ uint64 __fastcall XboxKernel_ObReferenceObjectByHandle(uint64 ip, cpu::CpuRegs& 
 	if (outObjectPtr)
 	{
 		cpu::mem::storeAddr<uint32>(outObjectPtr, nativeAddr);
+		xenon::TagMemoryWrite(outObjectPtr, 4, "ObReferenceObjectByHandle");
 	}
 
 	RETURN_ARG(0);
@@ -1564,6 +1565,7 @@ uint64 __fastcall XboxKernel_KeInitializeDpc(uint64 ip, cpu::CpuRegs& regs)
 	cpu::mem::storeAddr<uint32>(dpcPtr + 16, context);
 	cpu::mem::storeAddr<uint32>(dpcPtr + 20, 0);  // arg1
 	cpu::mem::storeAddr<uint32>(dpcPtr + 24, 0);  // arg2
+	xenon::TagMemoryWrite(dpcPtr, 28, "KeInitializeDpc");
 
 	RETURN();
 }
@@ -1644,6 +1646,7 @@ uint64 __fastcall XboxKernel_InterlockedPopEntrySList(uint64 ip, cpu::CpuRegs& r
 
 	uint32 second = cpu::mem::loadAddr<uint32>(first);
 	cpu::mem::storeAddr< uint32 >(plistPtr, second);
+	xenon::TagMemoryWrite(plistPtr, 4, "InterlockedPopEntrySList");
 
 	RETURN_ARG(first);
 }

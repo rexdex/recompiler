@@ -15,6 +15,7 @@ namespace runtime
 		, m_localWriteBufferPos(0)
 		, m_localWriteStartFrameIndex(0)
 		, m_threadId(threadId)
+		, m_lastValidIp(0)
 		, m_sequenceNumber(&sequenceNumber)
 		, m_name(name)
 	{
@@ -70,9 +71,72 @@ namespace runtime
 		// compute the deltas between current and previous frames
 		WriteDeltaFrame(ip, regs);
 
+		// count written frames
+		++m_frameIndex;
+
 		// flush when getting close to the end of block
 		if (m_localWriteBufferPos > (LOCAL_WRITE_BUFFER_SIZE - GUARD_AREA_SIZE))
 			LocalFlush();
+
+		// save the last IP in case a memory write happens
+		m_lastValidIp = ip;
+	}
+
+	void TraceWriter::AddMemoryWrite(const uint64 addr, const uint32 size, const void* data, const char* writerText)
+	{
+		// no owner
+		if (m_owner == nullptr)
+			return;
+
+		// split really large writes into parts
+		const auto maxSingleWriteSize = LOCAL_WRITE_BUFFER_SIZE - GUARD_AREA_SIZE - 1024;
+		if (size > maxSingleWriteSize)
+		{
+			auto readLeft = size;
+			auto* readPtr = (const uint8*)data;
+			while (readLeft > 0)
+			{
+				auto sizeToWrite = std::min<uint32_t>(maxSingleWriteSize, readLeft);
+				AddMemoryWrite(addr, sizeToWrite, readPtr, writerText);
+				readLeft -= sizeToWrite;
+				readPtr += sizeToWrite;
+			}
+			return;
+		}
+
+		// get length of the text and compute total needed size
+		const auto textLenth = strlen(writerText);
+		const auto totalSize = sizeof(common::TraceMemoryBlock) + textLenth + 1 + size;
+
+		// write big traces directly
+		if (m_localWriteBufferPos + totalSize > (LOCAL_WRITE_BUFFER_SIZE - GUARD_AREA_SIZE))
+			LocalFlush();
+
+		// request seq id now, before doing more mess
+		auto seq = (*m_sequenceNumber)++;	
+
+		// when starting the block, write the full frame
+		if (m_localWriteBufferPos == 0)
+			WriteBlockHeader();
+
+		// setup header
+		auto* header = LocalWrite<common::TraceMemoryBlock>();
+		header->m_textSize = (uint32)(textLenth + 1);
+		header->m_clock = __rdtsc();
+		header->m_ip = m_lastValidIp;
+		header->m_seq = seq;
+		header->m_address = addr;
+		header->m_size = (uint32)size;
+		header->m_magic = common::TraceMemoryBlock::MAGIC;
+
+		// copy text data
+		LocalWrite(writerText, header->m_textSize);
+
+		// copy memory data
+		LocalWrite(data, header->m_size);
+
+		// count written frames
+		++m_frameIndex;
 	}
 	
 	void TraceWriter::WriteBlockHeader()
@@ -102,9 +166,6 @@ namespace runtime
 		
 	void TraceWriter::WriteDeltaFrame(const uint64_t ip, const runtime::RegisterBank& regs)
 	{
-		// count written frames
-		++m_frameIndex;
-
 		// write frame header (will be patched)
 		auto* frame = LocalWrite<common::TraceFrame>();
 		frame->m_magic = common::TraceFrame::MAGIC;

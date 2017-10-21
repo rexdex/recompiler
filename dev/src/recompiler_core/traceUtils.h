@@ -43,6 +43,11 @@ namespace trace
 	// respects the parent relation, strips the bits
 	extern RECOMPILER_API int64 GetRegisterValueInteger(const platform::CPURegister* reg, const DataFrame& frame, const bool signExtend = true);
 
+	// get register data as int64 
+	// respects the parent relation, strips the bits
+	typedef std::function<bool(const platform::CPURegister* reg, void* outData)> TRegisterDataFetchFunc;
+	extern RECOMPILER_API int64 GetRegisterValueInteger(const platform::CPURegister* reg, const TRegisterDataFetchFunc& fetchFunc, const bool signExtend = true);
+
 	// get register data as floating point value
 	extern RECOMPILER_API double GetRegisterValueFloat(const platform::CPURegister* reg, const DataFrame& frame);
 

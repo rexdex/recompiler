@@ -35,6 +35,7 @@ uint64 __fastcall XboxInput_XamUserGetDeviceContext(uint64 ip, cpu::CpuRegs& reg
 	GLog.Log("XamUserGetDeviceContext(%d, %d, %.8X)", user, unk, outPtr);
 
 	cpu::mem::store<uint32>(outPtr, 0);
+	xenon::TagMemoryWrite(outPtr, 4, "XamUserGetDeviceContext");
 
 	if (!user || (user & 0xFF) == 0xFF)
 	{

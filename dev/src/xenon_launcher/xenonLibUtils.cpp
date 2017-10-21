@@ -154,10 +154,14 @@ uint64 __fastcall XboxUtils_RtlUnicodeToMultiByteN( uint64 ip, cpu::CpuRegs& reg
 		targetBuf[i] = c < 255 ? (uint8)c : '?';
 	}
 
-	cpu::mem::store<uint8>(targetBuf +  copyLength, 0);
+	cpu::mem::store<uint8>(targetBuf + copyLength, 0);
+	xenon::TagMemoryWrite(targetBuf + copyLength, 1, "RtlUnicodeToMultiByteN");
 
 	if (writtenPtr != 0)
+	{
 		cpu::mem::store<uint32>(writtenPtr, copyLength);
+		xenon::TagMemoryWrite(writtenPtr, 4, "RtlUnicodeToMultiByteN");
+	}
 
 	// done
 	RETURN_ARG(0);
@@ -182,9 +186,14 @@ uint64 __fastcall XboxUtils_RtlMultiByteToUnicodeN( uint64 ip, cpu::CpuRegs& reg
 	}
 
 	cpu::mem::store<uint16>(targetBuf + copyLength, 0);
+	xenon::TagMemoryWrite(targetBuf, 2*(copyLength+1), "RtlMultiByteToUnicodeN");
+
 
 	if (writtenPtr != 0)
+	{
 		cpu::mem::store<uint32>(writtenPtr, copyLength);
+		xenon::TagMemoryWrite(writtenPtr, 4, "RtlMultiByteToUnicodeN");
+	}
 
 	// done
 	RETURN_ARG(0);

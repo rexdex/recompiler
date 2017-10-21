@@ -37,6 +37,8 @@ namespace xenon
 		auto* traceFile = GPlatform.GetTraceFile();
 		auto* traceWriter = traceFile ? traceFile->CreateInterruptWriter(m_name) : nullptr;
 
+		auto* prevTraceWriter = BindMemoryTraceWriter(traceWriter);
+
 		if (traceWriter != nullptr)
 		{
 			traceWriter->AddFrame(m_code.GetInstructionPointer(), m_regs);
@@ -50,6 +52,7 @@ namespace xenon
 			{}
 		}
 
+		BindMemoryTraceWriter(prevTraceWriter);
 		delete traceWriter;
 
 		return (int)m_regs.R3;

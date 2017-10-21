@@ -12,17 +12,21 @@ namespace trace
 	// raw trace frame data
 	struct RawTraceFrame
 	{		
+		uint8_t m_type;
 		uint32 m_writerId;
 		uint32 m_threadId;
 		uint64 m_timeStamp;
 		uint64 m_ip;
+		uint64 m_address;
 		TraceFrameID m_seq;
+		std::string m_desc;
 		std::vector<uint8> m_data;
 
 		inline RawTraceFrame()
 			: m_writerId(0)
 			, m_threadId(0)
 			, m_timeStamp(0)
+			, m_address(0)
 			, m_ip(0)
 			, m_seq(0)
 		{}

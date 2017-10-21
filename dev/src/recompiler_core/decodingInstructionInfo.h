@@ -95,6 +95,10 @@ namespace decoding
 		// compute memory address used by this instruction
 		bool ComputeMemoryAddress(const trace::DataFrame& data, uint64& outAddress) const;
 
+		// compute memory address used by this instruction
+		typedef std::function<bool(const platform::CPURegister* reg, void* outData)> TRegisterDataFetchFunc;
+		bool ComputeMemoryAddress(const TRegisterDataFetchFunc& regDataFetch, uint64& outAddress) const;
+
 		// compute branch target address
 		bool ComputeBranchTargetAddress(const trace::DataFrame& data, uint64& outAddress) const;
 	};

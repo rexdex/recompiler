@@ -95,6 +95,22 @@ namespace xenon
 		bool m_userExitRequested;
 	};
 
+	//---------------------------------------------------------------------------
+
+	// bind trace for for memory tagging
+	// NOTE: writer is per-thead 
+	extern runtime::TraceWriter* BindMemoryTraceWriter(runtime::TraceWriter* writer);
+
+	// create IRQ/APC memory writer
+	extern void CreateSystemTraceMemoryWriter();
+
+	// tag a memory write, places information about the write in the trace file for current thread
+	extern void TagMemoryWrite(const uint64 addr, const uint32 size, const char* txt, ...);
+	extern void TagMemoryWrite(const void* ptr, const uint32 size, const char* txt, ...);
+
+	//---------------------------------------------------------------------------
+
+
 } // xenon
 
 //---------------------------------------------------------------------------
@@ -102,3 +118,6 @@ namespace xenon
 extern xenon::Platform GPlatform;
 
 //---------------------------------------------------------------------------
+
+#define TAG_MEMORY_WRITE_PTR(data, size) xenon::TagMemoryWrite((uint64)data, size, __FUNCTION__);
+#define TAG_MEMORY_WRITE_ADDR(addr, size) xenon::TagMemoryWrite(addr, size, __FUNCTION__);

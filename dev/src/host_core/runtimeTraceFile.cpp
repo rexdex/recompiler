@@ -166,6 +166,12 @@ namespace runtime
 		}
 	}
 
+	void TraceFile::WriteBlockAsync(Block* block)
+	{
+		WriteBlockSync(block->m_memory, block->m_size);
+		FreeBlock(block);
+	}
+
 	void TraceFile::WriteBlockAsync(const void* data, const size_t size)
 	{
 		// we have failed writing already, skip more writes (disk is probably full...)

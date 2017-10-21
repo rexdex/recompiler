@@ -98,7 +98,9 @@ uint64 __fastcall XboxVideo_VdGetCurrentDisplayGamma(uint64 ip, cpu::CpuRegs& re
 
 	GLog.Log("VdGetCurrentDisplayGamma(%08X, %08X)", arg0_ptr, arg1_ptr);
 	cpu::mem::storeAddr<uint32>(arg0_ptr, 2);
-	cpu::mem::storeAddr<float>(arg0_ptr, 2.22222233f);
+	xenon::TagMemoryWrite(arg0_ptr, 4, "VdGetCurrentDisplayGamma");
+	cpu::mem::storeAddr<float>(arg1_ptr, 2.22222233f);
+	xenon::TagMemoryWrite(arg1_ptr, 4, "VdGetCurrentDisplayGamma");
 	RETURN_ARG(0);
 }
 
@@ -130,6 +132,7 @@ uint64 __fastcall XboxVideo_VdGetCurrentDisplayInformation(uint64 ip, cpu::CpuRe
 	cpu::mem::storeAddr<uint32>(ptr + 76, 0x42700000);
 	cpu::mem::storeAddr<uint32>(ptr + 80, 0);
 	cpu::mem::storeAddr<uint32>(ptr + 84, 1280);  // display width
+	xenon::TagMemoryWrite(ptr, 88, "VdGetCurrentDisplayInformation");
 	RETURN_ARG(0);
 }
 
@@ -296,6 +299,8 @@ uint64 __fastcall XboxVideo_VdSwap(uint64 ip, cpu::CpuRegs& regs)
 	// Set by VdCallGraphicsNotificationRoutines.
 	cpu::mem::storeAddr<uint32>(ringBufferPtr + 8, GLastFrontBufferWidth);
 	cpu::mem::storeAddr<uint32>(ringBufferPtr + 12, GLastFrontBufferHeight);
+
+	xenon::TagMemoryWrite(ringBufferPtr, 16, "VdSwap");
 
 	RETURN_ARG(0);
 }

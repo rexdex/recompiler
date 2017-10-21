@@ -6,6 +6,50 @@
 namespace trace
 {
 
+	int64 GetRegisterValueInteger(const platform::CPURegister* reg, const TRegisterDataFetchFunc& fetchFunc, const bool signExtend/*= true*/)
+	{
+		uint64 bitSize = reg->GetBitSize();
+		uint64 bitOffset = reg->GetBitOffset();
+
+		const auto* rootReg = reg;
+		while (rootReg->GetParent())
+		{
+			bitOffset += rootReg->GetParent()->GetBitOffset();
+			rootReg = rootReg->GetParent();
+		}
+
+		// get data
+		uint8_t rawDataBuf[64];
+		if (!fetchFunc(reg, rawDataBuf))
+			return 0;
+
+		// register is to big to be represented as single value
+		if (bitSize > 64)
+			return 0;
+
+		// apply bit offset
+		auto* rawData = &rawDataBuf[0];
+		rawData += (bitOffset / 8);
+		bitOffset &= 7;
+
+		// compute bit mask
+		const uint64 bitMask = (bitSize == 64) ? ~0ULL : ((1ULL << bitSize) - 1);
+		uint64 unsignedVal = *(const uint64 *)rawData & bitMask; // TODO: potential AV risk		
+
+		// sign extend to 64 bits if required
+		if (signExtend && (bitSize < 64))
+		{
+			const uint64 bitSign = (1ULL << (bitSize - 1));
+			if (unsignedVal)
+			{
+				const uint64 signExtendBits = ~((1ULL << bitSize) - 1); // 0x00000100 -> 0x000000FF -> 0xFFFFFF00
+				unsignedVal |= signExtendBits;
+			}
+		}
+
+		return (int64&)unsignedVal;
+	}
+
 	int64 GetRegisterValueInteger(const platform::CPURegister* reg, const DataFrame& frame, const bool signExtend/*= true*/)
 	{
 		uint64 bitSize = reg->GetBitSize();

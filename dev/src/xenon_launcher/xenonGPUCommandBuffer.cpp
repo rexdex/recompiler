@@ -166,6 +166,8 @@ void CXenonGPUCommandBuffer::EndRead()
 	{
 		const uint32 cpuAddr = GPlatform.GetMemory().TranslatePhysicalAddress(m_writeBackPtr);
 		cpu::mem::storeAddr< uint32 >(cpuAddr, m_readIndex);
+		TAG_MEMORY_WRITE_ADDR(cpuAddr, sizeof(uint32));
+
 #ifdef DUMP_COMMAND_BUFFER
 		GLog.Log("GPU STORE at %08Xh, val %d (%08Xh)", cpuAddr, m_readIndex, m_readIndex);
 #endif

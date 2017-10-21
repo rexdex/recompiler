@@ -23,6 +23,8 @@ private:
 	HANDLE  m_hTimerQueue;
 	HANDLE  m_hVSyncTimer;
 
+	runtime::TraceWriter* m_traceWriter;
+
 	volatile bool	m_killRequest;
 
 	CXenonGPUCommandBuffer*		m_commandBuffer;	// related command buffer

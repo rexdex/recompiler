@@ -1,8 +1,9 @@
 #include "build.h"
 #include "traceRawReader.h"
 #include "traceCommon.h"
+#include "traceDataFile.h"
 
-//#pragma optimize("",off)
+#pragma optimize("",off)
 
 namespace trace
 {
@@ -63,8 +64,8 @@ namespace trace
 		std::vector<Context*> contextTables;
 
 		// the raw frame
-		RawTraceFrame rawFrame;
-		rawFrame.m_data.resize(m_frameSize, 0);
+		RawTraceFrame rawCodeFrame;
+		rawCodeFrame.m_data.resize(m_frameSize, 0);
 
 		// load all data until end of file has been reached
 		while ((uint64)m_file->tellg() < m_fileSize)
@@ -107,36 +108,72 @@ namespace trace
 			for (uint32 i = 0; i < header.m_numEntries; ++i)
 			{
 				// load frame header
-				common::TraceFrame frame;
-				Read(&frame, sizeof(frame));
+				uint32 frameMagic;
+				Read(&frameMagic, sizeof(frameMagic));
 
 				// invalid frame ?
-				if (frame.m_magic != common::TraceFrame::MAGIC)
+				if (frameMagic == common::TraceFrame::MAGIC)
+				{
+					// load the frame info
+					common::TraceFrame frame;
+					Read((char*)&frame + 4, sizeof(frame) - 4);
+
+					// report start of the block
+					if (context->m_numEntries == 0)
+						vistor.StartContext(log, context->m_writerId, context->m_threadId, frame.m_ip, frame.m_seq, "");
+
+					// decode frame data
+					DecodeFrameData(frame.m_mask, context->m_refData.data(), rawCodeFrame.m_data.data());
+
+					// setup rest 
+					rawCodeFrame.m_type = (uint8)trace::FrameType::CpuInstruction;
+					rawCodeFrame.m_seq = frame.m_seq;
+					rawCodeFrame.m_ip = frame.m_ip;
+					rawCodeFrame.m_threadId = context->m_threadId;
+					rawCodeFrame.m_writerId = context->m_writerId;
+					rawCodeFrame.m_timeStamp = frame.m_clock;
+					vistor.ConsumeFrame(log, context->m_writerId, frame.m_seq, rawCodeFrame);
+
+					// remember last sequence number of a context, this can be used to close it
+					context->m_lastSeq = frame.m_seq;
+					context->m_lastIp = frame.m_ip;
+					context->m_numEntries += 1;
+				}
+				else if (frameMagic == common::TraceMemoryBlock::MAGIC)
+				{
+					// load the frame info
+					common::TraceMemoryBlock frame;
+					Read((char*)&frame + 4, sizeof(frame) - 4);
+
+					// report start of the block
+					if (context->m_numEntries == 0)
+						vistor.StartContext(log, context->m_writerId, context->m_threadId, frame.m_ip, frame.m_seq, "");
+
+					// load the desc
+					RawTraceFrame rawMemoryFrame;
+					rawMemoryFrame.m_type = (uint8)trace::FrameType::ExternalMemoryWrite;
+					rawMemoryFrame.m_address = frame.m_address;
+					rawMemoryFrame.m_desc.resize(frame.m_textSize);
+					Read((char*)rawMemoryFrame.m_desc.data(), frame.m_textSize);
+
+					// load the data
+					rawMemoryFrame.m_data.resize(frame.m_size);
+					Read((char*)rawMemoryFrame.m_data.data(), frame.m_size);
+
+					// consume the frame
+					vistor.ConsumeFrame(log, context->m_writerId, frame.m_seq, rawMemoryFrame);
+
+					// remember last sequence number of a context, this can be used to close it
+					context->m_lastSeq = frame.m_seq;
+					context->m_lastIp = frame.m_ip;
+					context->m_numEntries += 1;
+				}
+				else
 				{
 					log.Warn("Trace: Invalid frame header at %llu (%1.2f%% of file). Stopping trace loading.",
 						m_file->tellg(), ((double)m_file->tellg() / (double)m_fileSize) * 100.0);
 					break;
 				}
-
-				// report start of the block
-				if (context->m_numEntries == 0)
-					vistor.StartContext(log, context->m_writerId, context->m_threadId, frame.m_ip, frame.m_seq, "");
-
-				// decode frame data
-				DecodeFrameData(frame.m_mask, context->m_refData.data(), rawFrame.m_data.data());
-
-				// setup rest 
-				rawFrame.m_seq = frame.m_seq;
-				rawFrame.m_ip = frame.m_ip;
-				rawFrame.m_threadId = context->m_threadId;
-				rawFrame.m_writerId = context->m_writerId;
-				rawFrame.m_timeStamp = frame.m_clock;
-				vistor.ConsumeFrame(log, context->m_writerId, frame.m_seq, rawFrame);
-
-				// remember last sequence number of a context, this can be used to close it
-				context->m_lastSeq = frame.m_seq;
-				context->m_lastIp = frame.m_ip;
-				context->m_numEntries += 1;
 			}
 		}
 

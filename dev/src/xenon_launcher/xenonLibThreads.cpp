@@ -197,6 +197,7 @@ uint64 __fastcall XboxThreads_KeQuerySystemTime(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 dataPtr = (const uint32)regs.R3;
 	GLog.Log("KeQuerySystemTime(0x%08X)", dataPtr);
 	cpu::mem::storeAddr<uint64>(dataPtr, 0);
+	xenon::TagMemoryWrite(dataPtr, 8, "KeQuerySystemTime");
 	RETURN_DEFAULT();
 }
 
@@ -255,6 +256,7 @@ uint64 __fastcall XboxThreads_NtCreateEvent(uint64 ip, cpu::CpuRegs& regs)
 		RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
 
 	cpu::mem::storeAddr(outPtr, evt->GetHandle());
+	xenon::TagMemoryWrite(outPtr, 4, "NtCreateEvent");
 	RETURN_ARG(0);
 }
 
@@ -266,6 +268,7 @@ uint64 __fastcall XboxThreads_KeSetEvent(uint64 ip, cpu::CpuRegs& regs)
 
 	auto* nativeEvent = (xnative::XEVENT*) eventPtr;
 	cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 1);
+	xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 4, "KeSetEvent");
 
 	auto* obj = GPlatform.GetKernel().ResolveObject((void*)eventPtr, xenon::NativeKernelObjectType::EventNotificationObject);
 	if (!obj)
@@ -292,7 +295,10 @@ uint64 __fastcall XboxThreads_NtSetEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 ret = evt->Set(0, false);
 
 	if (statePtr)
+	{
 		cpu::mem::storeAddr(statePtr, ret);
+		xenon::TagMemoryWrite(statePtr, 4, "NtSetEvent");
+	}
 
 	RETURN_ARG(0);
 }
@@ -316,7 +322,11 @@ uint64 __fastcall XboxThreads_NtPulseEvent(uint64 ip, cpu::CpuRegs& regs)
 	const uint32 ret = evt->Set(0, false);
 
 	if (statePtr)
+	{
 		cpu::mem::storeAddr(statePtr, ret);
+		xenon::TagMemoryWrite(statePtr, 4, "NtPulseEvent");
+	}
+
 
 	RETURN_ARG(ret);
 }
@@ -327,6 +337,8 @@ uint64 __fastcall XboxThreads_KeResetEvent(uint64 ip, cpu::CpuRegs& regs)
 
 	auto* nativeEvent = (xnative::XEVENT*) eventPtr;
 	cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 0);
+	xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 0, "KeResetEvent");
+
 
 	auto* obj = GPlatform.GetKernel().ResolveObject(nativeEvent, xenon::NativeKernelObjectType::EventNotificationObject);
 	if (!obj)

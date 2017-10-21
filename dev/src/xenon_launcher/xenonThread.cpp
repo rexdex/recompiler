@@ -46,6 +46,12 @@ namespace xenon
 		, m_traceWriter(nullptr)
 		, m_irql(0)
 	{
+		// create trace writer
+		if (GPlatform.GetTraceFile())
+		{
+			m_traceWriter = GPlatform.GetTraceFile()->CreateThreadWriter(GetIndex());
+		}
+
 		// register descriptor in kernel linked lists
 		SetNativePointer((void*)m_memory.GetThreadDataAddr()); // NOTE: we are not binding it to the thread
 
@@ -64,10 +70,6 @@ namespace xenon
 
 		// create the native thread
 		m_nativeThread = nativeKernel->CreateThread(this);
-
-		// create trace writer
-		if (GPlatform.GetTraceFile())
-			m_traceWriter = GPlatform.GetTraceFile()->CreateThreadWriter(GetIndex());
 	}
 
 	KernelThread::~KernelThread()
@@ -85,6 +87,7 @@ namespace xenon
 		m_apcList = nullptr;
 
 		// if we still have trace file close it now (should be closed on the thread)
+		BindMemoryTraceWriter(nullptr);
 		delete m_traceWriter;
 		m_traceWriter = nullptr;
 	}
@@ -169,6 +172,10 @@ namespace xenon
 
 	int KernelThread::Run(native::IThread& thread)
 	{
+		// tag memory write of thread data
+		BindMemoryTraceWriter(m_traceWriter);
+		TagMemoryWrite(m_memory.GetBlockData(), m_memory.GetBlockSize(), "KERNEL_THEAD_SETUP");
+
 		// bind the current thread
 		GCurrentThread = this;
 
@@ -261,6 +268,7 @@ namespace xenon
 			// Mark as uninserted so that it can be reinserted again by the routine.
 			const uint32 oldFlags = cpu::mem::loadAddr<uint32>(apcAddress + 40);
 			cpu::mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
+			xenon::TagMemoryWrite(apcAddress + 40, 4, "KERNEL_APC_SETUP");
 
 			// Call kernel routine.
 			// The routine can modify all of its arguments before passing it on.
@@ -271,6 +279,7 @@ namespace xenon
 			cpu::mem::storeAddr<uint32>(scratchAddr + 4, normalContext);
 			cpu::mem::storeAddr<uint32>(scratchAddr + 8, systemArg1);
 			cpu::mem::storeAddr<uint32>(scratchAddr + 12, systemArg2);
+			xenon::TagMemoryWrite(scratchAddr, 16, "KERNEL_APC_SETUP");
 
 			// setup execution params
 			// kernel_routine(apc_address, &normalRoutine, &normalContext, &systemArg1, &systemArg2)
@@ -336,6 +345,7 @@ namespace xenon
 			// Mark as uninserted so that it can be reinserted again by the routine.
 			const uint32 oldFlags = cpu::mem::loadAddr<uint32>(apcAddress + 40);
 			cpu::mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
+			TagMemoryWrite(apcAddress + 40, 4, "KERNEL_CLEANUP_APC");
 
 			// Call the rundown routine.
 			if (rundownRoutine)

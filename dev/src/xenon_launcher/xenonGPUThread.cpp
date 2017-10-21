@@ -4,6 +4,8 @@
 #include "xenonGPUAbstractLayer.h"
 #include "xenonGPUExecutor.h"
 #include "xenonGPUCommandBuffer.h"
+#include "xenonPlatform.h"
+#include "../host_core/runtimeTraceFile.h"
 
 CXenonGPUThread::CXenonGPUThread( CXenonGPUCommandBuffer& cmdBuffer, CXenonGPUExecutor& executor, IXenonGPUAbstractLayer* abstractionLayer )
 	: m_commandBuffer( &cmdBuffer )
@@ -13,7 +15,12 @@ CXenonGPUThread::CXenonGPUThread( CXenonGPUCommandBuffer& cmdBuffer, CXenonGPUEx
 	, m_hTimerQueue( nullptr )
 	, m_hVSyncTimer( nullptr )
 	, m_killRequest( false )
+	, m_traceWriter(nullptr)
 {
+	// create the trace writer
+	if (GPlatform.GetTraceFile())
+		m_traceWriter = GPlatform.GetTraceFile()->CreateInterruptWriter("GPU_THREAD");
+
 	// create thread
 	DWORD dwThreadID = 0;
 	m_hSync = ::CreateEventA( NULL, FALSE, FALSE, NULL );
@@ -103,6 +110,8 @@ DWORD WINAPI CXenonGPUThread::ThreadProc( LPVOID lpParameter )
 
 void CXenonGPUThread::ThreadFunc()
 {
+	xenon::BindMemoryTraceWriter(m_traceWriter);
+
 	while ( !m_killRequest )
 	{
 		// TODO: the output "frame" should be cached here, if nothing gets rendered than we deal with this shit ourselves
