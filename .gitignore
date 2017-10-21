@@ -25,3 +25,4 @@ projects/**/.temp/*
 projects/**/*.dll
 projects/xenon/launcher/default.pdi
 projects/xenon/launcher/project.rep
+*.tlog
