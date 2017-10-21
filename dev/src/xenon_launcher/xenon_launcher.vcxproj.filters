@@ -176,6 +176,7 @@
     <ClCompile Include="xenonAudio.cpp">
       <Filter>devices\audio</Filter>
     </ClCompile>
+    <ClCompile Include="xenonLibNet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibUtils.h">

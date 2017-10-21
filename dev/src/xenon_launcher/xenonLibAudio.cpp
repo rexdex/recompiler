@@ -48,8 +48,8 @@ uint64 __fastcall Xbox_XAudioGetVoiceCategoryVolume(uint64 ip, cpu::CpuRegs& reg
 void RegisterXboxAudio(runtime::Symbols& symbols)
 {
 #define REGISTER(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &Xbox_##x);
-	REGISTER(XAudioSubmitRenderDriverFrame)
-	REGISTER(XAudioUnregisterRenderDriverClient)
+    REGISTER(XAudioSubmitRenderDriverFrame);
+    REGISTER(XAudioUnregisterRenderDriverClient);
 	REGISTER(XAudioRegisterRenderDriverClient);
 	REGISTER(XAudioGetVoiceCategoryVolume);
 	REGISTER(XAudioGetSpeakerConfig);

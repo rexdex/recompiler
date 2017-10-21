@@ -131,6 +131,7 @@
     <ClCompile Include="xenonLibFiles.cpp" />
     <ClCompile Include="xenonLibInput.cpp" />
     <ClCompile Include="xenonLibNatives.cpp" />
+    <ClCompile Include="xenonLibNet.cpp" />
     <ClCompile Include="xenonLibThreads.cpp" />
     <ClCompile Include="xenonLibUtils.cpp" />
     <ClCompile Include="xenonLibVideo.cpp" />

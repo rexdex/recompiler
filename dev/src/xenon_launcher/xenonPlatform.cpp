@@ -149,7 +149,7 @@ namespace xenon
 		GLog.Log("Runtime: Initializing Xenon kernel");
 		m_kernel = new Kernel(nativeSystems, commandline);
 
-		// create file syste
+		// create file system
 		GLog.Log("Runtime: Initializing Xenon file system");
 		m_fileSys = new FileSystem(m_kernel, nativeSystems.m_fileSystem, commandline);
 
@@ -166,7 +166,7 @@ namespace xenon
 		m_users = new UserProfileManager();
 
 		// create the audio system
-		GLog.Log("Runtime: Initializing Audio system");
+		GLog.Log("Runtime: Initializing Xenon audio system");
 		m_audio = new Audio(symbols, commandline);
 
 		// initialize config data
@@ -192,6 +192,8 @@ namespace xenon
 		RegisterXboxXAM(symbols);
 		extern void RegisterXboxAudio(runtime::Symbols& symbols);
 		RegisterXboxAudio(symbols);
+        extern void RegisterXboxNetworking(runtime::Symbols& symbols);
+        RegisterXboxNetworking(symbols);
 
 		// register the process native data
 
