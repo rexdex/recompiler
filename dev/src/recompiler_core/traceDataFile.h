@@ -1,5 +1,5 @@
 #pragma once
-#include <functional>
+#include "traceMemorySlice.h"
 
 namespace trace
 {
@@ -122,6 +122,34 @@ namespace trace
 		uint64_t m_dataOffsets[NUM_ADDRESSES_PER_PAGE]; // offsets to entry lists in data blob
 	};
 
+	// memory access type
+	enum class MemoryAccessType
+	{
+		Read,
+		Write,
+	};
+
+	// info from memory access
+	struct MemoryAccessInfo
+	{
+		static const uint32_t MAX_BYTES = 16;
+
+		MemoryAccessType m_type;
+		TraceFrameID m_seq; // sequence point
+		uint64_t m_mask; // bytes affected by this access, bits -> bytes
+		uint8_t m_value[MAX_BYTES]; // memory values
+		uint8_t m_size; // in bytes
+
+		inline MemoryAccessInfo()
+			: m_type(MemoryAccessType::Read)
+			, m_seq(INVALID_TRACE_FRAME_ID)
+			, m_mask(0)
+			, m_size(0)
+		{
+			memset(m_value, 0, sizeof(m_value));
+		}
+	};
+
 	// decoded frame
 	class RECOMPILER_API DataFrame
 	{
@@ -170,6 +198,12 @@ namespace trace
 
 		// get total number of frames 
 		inline const uint64 GetNumDataFrames() const { return m_entries.size(); }
+
+		// get first valid entry index
+		inline const TraceFrameID GetFirstFrame() const { return m_firstFrameSeq; }
+
+		// get last valid entry index
+		inline const TraceFrameID GetLastFrame() const { return m_lastFrameSeq; }
 
 		// get list of trace contexts in the file
 		typedef std::vector<Context> TContextList;
@@ -249,6 +283,23 @@ namespace trace
 
 		//--
 
+		// get memory trace page (or null if not found) for given memory address
+		const MemoryTracePage* GetMemoryTracePage(const uint64_t address) const;
+
+		// get the memory cell data for given address
+		MemoryCell GetMemoryCell(const uint64_t address) const;
+
+		// get the browsable slice of memory
+		MemorySlice* GetMemorySlice(const uint64_t baseAddress, const uint64_t size) const;
+
+		// generate memory history for given address range
+		const bool GetMemoryWriteHistory(const uint64_t baseAddress, const uint64_t size, std::vector<MemoryAccessInfo>& outHistory) const;
+
+		// generate memory read/write history for given address range, slow, requires progress bar
+		const bool GetMemoryFullHistory(ILogOutput& log, const uint64_t baseAddress, const uint64_t size, std::vector<MemoryAccessInfo>& outHistory) const;
+
+		//--
+
 		// save to file, can fail if we don't have enough disk space
 		const bool Save(ILogOutput& log, const std::wstring& filePath) const;
 
@@ -288,6 +339,8 @@ namespace trace
 		{
 			uint32 m_magic;
 			uint32 m_numRegisters;
+			TraceFrameID m_firstSeq;
+			TraceFrameID m_lastSeq;
 			FileChunk m_chunks[NUM_CHUNKS];
 		};
 
@@ -343,6 +396,10 @@ namespace trace
 
 		// memory pages
 		std::vector<MemoryTracePage> m_memoryTracePages;
+
+		// sequence range
+		TraceFrameID m_firstFrameSeq;
+		TraceFrameID m_lastFrameSeq;
 
 		//--
 

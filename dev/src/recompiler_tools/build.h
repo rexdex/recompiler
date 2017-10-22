@@ -74,6 +74,7 @@
 #include "wx/filedlg.h"
 #include "wx/process.h"
 #include "wx/datetime.h"
+#include "wx/accel.h"
 
 // Backend
 #include "../recompiler_core/build.h"
@@ -148,7 +149,8 @@ namespace tools
 		virtual std::shared_ptr<ProjectImage> GetCurrentImage() { return nullptr; }
 		virtual MemoryView* GetCurrentMemoryView() { return nullptr; }
 		virtual bool NavigateToFrame(const TraceFrameID id) { return false; };
-		virtual bool NavigateToAddress(const uint64 id, const bool addToHistory) { return false; };
+		virtual bool NavigateToCodeAddress(const uint64 id, const bool addToHistory) { return false; };
+		virtual bool NavigateToMemoryAddress(const uint64 memoryAddress) { return false; };
 		virtual bool Navigate(const NavigationType type) { return false; };
 	};
 

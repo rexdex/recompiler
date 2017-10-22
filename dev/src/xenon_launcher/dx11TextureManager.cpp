@@ -6,7 +6,7 @@
 #include <xutility>
 
 #undef min
-#pragma optimize( "", off )
+//#pragma optimize( "", off )
 
 //---------------------------------------------------------------------------
 

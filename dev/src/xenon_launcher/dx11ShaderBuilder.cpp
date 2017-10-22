@@ -10,7 +10,7 @@
 #include "shaders/vsCommon.fx.h"
 #include "shaders/instrCommon.fx.h"
 
-#pragma optimize( "", off )
+//#pragma optimize( "", off )
 
 CDX11ShaderHLSLGenerator::CDX11ShaderHLSLGenerator()
 {

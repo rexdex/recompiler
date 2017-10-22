@@ -107,6 +107,12 @@
     <ClCompile Include="horizontalView.cpp">
       <Filter>widgets\horizontalView</Filter>
     </ClCompile>
+    <ClCompile Include="memoryTraceView.cpp">
+      <Filter>widgets\memoryView</Filter>
+    </ClCompile>
+    <ClCompile Include="memoryHistoryView.cpp">
+      <Filter>widgets\memoryHistoryView</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build.h" />
@@ -216,6 +222,12 @@
     <ClInclude Include="horizontalView.h">
       <Filter>widgets\horizontalView</Filter>
     </ClInclude>
+    <ClInclude Include="memoryTraceView.h">
+      <Filter>widgets\memoryView</Filter>
+    </ClInclude>
+    <ClInclude Include="memoryHistoryView.h">
+      <Filter>widgets\memoryHistoryView</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="app">
@@ -295,6 +307,12 @@
     </Filter>
     <Filter Include="widgets\horizontalView">
       <UniqueIdentifier>{83394787-4427-442f-b2fc-9990469310d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\memoryView">
+      <UniqueIdentifier>{8003c025-86db-41aa-a9f9-ca1cff342e12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="widgets\memoryHistoryView">
+      <UniqueIdentifier>{22798e2c-f204-4d51-889b-4e5a3784bb99}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

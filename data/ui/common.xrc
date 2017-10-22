@@ -48,20 +48,20 @@
 				</object>
 				<object class="separator" />
 				<object class="wxMenuItem" name="imagePrevAddress">
-					<label>Previous address from history\tBack</label>
+					<label>Previous address from history</label>
 					<help></help>
 				</object>
 				<object class="wxMenuItem" name="imageNextAddress">
-					<label>Next address from history\tShift+Back</label>
+					<label>Next address from history</label>
 					<help></help>
 				</object>
 				<object class="separator" />
 				<object class="wxMenuItem" name="imageFollowAddress">
-					<label>Follow address\tEnter</label>
+					<label>Follow address\t.</label>
 					<help></help>
 				</object>
 				<object class="wxMenuItem" name="imageReverseFollowAddress">
-					<label>Reverse follow address\tShift+Enter</label>
+					<label>Reverse follow address</label>
 					<help></help>
 				</object>
 				<object class="separator" />
@@ -542,6 +542,21 @@
 		</object>
 	</object>
 	<object class="wxPanel" name="HorizontalView">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>500,300</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxListCtrl" name="DataList">
+					<style>wxLC_REPORT</style>
+				</object>
+			</object>
+		</object>
+	</object>
+	<object class="wxPanel" name="MemoryHistoryView">
 		<style>wxTAB_TRAVERSAL</style>
 		<size>500,300</size>
 		<object class="wxBoxSizer">
@@ -2056,6 +2071,14 @@
 						<bitmap>icons/world.png</bitmap>
 						<toggle>1</toggle>
 					</object>
+					<object class="separator" />
+					<object class="tool" name="showValuesAsHex">
+						<label>Hex</label>
+						<tooltip>Show the numbers in hex format</tooltip>
+						<longhelp></longhelp>
+						<bitmap>icons/calculator.png</bitmap>
+						<toggle>1</toggle>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -2079,7 +2102,7 @@
 								<object class="wxSplitterWindow" name="m_splitter7">
 									<style>wxSP_3D</style>
 									<sashpos>0</sashpos>
-									<gravity>0.6</gravity>
+									<gravity>0.5</gravity>
 									<minsize>0</minsize>
 									<orientation>vertical</orientation>
 									<object class="wxPanel" name="m_panel33">
@@ -2115,25 +2138,6 @@
 														<object class="wxBoxSizer">
 															<orient>wxVERTICAL</orient>
 															<object class="sizeritem">
-																<option>0</option>
-																<flag>wxEXPAND</flag>
-																<border>5</border>
-																<object class="wxToolBar" name="RegistersToolbar">
-																	<style>wxTB_HORIZONTAL|wxTB_TEXT</style>
-																	<bitmapsize></bitmapsize>
-																	<margins></margins>
-																	<packing>1</packing>
-																	<separation>5</separation>
-																	<object class="tool" name="showValuesAsHex">
-																		<label>Hex</label>
-																		<tooltip>Show the numbers in hex format</tooltip>
-																		<longhelp></longhelp>
-																		<bitmap>icons/calculator.png</bitmap>
-																		<toggle>1</toggle>
-																	</object>
-																</object>
-															</object>
-															<object class="sizeritem">
 																<option>1</option>
 																<flag>wxEXPAND | wxALL</flag>
 																<border>5</border>
@@ -2156,9 +2160,133 @@
 																	</object>
 																	<object class="notebookpage">
 																		<label>Execution info</label>
-																		<selected>1</selected>
-																		<object class="wxPanel" name="TraceDataPanel">
+																		<selected>0</selected>
+																		<object class="wxPanel" name="TraceDataPanel2">
 																			<style>wxTAB_TRAVERSAL</style>
+																			<object class="wxBoxSizer">
+																				<orient>wxVERTICAL</orient>
+																				<object class="sizeritem">
+																					<option>0</option>
+																					<flag>wxEXPAND</flag>
+																					<border>5</border>
+																					<object class="wxToolBar" name="TimeMachineToolbar">
+																						<style>wxTB_HORIZONTAL|wxTB_TEXT</style>
+																						<bitmapsize></bitmapsize>
+																						<margins></margins>
+																						<packing>1</packing>
+																						<separation>5</separation>
+																						<object class="tool" name="timeMachineCreate">
+																							<label>Time machine</label>
+																							<tooltip>Explore the instruction execution in time machine</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/clock.png</bitmap>
+																						</object>
+																						<object class="separator" />
+																						<object class="tool" name="horizontalViewFunction">
+																							<label>Function slice</label>
+																							<tooltip>Explore horizontal view of this instruction in current function</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/table.png</bitmap>
+																						</object>
+																						<object class="tool" name="horizontalViewContext">
+																							<label>Context slice</label>
+																							<tooltip>Explore horizontal view of this instruction in current context</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/table.png</bitmap>
+																						</object>
+																						<object class="tool" name="horizontalViewGlobal">
+																							<label>Global slice</label>
+																							<tooltip>Explore horizontal view of this instruction in whole trace file</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/table.png</bitmap>
+																						</object>
+																						<object class="separator" />
+																					</object>
+																				</object>
+																				<object class="sizeritem">
+																					<option>1</option>
+																					<flag>wxEXPAND | wxALL</flag>
+																					<border>5</border>
+																					<object class="wxPanel" name="TraceDataPanel">
+																						<style>wxTAB_TRAVERSAL</style>
+																					</object>
+																				</object>
+																			</object>
+																		</object>
+																	</object>
+																	<object class="notebookpage">
+																		<label>Memory</label>
+																		<selected>1</selected>
+																		<object class="wxPanel" name="MemoryViewPage">
+																			<style>wxTAB_TRAVERSAL</style>
+																			<object class="wxBoxSizer">
+																				<orient>wxVERTICAL</orient>
+																				<object class="sizeritem">
+																					<option>0</option>
+																					<flag>wxEXPAND</flag>
+																					<border>5</border>
+																					<object class="wxToolBar" name="MemoryToolbar">
+																						<style>wxTB_HORIZONTAL</style>
+																						<bitmapsize></bitmapsize>
+																						<margins></margins>
+																						<packing>1</packing>
+																						<separation>5</separation>
+																						<object class="wxTextCtrl" name="MemoryAddress">
+																							<style>wxTE_PROCESS_ENTER</style>
+																							<value></value>
+																						</object>
+																						<object class="wxStaticText" name="m_staticText231">
+																							<label>  Mode: </label>
+																							<wrap>-1</wrap>
+																						</object>
+																						<object class="wxChoice" name="MemoryDisplayMode">
+																							<size>70,-1</size>
+																							<selection>0</selection>
+																							<content />
+																						</object>
+																						<object class="wxStaticText" name="m_staticText2311">
+																							<label>  Row: </label>
+																							<wrap>-1</wrap>
+																						</object>
+																						<object class="wxChoice" name="MemoryRowSize">
+																							<size>50,-1</size>
+																							<selection>0</selection>
+																							<content />
+																						</object>
+																						<object class="wxStaticText" name="m_staticText23111">
+																							<label>  Endianess: </label>
+																							<wrap>-1</wrap>
+																						</object>
+																						<object class="wxChoice" name="MemoryEndianess">
+																							<size>60,-1</size>
+																							<selection>0</selection>
+																							<content />
+																						</object>
+																						<object class="separator" />
+																						<object class="tool" name="traceMemoryWrites">
+																							<label>tool</label>
+																							<tooltip>Generate list of instructions that are writing to given address range</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/table_go.png</bitmap>
+																						</object>
+																						<object class="separator" />
+																						<object class="tool" name="traceMemoryFull">
+																							<label>tool</label>
+																							<tooltip>Generate list of instructions that are reading and writing to given address range (much slower)</tooltip>
+																							<longhelp></longhelp>
+																							<bitmap>icons/table_refresh.png</bitmap>
+																						</object>
+																					</object>
+																				</object>
+																				<object class="sizeritem">
+																					<option>1</option>
+																					<flag>wxEXPAND | wxALL</flag>
+																					<border>5</border>
+																					<object class="wxPanel" name="MemoryTraceView">
+																						<style>wxTAB_TRAVERSAL</style>
+																					</object>
+																				</object>
+																			</object>
 																		</object>
 																	</object>
 																</object>
@@ -2169,44 +2297,6 @@
 														<style>wxTAB_TRAVERSAL</style>
 														<object class="wxBoxSizer">
 															<orient>wxVERTICAL</orient>
-															<object class="sizeritem">
-																<option>0</option>
-																<flag>wxEXPAND</flag>
-																<border>5</border>
-																<object class="wxToolBar" name="TimeMachineToolbar">
-																	<style>wxTB_HORIZONTAL|wxTB_TEXT</style>
-																	<bitmapsize></bitmapsize>
-																	<margins></margins>
-																	<packing>1</packing>
-																	<separation>5</separation>
-																	<object class="tool" name="timeMachineCreate">
-																		<label>Time machine</label>
-																		<tooltip>Explore the instruction execution in time machine</tooltip>
-																		<longhelp></longhelp>
-																		<bitmap>icons/clock.png</bitmap>
-																	</object>
-																	<object class="separator" />
-																	<object class="tool" name="horizontalViewFunction">
-																		<label>Function slice</label>
-																		<tooltip>Explore horizontal view of this instruction in current function</tooltip>
-																		<longhelp></longhelp>
-																		<bitmap>icons/table.png</bitmap>
-																	</object>
-																	<object class="tool" name="horizontalViewContext">
-																		<label>Context slice</label>
-																		<tooltip>Explore horizontal view of this instruction in current context</tooltip>
-																		<longhelp></longhelp>
-																		<bitmap>icons/table.png</bitmap>
-																	</object>
-																	<object class="tool" name="horizontalViewGlobal">
-																		<label>Global slice</label>
-																		<tooltip>Explore horizontal view of this instruction in whole trace file</tooltip>
-																		<longhelp></longhelp>
-																		<bitmap>icons/table.png</bitmap>
-																	</object>
-																	<object class="separator" />
-																</object>
-															</object>
 															<object class="sizeritem">
 																<option>1</option>
 																<flag>wxEXPAND | wxALL</flag>
@@ -2236,7 +2326,7 @@
 								<object class="wxNotebook" name="m_notebook11">
 									<object class="notebookpage">
 										<label>Call trace</label>
-										<selected>1</selected>
+										<selected>0</selected>
 										<object class="wxPanel" name="m_panel50">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
@@ -2277,13 +2367,6 @@
 													</object>
 												</object>
 											</object>
-										</object>
-									</object>
-									<object class="notebookpage">
-										<label>Memory view</label>
-										<selected>0</selected>
-										<object class="wxPanel" name="m_panel54">
-											<style>wxTAB_TRAVERSAL</style>
 										</object>
 									</object>
 								</object>

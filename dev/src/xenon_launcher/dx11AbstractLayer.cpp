@@ -446,12 +446,16 @@ bool CDX11AbstractLayer::CreateSwapchain()
 
 void CDX11AbstractLayer::BindColorRenderTarget( const uint32 index, const XenonColorRenderTargetFormat format, const XenonMsaaSamples msaa, const uint32 base, const uint32 pitch )
 {
-	m_surfaceManager->BindColorRenderTarget( index, format, msaa, base, pitch );
+	// HACK: we don't support properly the MSAA, force the x1 mode but save what it should be for other hacks (mainly clear)
+	m_colorMSAA[index] = msaa;
+	m_surfaceManager->BindColorRenderTarget( index, format, /*msaa*/ XenonMsaaSamples::MSSA1X, base, pitch );
 }
 
 void CDX11AbstractLayer::BindDepthStencil( const XenonDepthRenderTargetFormat format, const XenonMsaaSamples msaa, const uint32 base, const uint32 pitch )
 {
-	m_surfaceManager->BindDepthStencil( format, msaa, base, pitch );
+	// HACK: we don't support properly the MSAA, force the x1 mode but save what it should be for other hacks (mainly clear)
+	m_depthMSAA = msaa;
+	m_surfaceManager->BindDepthStencil( format, /*msaa*/ XenonMsaaSamples::MSSA1X, base, pitch );
 }
 
 void CDX11AbstractLayer::UnbindColorRenderTarget( const uint32 index )
@@ -1079,43 +1083,96 @@ static const char* XenonGetPrimitiveTypeName(const XenonPrimitiveType pt)
 	return "Unknown";
 }
 
+#pragma optimize ("",off)
+
+void CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds)
+{
+	DEBUG_CHECK(ds.m_indexCount == 3);
+
+	// get the vertex stream with clear color
+	const uint32 fetchSlot = 0;
+	const uint32 fetchRegBase = (uint32)XenonGPURegister::REG_SHADER_CONSTANT_FETCH_00_0 + (fetchSlot * 2);
+	const auto& fetchEntry = regs.GetStructAt<XenonGPUVertexFetchData>((XenonGPURegister)fetchRegBase);
+
+	// the vertex buffer format seems to be: FLOAT3 FLOAT4 
+	const uint32 srcMemoryAddress = GPlatform.GetMemory().TranslatePhysicalAddress((fetchEntry.address << 2) + 0);
+
+	// get the area to clear - 3 corners
+	float rectArea[3][3];
+	rectArea[0][0] = cpu::mem::loadAddr<float>(srcMemoryAddress + 0 + 0);
+	rectArea[0][1] = cpu::mem::loadAddr<float>(srcMemoryAddress + 0 + 4);
+	rectArea[0][2] = cpu::mem::loadAddr<float>(srcMemoryAddress + 0 + 8);
+	rectArea[1][0] = cpu::mem::loadAddr<float>(srcMemoryAddress + 28 + 0);
+	rectArea[1][1] = cpu::mem::loadAddr<float>(srcMemoryAddress + 28 + 4);
+	rectArea[1][2] = cpu::mem::loadAddr<float>(srcMemoryAddress + 28 + 8);
+	rectArea[2][0] = cpu::mem::loadAddr<float>(srcMemoryAddress + 56 + 0);
+	rectArea[2][1] = cpu::mem::loadAddr<float>(srcMemoryAddress + 56 + 4);
+	rectArea[2][2] = cpu::mem::loadAddr<float>(srcMemoryAddress + 56 + 8);
+
+	// in the MSAA_X4 mode that is sometimes used for clear we are writing 2x bigger image
+	if (m_colorMSAA[0] == XenonMsaaSamples::MSSA4X)
+	{
+		rectArea[0][0] *= 2.0f;
+		rectArea[0][1] *= 2.0f;
+		rectArea[1][0] *= 2.0f;
+		rectArea[1][1] *= 2.0f;
+		rectArea[2][0] *= 2.0f;
+		rectArea[2][1] *= 2.0f;
+
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 0 + 0, rectArea[0][0]);
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 0 + 4, rectArea[0][1]);
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 0, rectArea[1][0]);
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 4, rectArea[1][1]);
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 0, rectArea[2][0]);
+		cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 4, rectArea[2][1]);
+	}
+
+	// get the clear color - first vertex
+	float clearColor[4];
+	clearColor[0] = cpu::mem::loadAddr<float>(srcMemoryAddress + 12 + 0);
+	clearColor[1] = cpu::mem::loadAddr<float>(srcMemoryAddress + 12 + 4);
+	clearColor[2] = cpu::mem::loadAddr<float>(srcMemoryAddress + 12 + 8);
+	clearColor[3] = cpu::mem::loadAddr<float>(srcMemoryAddress + 12 + 12);
+
+	// get the Z to clear
+	const auto clearZ = rectArea[0][2];
+
+	// compensate for packed color
+	const float packMin = -32896.503f;
+	const float packRange = 32896.503f;
+	clearColor[0] = (clearColor[0] - packMin) / packRange;
+	clearColor[1] = (clearColor[1] - packMin) / packRange;
+	clearColor[2] = (clearColor[2] - packMin) / packRange;
+	clearColor[3] = (clearColor[3] - packMin) / packRange;
+
+	// update colors
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 0, clearColor[0]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 4, clearColor[1]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 8, clearColor[2]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 12, clearColor[3]);
+
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 12 + 0, clearColor[0]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 12 + 4, clearColor[1]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 12 + 8, clearColor[2]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 28 + 12 + 12, clearColor[3]);
+
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 0, clearColor[0]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 4, clearColor[1]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 8, clearColor[2]);
+	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 12, clearColor[3]);
+
+	// pass to the edram - clear the EDRAM itself
+	//m_surfaceManager->ClearColor(0, clearColor, true);
+	//m_surfaceManager->ClearDepth(clearZ, 0, true);
+}
+
 bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds )
 {
 	// clear shader - HACK
 	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && ds.m_indexCount == 3 )
 	{
-		XenonGPUScope scope(this, "ClearHACK");
-
-		DEBUG_CHECK(ds.m_indexCount == 3);
-
-		// get the vertex stream with clear color
-		const uint32 fetchSlot = 0;
-		const uint32 fetchRegBase = (uint32) XenonGPURegister::REG_SHADER_CONSTANT_FETCH_00_0 + (fetchSlot*2);
-		const auto& fetchEntry = regs.GetStructAt<XenonGPUVertexFetchData>( (XenonGPURegister) fetchRegBase );
-
-		// get the clear color - first vertex
-		float clearColor[4];
-		const uint32 srcMemoryAddress = GPlatform.GetMemory().TranslatePhysicalAddress( (fetchEntry.address<<2) + 0 );
-		clearColor[0] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 0 );
-		clearColor[1] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 4 );
-		clearColor[2] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 8 );
-		clearColor[3] = cpu::mem::loadAddr<float>( srcMemoryAddress + 12 + 12 );
-
-		// get the Z to clear
-		const auto clearZ = 1.0f;// cpu::mem::loadAddr<float>(srcMemoryAddress + 8);
-
-		// compensate for packed color
-		const float packMin = -32896.503f;
-		const float packRange = 32896.503f;
-		clearColor[0] = (clearColor[0] - packMin) / packRange;
-		clearColor[1] = (clearColor[1] - packMin) / packRange;
-		clearColor[2] = (clearColor[2] - packMin) / packRange;
-		clearColor[3] = (clearColor[3] - packMin) / packRange;
-
-		// pass to the edram - clear the EDRAM itself
-		m_surfaceManager->ClearColor( 0, clearColor, true );
-		m_surfaceManager->ClearDepth(clearZ, 0, true);
-		return true;
+		HACK_ClearFromDraw(regs, traceDump, ds);
+		//return true;
 	}
 
 	// draw

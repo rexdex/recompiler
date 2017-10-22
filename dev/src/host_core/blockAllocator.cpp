@@ -1,7 +1,7 @@
 #include "build.h"
 #include "blockAllocator.h"
 
-#pragma optimize("",off)
+//#pragma optimize("",off)
 
 namespace utils
 {

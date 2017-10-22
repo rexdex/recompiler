@@ -152,7 +152,14 @@ namespace trace
 					// load the desc
 					RawTraceFrame rawMemoryFrame;
 					rawMemoryFrame.m_type = (uint8)trace::FrameType::ExternalMemoryWrite;
+					rawMemoryFrame.m_seq = frame.m_seq;
 					rawMemoryFrame.m_address = frame.m_address;
+					rawMemoryFrame.m_ip = 0;
+					rawMemoryFrame.m_threadId = context->m_threadId;
+					rawMemoryFrame.m_writerId = context->m_writerId;
+					rawMemoryFrame.m_timeStamp = frame.m_clock;
+
+					// load the name
 					rawMemoryFrame.m_desc.resize(frame.m_textSize);
 					Read((char*)rawMemoryFrame.m_desc.data(), frame.m_textSize);
 
@@ -165,7 +172,6 @@ namespace trace
 
 					// remember last sequence number of a context, this can be used to close it
 					context->m_lastSeq = frame.m_seq;
-					context->m_lastIp = frame.m_ip;
 					context->m_numEntries += 1;
 				}
 				else

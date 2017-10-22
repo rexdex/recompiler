@@ -63,6 +63,7 @@ CDX11SurfaceManager::EDRAMSetup::EDRAMSetup()
 
 void CDX11SurfaceManager::EDRAMSetup::Dump()
 {
+#ifdef _DEBUG
 	if ( m_depth.IsValid() )
 	{
 		GLog.Log( "EDRAM:  Depth: %hs, %hs, pitch:%d, base: %d", 
@@ -83,6 +84,7 @@ void CDX11SurfaceManager::EDRAMSetup::Dump()
 				color.m_pitch, color.m_base );
 		}
 	}
+#endif
 }
 
 //-------------------------------------------------------

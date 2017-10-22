@@ -65,7 +65,7 @@ namespace decoding
 		const uint32 DecodeInstruction(ILogOutput& log, const uint64_t codeAddress, Instruction& outInstruction, const bool cached = true);
 
 		// get function name for given code address (if known, if not known an automatic function name is returned)
-		const bool GetFunctionName(const uint32 codeAddress, std::string& outFunctionName, uint32& outFunctionStart) const;
+		const bool GetFunctionName(const uint64 codeAddress, std::string& outFunctionName, uint64& outFunctionStart) const;
 
 		// create decoding context for given image
 		static Context* Create(ILogOutput& log, const std::shared_ptr<image::Binary>& moduleImage, const platform::Definition* platformDefinition);

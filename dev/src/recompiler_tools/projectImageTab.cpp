@@ -117,7 +117,7 @@ namespace tools
 		}
 
 		// go to the address from address history
-		NavigateToAddress(img->GetAddressHistory().GetCurrentAddress(), false);
+		NavigateToCodeAddress(img->GetAddressHistory().GetCurrentAddress(), false);
 
 		// refresh ui
 		RefreshSectionList();
@@ -378,13 +378,13 @@ namespace tools
 			case NavigationType::HistoryBack:
 			{
 				const auto newAddress = m_image->GetAddressHistory().NavigateBack();
-				return NavigateToAddress(newAddress, false);
+				return NavigateToCodeAddress(newAddress, false);
 			}
 
 			case NavigationType::HistoryForward:
 			{
 				const auto newAddress = m_image->GetAddressHistory().NavigateForward();
-				return NavigateToAddress(newAddress, false);
+				return NavigateToCodeAddress(newAddress, false);
 			}
 
 			case NavigationType::Follow:
@@ -400,7 +400,7 @@ namespace tools
 
 				const uint32 branchTargetAddress = m_image->GetEnvironment().GetDecodingContext()->GetAddressMap().GetReferencedAddress(lowAddres);
 				if (branchTargetAddress)
-					return NavigateToAddress(branchTargetAddress, true);
+					return NavigateToCodeAddress(branchTargetAddress, true);
 
 				return false;
 			}
@@ -432,7 +432,7 @@ namespace tools
 					menu.Bind(wxEVT_MENU, [this, sourceAddresses](const wxCommandEvent& evt)
 					{
 						const auto it = evt.GetId() - 16000;
-						return NavigateToAddress(sourceAddresses[it], true);
+						return NavigateToCodeAddress(sourceAddresses[it], true);
 					});
 
 					PopupMenu(&menu);
@@ -462,7 +462,7 @@ namespace tools
 		return m_disassemblyPanel;
 	}
 
-	bool ProjectImageTab::NavigateToAddress(const uint64 address, const bool addToHistory)
+	bool ProjectImageTab::NavigateToCodeAddress(const uint64 address, const bool addToHistory)
 	{
 		// do not navigate to invalid address
 		if (address == INVALID_ADDRESS)
@@ -493,7 +493,7 @@ namespace tools
 		// get the section
 		const auto image = m_image->GetEnvironment().GetImage();
 		const auto* section = image->GetSection(selectedSectionID);
-		NavigateToAddress(section->GetVirtualOffset() + image->GetBaseAddress(), true);
+		NavigateToCodeAddress(section->GetVirtualOffset() + image->GetBaseAddress(), true);
 	}
 
 	void ProjectImageTab::OnFindSymbol(wxCommandEvent& evt)	
@@ -502,7 +502,7 @@ namespace tools
 		if (0 == dlg.ShowModal())
 		{
 			const auto address = dlg.GetSelectedSymbolAddress();
-			NavigateToAddress(address, true);
+			NavigateToCodeAddress(address, true);
 		}
 	}
 	
@@ -510,13 +510,13 @@ namespace tools
 	{
 		GotoAddressDialog dlg(this, m_image, m_disassemblyPanel);
 		const uint32 newAddres = dlg.GetNewAddress();
-		NavigateToAddress(newAddres, true);
+		NavigateToCodeAddress(newAddres, true);
 	}
 
 	void ProjectImageTab::OnGotoEntryAddress(wxCommandEvent& evt)
 	{
 		const auto entryAddress = m_image->GetEnvironment().GetDecodingContext()->GetEntryPointRVA();
-		NavigateToAddress(entryAddress, true);
+		NavigateToCodeAddress(entryAddress, true);
 	}
 
 	void ProjectImageTab::OnBuildCode(wxCommandEvent& evt)
@@ -776,7 +776,7 @@ namespace tools
 			if (index < image->GetNumImports())
 			{
 				const auto* dat = image->GetImport(index);
-				NavigateToAddress(dat->GetEntryAddress(), true);
+				NavigateToCodeAddress(dat->GetEntryAddress(), true);
 			}
 		}
 	}
@@ -793,7 +793,7 @@ namespace tools
 			if (index < image->GetNumExports())
 			{
 				const auto* dat = image->GetExports(index);
-				NavigateToAddress(dat->GetEntryPointAddress(), true);
+				NavigateToCodeAddress(dat->GetEntryPointAddress(), true);
 			}
 		}
 	}
@@ -810,7 +810,7 @@ namespace tools
 			if (index < image->GetNumSymbols())
 			{
 				const auto* dat = image->GetSymbol(index);
-				NavigateToAddress(dat->GetAddress(), true);
+				NavigateToCodeAddress(dat->GetAddress(), true);
 			}
 		}
 	}
@@ -824,7 +824,7 @@ namespace tools
 			const auto addr = (uint32)box->GetItemData(id);
 			if (addr != 0)
 			{
-				NavigateToAddress(addr, true);
+				NavigateToCodeAddress(addr, true);
 			}
 		}
 	}

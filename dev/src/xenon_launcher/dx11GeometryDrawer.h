@@ -54,9 +54,15 @@ public:
 	// Set the sampler to given fetch slot
 	void SetSampler(const uint32 fetchSlot, const XenonSamplerInfo& samplerInfo);
 
-public:
+	//--
+
 	// Draw prepared geometry
 	bool Draw( const class CXenonGPURegisters& regs, class IXenonGPUDumpWriter* traceDump, const struct CXenonGPUState::DrawIndexState& ds );
+
+	//--
+
+	// Draw clear quad
+	bool DrawClearQuad(const float minX, const float minY, const float maxX, const float maxY, const float depth, const float r, const float g, const float b, const float a);
 
 private:
 	// DX11 device, always valid

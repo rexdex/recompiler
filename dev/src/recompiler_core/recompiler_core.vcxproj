@@ -122,6 +122,7 @@
     <ClInclude Include="rapidxml_print.hpp" />
     <ClInclude Include="rapidxml_utils.hpp" />
     <ClInclude Include="timemachine.h" />
+    <ClInclude Include="traceMemorySlice.h" />
     <ClInclude Include="traceRawReader.h" />
     <ClInclude Include="traceUtils.h" />
     <ClInclude Include="xmlReader.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="platformDefinition.cpp" />
     <ClCompile Include="externalAppWin.cpp" />
     <ClCompile Include="timemachine.cpp" />
+    <ClCompile Include="traceMemorySlice.cpp" />
     <ClCompile Include="traceRawReader.cpp" />
     <ClCompile Include="traceUtils.cpp" />
     <ClCompile Include="xmlReader.cpp" />

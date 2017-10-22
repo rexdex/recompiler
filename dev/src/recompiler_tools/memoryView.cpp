@@ -1284,7 +1284,18 @@ namespace tools
 
 	void MemoryView::OnCharHook(wxKeyEvent& event)
 	{
-		event.Skip();
+		if (event.GetKeyCode() == WXK_RETURN)
+		{
+			m_view->Navigate(this, NavigationType::Follow);
+		}
+		else if (event.GetKeyCode() == WXK_BACK)
+		{
+			m_view->Navigate(this, NavigationType::HistoryBack);
+		}
+		else
+		{
+			event.Skip();
+		}
 	}
 
 	void MemoryView::OnKeyDown(wxKeyEvent& event)

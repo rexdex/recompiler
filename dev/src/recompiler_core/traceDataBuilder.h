@@ -18,6 +18,9 @@ namespace trace
 
 		void FlushData();
 
+		TraceFrameID m_firstSeq;
+		TraceFrameID m_lastSeq;
+
 		utils::big_vector<DataFile::Entry> m_entries;
 		utils::big_vector<Context> m_contexts;
 		utils::big_vector<uint8_t> m_blob;
@@ -56,6 +59,9 @@ namespace trace
 			std::vector<DeltaReference> m_references;
 			uint32_t m_localSeq;
 			TraceFrameID m_prevSeq;
+
+			std::vector<uint64_t*> m_unresolvedIPAddresses;
+			uint64_t m_lastValidResolvedIP;
 
 			DeltaContext();
 
@@ -217,13 +223,13 @@ namespace trace
 		uint32_t DeltaWrite(const uint8_t* referenceData, const uint8_t* currentData);
 
 		// write to blob
-		void WriteToBlob(const void* data, const uint32_t size);
+		uint64_t WriteToBlob(const void* data, const uint32_t size);
 
 		// write to blob, typed
 		template< typename T>
-		inline void WriteToBlob(const T& data)
+		inline uint64_t WriteToBlob(const T& data)
 		{
-			WriteToBlob(&data, sizeof(data));
+			return WriteToBlob(&data, sizeof(data));
 		}
 
 		//--

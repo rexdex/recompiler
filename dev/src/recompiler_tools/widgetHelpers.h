@@ -371,4 +371,9 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
+	extern bool ParseHexValue64(const char* start, uint64& outValue);
+	extern bool ParseAddress(const wxString& str, uint64& outValue);
+
+	//---------------------------------------------------------------------------
+
 } // tools

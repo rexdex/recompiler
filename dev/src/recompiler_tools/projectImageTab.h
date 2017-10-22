@@ -24,7 +24,7 @@ namespace tools
 		virtual bool Navigate(const NavigationType type) override;
 
 		// navigate to address in this image
-		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) override;
+		virtual bool NavigateToCodeAddress(const uint64 address, const bool addToHistory) override;
 
 	private:
 		std::shared_ptr<ProjectImage> m_image;

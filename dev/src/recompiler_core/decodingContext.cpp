@@ -148,9 +148,9 @@ namespace decoding
 		return 0;
 	}
 
-	const bool Context::GetFunctionName(const uint32 codeAddress, std::string& outFunctionName, uint32& outFunctionStart) const
+	const bool Context::GetFunctionName(const uint64 codeAddress, std::string& outFunctionName, uint64& outFunctionStart) const
 	{
-		uint32 addr = codeAddress;
+		auto addr = codeAddress;
 		while (m_memoryMap->GetMemoryInfo(addr).IsExecutable())
 		{
 			// function start ?

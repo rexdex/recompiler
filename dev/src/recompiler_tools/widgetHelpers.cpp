@@ -461,4 +461,53 @@ namespace tools
 
 	//---------------------------------------------------------------------------
 
+	bool ParseHexValue64(const char* start, uint64& outValue)
+	{
+		// decode number
+		const char* txt = start + strlen(start) - 1;
+		uint64 ret = 0;
+		uint64 b = 1;
+		while (txt >= start)
+		{
+			const char ch = *txt--;
+
+			// get char value
+			uint64 c = 0;
+			if (ch == 'A' || ch == 'a') c = 10;
+			else if (ch == 'B' || ch == 'b') c = 11;
+			else if (ch == 'C' || ch == 'c') c = 12;
+			else if (ch == 'D' || ch == 'd') c = 13;
+			else if (ch == 'E' || ch == 'e') c = 14;
+			else if (ch == 'F' || ch == 'f') c = 15;
+			else if (ch >= '0' && ch <= '9') c = (ch - '0');
+			else
+			{
+				return false;
+			}
+
+			// accumulate
+			ret += b * c;
+			b <<= 4;
+		}
+
+		// done
+		outValue = ret;
+		return true;
+	}
+
+	bool ParseAddress(const wxString& str, uint64& outValue)
+	{
+		auto text = str;
+		text.Trim();
+
+		if (text.EndsWith("h"))
+			text = text.Mid(0, text.Length() - 1);
+		else if (text.StartsWith("0x"))
+			text = text.Mid(2);
+
+		return ParseHexValue64(text.c_str().AsChar(), outValue);
+	}
+
+	//---------------------------------------------------------------------------
+
 } // tools

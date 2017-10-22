@@ -12,7 +12,7 @@
 #include "dx11TextureManager.h"
 #include "xenonGPUDumpWriter.h"
 
-#pragma optimize( "",off )
+//#pragma optimize( "",off )
 
 //----------------------
 
@@ -793,6 +793,11 @@ bool CDX11GeometryDrawer::TranslatePrimitiveType( const XenonPrimitiveType primi
 
 	DEBUG_CHECK( !"Unknown primitive type" );
 	return false;
+}
+
+bool CDX11GeometryDrawer::DrawClearQuad(const float minX, const float minY, const float maxX, const float maxY, const float depth, const float r, const float g, const float b, const float a)
+{
+
 }
 
 bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXenonGPUDumpWriter* traceDump, const struct CXenonGPUState::DrawIndexState& ds )

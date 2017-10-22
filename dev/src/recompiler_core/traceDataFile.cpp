@@ -6,6 +6,8 @@
 #include "internalUtils.h"
 #include <algorithm>
 
+#pragma optimize("",off)
+
 namespace trace
 {
 
@@ -54,6 +56,8 @@ namespace trace
 
 	DataFile::DataFile(const platform::CPU* cpuInfo)
 		: m_cpu(cpuInfo)
+		, m_firstFrameSeq(0)
+		, m_lastFrameSeq(0)
 	{
 		std::vector<uint8> data;
 		m_emptyFrame = new DataFrame(LocationInfo(), FrameType::Invalid, NavigationData(), data);
@@ -367,6 +371,121 @@ namespace trace
 		return false;
 	}
 
+	//--
+
+	const MemoryTracePage* DataFile::GetMemoryTracePage(const uint64_t address) const
+	{
+		// linear search
+		// TODO: std::lower_bound
+		for (auto& memoryPage : m_memoryTracePages)
+			if (address >= memoryPage.m_baseAddress && address < memoryPage.m_baseAddress + MemoryTracePage::NUM_ADDRESSES_PER_PAGE)
+				return &memoryPage;
+
+		return nullptr;
+	}
+
+	MemoryCell DataFile::GetMemoryCell(const uint64_t address) const
+	{
+		// get the memory page for given address
+		const auto* page = GetMemoryTracePage(address);
+		if (!page)
+			return MemoryCell::EMPTY();
+
+		// get the offset to data
+		const auto dataOffset = page->m_dataOffsets[address % MemoryTracePage::NUM_ADDRESSES_PER_PAGE];
+		if (!dataOffset)
+			return MemoryCell::EMPTY();
+
+		// get number of entries
+		const auto* dataPtr = (const uint8_t*)m_dataBlob.data() + dataOffset;
+		const auto numEntries = *(const uint32_t*)dataPtr;
+		if (!numEntries)
+			return MemoryCell::EMPTY();
+
+		// create the cell
+		const auto* historyEntries = (const MemoryCellHistoryEntry*)(dataPtr + 4);
+		return MemoryCell(historyEntries, numEntries);
+	}
+
+	MemorySlice* DataFile::GetMemorySlice(const uint64_t baseAddress, const uint64_t size) const
+	{
+		// empty trace
+		if (!size)
+			return nullptr;
+
+		// collect cells
+		std::vector<MemoryCell> cells;
+		cells.resize(size);
+		for (uint32_t i = 0; i < size; ++i)
+			cells[i] = GetMemoryCell(baseAddress + i);
+
+		// create the memory slice
+		return new MemorySlice(baseAddress, baseAddress + size, cells);
+	}
+
+	const bool DataFile::GetMemoryWriteHistory(const uint64_t baseAddress, const uint64_t size, std::vector<MemoryAccessInfo>& outHistory) const
+	{
+		// to many byte
+		if (size > MemoryAccessInfo::MAX_BYTES)
+			return false;
+
+		// collect memory slice
+		std::unique_ptr<MemorySlice> slice(GetMemorySlice(baseAddress, size));
+
+		// collect all sequence points
+		std::unordered_set<TraceFrameID> unorderedSequencePoints;
+		for (uint32_t i = 0; i < size; ++i)
+		{
+			const auto& cell = slice->GetMemoryCell(baseAddress + i);
+			for (uint32_t j = 0; j < cell.GetHistoryCount(); ++j)
+			{
+				const auto seq = cell.GetHistoryEntries()[j].m_seq;
+				unorderedSequencePoints.insert(seq);
+			}
+		}
+
+		// get ordered list of sequence points
+		std::vector<TraceFrameID> sequencePoints;
+		for (const auto it : unorderedSequencePoints)
+			sequencePoints.push_back(it);
+		std::sort(sequencePoints.begin(), sequencePoints.end());
+
+		// build data entries
+		for (const auto seq : sequencePoints)
+		{
+			// rewind the slice to this time
+			slice->Rewind(seq);
+
+			// collect data
+			MemoryAccessInfo info;
+			info.m_seq = seq;
+			info.m_size = (uint8_t)size;
+			info.m_type = MemoryAccessType::Write;
+
+			for (uint32_t i = 0; i < size; ++i)
+			{
+				const auto& cell = slice->GetMemoryCell(baseAddress + i);
+				info.m_value[i] = cell.GetValue();
+
+				const bool isWritten = (cell.GetFrameID() == seq);
+				if (isWritten)
+					info.m_mask |= 1ULL << i;
+			}
+
+			outHistory.push_back(info);
+		}
+
+		// trace extracted
+		return true;
+	}
+
+	const bool DataFile::GetMemoryFullHistory(ILogOutput& log, const uint64_t baseAddress, const uint64_t size, std::vector<MemoryAccessInfo>& outHistory) const
+	{
+		// TODO
+		return GetMemoryWriteHistory(baseAddress, size, outHistory);
+	}
+
+	///---
 
 	DataFrame* DataFile::CompileFrame(const TraceFrameID id)
 	{
@@ -390,36 +509,50 @@ namespace trace
 		navi.m_prevInContext = entryInfo.m_prevThread;
 		navi.m_nextInContext = entryInfo.m_nextThread;
 
-		// prepare data buffer
+		// unpack data
 		std::vector<uint8> data;
-		data.resize(m_dataFrameSize, 0);
-
-		// get the base frame
-		if (entryInfo.m_base != INVALID_TRACE_FRAME_ID)
+		if (entryInfo.m_type == (uint8_t)FrameType::CpuInstruction)
 		{
-			const auto& baseFrame = GetFrame(entryInfo.m_base);
-			memcpy(data.data(), baseFrame.GetRawData(), m_dataFrameSize);
-		}
+			// prepare data buffer
+			data.resize(m_dataFrameSize, 0);
 
-		// unpack the packed data
-		{
-			const auto* readPtr = (const uint8_t*)&blobInfo + sizeof(blobInfo);
-
-			// read number of registers and the data for the registers
-			const auto numRegs = *readPtr++;
-			for (uint32 i = 0; i < numRegs; ++i)
+			// get the base frame
+			if (entryInfo.m_base != INVALID_TRACE_FRAME_ID && (entryInfo.m_base != id))
 			{
-				// read register id
-				const auto regIndex = *readPtr++;
-
-				// get the register
-				const auto* reg = m_registers[regIndex];
-				const auto dataOffset = reg->GetTraceDataOffset();
-
-				// load data for the register
-				memcpy(data.data() + dataOffset, readPtr, reg->GetBitSize() / 8);
-				readPtr += reg->GetBitSize() / 8;
+				const auto& baseFrame = GetFrame(entryInfo.m_base);
+				memcpy(data.data(), baseFrame.GetRawData(), m_dataFrameSize);
 			}
+
+			// unpack the packed data
+			{
+				const auto* readPtr = (const uint8_t*)&blobInfo + sizeof(blobInfo);
+
+				// read number of registers and the data for the registers
+				const auto numRegs = *readPtr++;
+				for (uint32 i = 0; i < numRegs; ++i)
+				{
+					// read register id
+					const auto regIndex = *readPtr++;
+
+					// get the register
+					const auto* reg = m_registers[regIndex];
+					const auto dataOffset = reg->GetTraceDataOffset();
+
+					// load data for the register
+					memcpy(data.data() + dataOffset, readPtr, reg->GetBitSize() / 8);
+					readPtr += reg->GetBitSize() / 8;
+				}
+			}
+		}
+		else if (entryInfo.m_type == (uint8_t)FrameType::ExternalMemoryWrite)
+		{
+			// load size of data
+			const auto* readPtr = (const uint8_t*)&blobInfo + sizeof(blobInfo);
+			const auto stringLength = readPtr[0];
+			const auto totalLength = stringLength + 1 + 8 + 4;
+
+			data.resize(totalLength);
+			memcpy(data.data(), readPtr, totalLength);
 		}
 
 		// prepare the frame
@@ -475,6 +608,8 @@ namespace trace
 		memset(&header, 0, sizeof(header));
 		header.m_magic = 0;
 		header.m_numRegisters = (uint32)m_registers.size();
+		header.m_firstSeq = m_firstFrameSeq;
+		header.m_lastSeq = m_lastFrameSeq;
 		file.write((char*)&header, sizeof(header));
 
 		// write the registers
@@ -640,6 +775,8 @@ namespace trace
 		// remember how much memory we need for one frame worth of data
 		log.Log("Trace: Register data consumes %u bytes per frame", traceDataOffsetPos);
 		ret->m_dataFrameSize = traceDataOffsetPos;
+		ret->m_firstFrameSeq = header.m_firstSeq;
+		ret->m_lastFrameSeq = header.m_lastSeq;
 
 		// load the chunks
 		{
@@ -732,6 +869,10 @@ namespace trace
 		DataBuilder builder(rawTrace, decodingContextQuery);
 		rawTrace.Scan(log, builder);
 		builder.FlushData();
+
+		// frame range
+		ret->m_firstFrameSeq = builder.m_firstSeq;
+		ret->m_lastFrameSeq = builder.m_lastSeq;
 
 		// extract data
 		builder.m_blob.exportToVector(ret->m_dataBlob);

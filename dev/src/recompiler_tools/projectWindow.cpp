@@ -365,7 +365,7 @@ namespace tools
 				if (0 == dlg.ShowModal())
 				{
 					const auto address = dlg.GetSelectedSymbolAddress();
-					navigator->NavigateToAddress(address, true);
+					navigator->NavigateToCodeAddress(address, true);
 				}
 			}
 		}
@@ -391,7 +391,7 @@ namespace tools
 			{
 				GotoAddressDialog dlg(this, image, memory);
 				const auto newAddr = dlg.GetNewAddress();
-				navigator->NavigateToAddress(newAddr, true);
+				navigator->NavigateToCodeAddress(newAddr, true);
 			}
 		}
 	}

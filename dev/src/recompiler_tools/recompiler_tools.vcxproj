@@ -96,6 +96,8 @@
     <ClCompile Include="eventDispatcher.cpp" />
     <ClCompile Include="eventListener.cpp" />
     <ClCompile Include="findSymbolDialog.cpp" />
+    <ClCompile Include="memoryHistoryView.cpp" />
+    <ClCompile Include="memoryTraceView.cpp" />
     <ClCompile Include="projectImageTab.cpp" />
     <ClCompile Include="projectMainTab.cpp" />
     <ClCompile Include="projectTraceTab.cpp" />
@@ -134,6 +136,8 @@
     <ClInclude Include="eventDispatcher.h" />
     <ClInclude Include="eventListener.h" />
     <ClInclude Include="findSymbolDialog.h" />
+    <ClInclude Include="memoryHistoryView.h" />
+    <ClInclude Include="memoryTraceView.h" />
     <ClInclude Include="projectImageTab.h" />
     <ClInclude Include="projectTraceTab.h" />
     <ClInclude Include="projectWindow.h" />

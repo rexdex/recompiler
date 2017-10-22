@@ -13,6 +13,7 @@ namespace tools
 	class RegisterView;
 	class CallTreeView;
 	class CallTreeList;
+	class MemoryTraceView;
 
 	/// tab for the project trace 
 	class ProjectTraceTab : public ProjectTab, public INavigationHelper
@@ -70,6 +71,9 @@ namespace tools
 		// horizontal trace
 		std::vector<TraceFrameID> m_horizontalTraceFrames;
 
+		// memory trace view
+		MemoryTraceView* m_memoryTraceView;
+
 		//--
 
 		void OnRefreshTimer(wxTimerEvent & evt);
@@ -91,11 +95,17 @@ namespace tools
 		void OnShowHorizontalTraceFunction(wxCommandEvent& evt);
 		void OnShowHorizontalTraceContext(wxCommandEvent& evt);
 		void OnShowHorizontalTraceGlobal(wxCommandEvent& evt);
+		void OnMemoryDisplayParamsChanged(wxCommandEvent& evt);
+		void OnMemoryDisplayAddressChanged(wxCommandEvent& evt);
+		void OnTraceMemoryWrites(wxCommandEvent& evt);
+		void OnTraceMemoryFull(wxCommandEvent& evt);
 
 		void SyncImageView();
 		void SyncRegisterView();
 		void SyncTraceView();
+		void SyncMemoryView();
 
+		void RefreshMemoryDisplayMode();
 		void RefreshState();
 		void RefreshUI();
 
@@ -114,7 +124,8 @@ namespace tools
 
 		virtual std::shared_ptr<ProjectImage> GetCurrentImage() override;
 		virtual MemoryView* GetCurrentMemoryView() override;
-		virtual bool NavigateToAddress(const uint64 address, const bool addToHistory) override;
+		virtual bool NavigateToCodeAddress(const uint64 address, const bool addToHistory) override;
+		virtual bool NavigateToMemoryAddress(const uint64 address) override;
 	};
 
 } // tool

@@ -594,7 +594,7 @@ namespace tools
 					if (numAdresses == 1 && numTrace == 0)
 					{
 						const uint32 address = addresses[0];
-						//wxTheFrame->NavigateToAddress(address);
+						//wxTheFrame->NavigateToCodeAddress(address);
 					}
 					else if (numTrace == 1 && numAdresses == 0)
 					{
@@ -763,7 +763,7 @@ namespace tools
 	void LogDisplayBuffer::OnNavigateToAddress(wxCommandEvent& event)
 	{
 		wxAddressData* data = static_cast<wxAddressData*>(event.m_callbackUserData);
-		//wxTheFrame->NavigateToAddress(data->m_address);
+		//wxTheFrame->NavigateToCodeAddress(data->m_address);
 	}
 
 	void LogDisplayBuffer::OnNavigateToTrace(wxCommandEvent& event)

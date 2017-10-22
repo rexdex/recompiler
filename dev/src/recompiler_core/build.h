@@ -14,6 +14,7 @@
 #include <istream>
 #include <fstream>
 #include <functional>
+#include <algorithm>
 
 #ifdef _LIB
 	#define RECOMPILER_API

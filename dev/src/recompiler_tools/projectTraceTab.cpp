@@ -18,6 +18,8 @@
 #include "../recompiler_core/traceDataFile.h"
 #include "../recompiler_core/decodingAddressMap.h"
 #include "../recompiler_core/decodingContext.h"
+#include "memoryTraceView.h"
+#include "memoryHistoryView.h"
 
 #pragma optimize ("",off)
 
@@ -44,6 +46,12 @@ namespace tools
 		EVT_MENU(XRCID("horizontalViewFunction"), ProjectTraceTab::OnShowHorizontalTraceFunction)
 		EVT_MENU(XRCID("horizontalViewContext"), ProjectTraceTab::OnShowHorizontalTraceContext)
 		EVT_MENU(XRCID("horizontalViewGlobal"), ProjectTraceTab::OnShowHorizontalTraceGlobal)
+		EVT_TEXT_ENTER(XRCID("MemoryAddress"), ProjectTraceTab::OnMemoryDisplayAddressChanged)
+		EVT_CHOICE(XRCID("MemoryDisplayMode"), ProjectTraceTab::OnMemoryDisplayParamsChanged)
+		EVT_CHOICE(XRCID("MemoryRowSize"), ProjectTraceTab::OnMemoryDisplayParamsChanged)
+		EVT_CHOICE(XRCID("MemoryEndianess"), ProjectTraceTab::OnMemoryDisplayParamsChanged)
+		EVT_MENU(XRCID("traceMemoryWrites"), ProjectTraceTab::OnTraceMemoryWrites)
+		EVT_MENU(XRCID("traceMemoryFull"), ProjectTraceTab::OnTraceMemoryFull)
 	END_EVENT_TABLE()
 
 	ProjectTraceTab::ProjectTraceTab(ProjectWindow* parent, wxWindow* tabs, std::unique_ptr<trace::DataFile>& traceData)
@@ -58,9 +66,13 @@ namespace tools
 		, m_timeMachineTabs(nullptr)
 		, m_callStackView(nullptr)
 		, m_callTreeView(nullptr)
-	{
+	{		
 		// load the ui
 		wxXmlResource::Get()->LoadPanel(this, tabs, wxT("TraceTab"));
+
+		// remove the key shortcuts that cause problems
+		//GetAcceleratorTable()->Remove(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_RETURN));
+		//GetAcceleratorTable()->Remove(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_BA));
 
 		// create the disassembly window
 		{
@@ -74,7 +86,7 @@ namespace tools
 		// the trace data
 		{
 			auto* panel = XRCCTRL(*this, "TraceDataPanel", wxPanel);
-			m_traceInfoView = new TraceInfoView(panel, *m_data, GetProjectWindow()->GetProject().get());
+			m_traceInfoView = new TraceInfoView(panel, *m_data, GetProjectWindow()->GetProject().get(), this);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_traceInfoView, 1, wxEXPAND, 0);
 		}
@@ -142,6 +154,58 @@ namespace tools
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_callTreeView, 1, wxEXPAND, 0);
 		}
+
+		// memory view
+		{
+			auto* panel = XRCCTRL(*this, "MemoryTraceView", wxPanel);
+			m_memoryTraceView = new MemoryTraceView(panel, m_data.get());
+			m_memoryTraceView->SetAddress(0);
+			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+			panel->GetSizer()->Add(m_memoryTraceView, 1, wxEXPAND, 0);
+		}
+
+		// memory display mode
+		{
+			auto* mode = XRCCTRL(*this, "MemoryDisplayMode", wxChoice);
+			mode->AppendString("Hex8");
+			mode->AppendString("Hex16");
+			mode->AppendString("Hex32");
+			mode->AppendString("Hex64");
+			mode->AppendString("Uint8");
+			mode->AppendString("Uint16");
+			mode->AppendString("Uint32");
+			mode->AppendString("Uint64");
+			mode->AppendString("Int8");
+			mode->AppendString("Int16");
+			mode->AppendString("Int32");
+			mode->AppendString("Int64");
+			mode->AppendString("Float");
+			mode->AppendString("Double");
+			mode->AppendString("AnsiChars");
+			mode->AppendString("UniChars");
+			mode->SetSelection(0);
+		}
+
+		// memory row sizes
+		{
+			auto* mode = XRCCTRL(*this, "MemoryRowSize", wxChoice);
+			mode->AppendString("8");
+			mode->AppendString("16");
+			mode->AppendString("32");
+			mode->AppendString("64");
+			mode->SetSelection(2);
+		}
+
+		// memory endianess mode list
+		{
+			auto* mode = XRCCTRL(*this, "MemoryEndianess", wxChoice);
+			mode->AppendString("BigEndian");
+			mode->AppendString("LittleEndian");
+			mode->SetSelection(0);
+		}
+
+		// sync the memory view
+		RefreshMemoryDisplayMode();		
 	}
 
 	ProjectTraceTab::~ProjectTraceTab()
@@ -159,7 +223,7 @@ namespace tools
 		{
 			GotoAddressDialog dlg(this, m_currentImage, m_disassemblyPanel);
 			const auto newAddres = dlg.GetNewAddress();
-			NavigateToAddress(newAddres, true);
+			NavigateToCodeAddress(newAddres, true);
 		}
 	}
 
@@ -232,11 +296,11 @@ namespace tools
 
 	bool ProjectTraceTab::OpenHorizontalTrace(const TraceFrameID seq, const SliceMode mode)
 	{
-		TraceFrameID firstEntry = 0;
-		TraceFrameID lastEntry = m_data->GetNumDataFrames();
+		TraceFrameID firstEntry = m_data->GetFirstFrame();
+		TraceFrameID lastEntry = m_data->GetLastFrame();
 		wxString title = "Global";
 
-		// constrain to range of trace
+				// constrain to range of trace
 		if (mode == SliceMode::Function)
 		{
 			if (!m_data->GetInnerMostCallFunction(seq, firstEntry, lastEntry))
@@ -252,23 +316,53 @@ namespace tools
 			title = "Scope";
 		}
 
-		// get the code page matching the initial sequence point
-		const auto* codePage = m_data->GetCodeTracePage(seq);
-		if (!codePage)
-			return false;
-
-		// get the list of sequence points
+		// get the trace frames the instruction is visited
 		const auto codeAddress = m_data->GetFrame(seq).GetAddress();
 		std::vector<TraceFrameID> sequenceList;
-		if (!m_data->GetCodeTracePageHorizonstalSlice(*codePage, seq, firstEntry, lastEntry, codeAddress, sequenceList))
-			return false;
+		if (mode == SliceMode::Global)
+		{
+			// process all contexts
+			for (uint32_t i = 0; i < m_data->GetContextList().size(); ++i)
+			{
+				const auto* codePage = m_data->GetCodeTracePage(i, codeAddress);
+				if (nullptr != codePage)
+				{
+					m_data->GetCodeTracePageHorizonstalSlice(*codePage, seq, firstEntry, lastEntry, codeAddress, sequenceList);
+				}
+			}
+		}
+		else
+		{
+			// get the code page matching the initial sequence point
+			const auto* codePage = m_data->GetCodeTracePage(seq);
+			if (!codePage)
+				return false;
+
+			// get the list of sequence points
+			const auto codeAddress = m_data->GetFrame(seq).GetAddress();
+			if (!m_data->GetCodeTracePageHorizonstalSlice(*codePage, seq, firstEntry, lastEntry, codeAddress, sequenceList))
+				return false;
+		}
 
 		// get display mode
 		const auto displayMode = GetValueDisplayFormat();
 
+		// get more human readable info about the file
+		auto codeAddressName = wxString::Format("0x%08llX", codeAddress);
+		if (const auto* context = GetProjectWindow()->GetProject()->GetDecodingContext(codeAddress))
+		{
+			std::string functionName;
+			uint64 functionBase;
+			if (context->GetFunctionName(codeAddress, functionName, functionBase) && !functionName.empty())
+			{
+				const auto delta = codeAddress - functionBase;
+				codeAddressName += wxString::Format(" %hs + %X", functionName.c_str());
+			}
+		}
+
 		// create the horizontal list
 		auto* view = new HorizontalRegisterView(m_timeMachineTabs, this);
-		const auto name = wxString::Format("Slice %hs at 0x%08llX (%llu)", title.c_str().AsChar(), codeAddress, seq);
+		const auto name = wxString::Format("Slice %hs at %hs (%llu)", title.c_str().AsChar(), codeAddressName.c_str().AsChar(), seq);
 		if (!view->FillTable(GetProjectWindow()->GetProject().get(), *m_data, seq, sequenceList))
 		{
 			delete view;
@@ -330,7 +424,7 @@ namespace tools
 
 	trace::RegDisplayFormat ProjectTraceTab::GetValueDisplayFormat() const
 	{
-		auto* toolbar = XRCCTRL(*this, "RegistersToolbar", wxToolBar);
+		auto* toolbar = XRCCTRL(*this, "ToolBar", wxToolBar);
 
 		const auto hexView = toolbar->GetToolState(XRCID("showValuesAsHex"));
 		if (hexView)
@@ -370,6 +464,98 @@ namespace tools
 		OpenHorizontalTrace(m_currentEntry, SliceMode::Global);
 	}
 
+	void ProjectTraceTab::OnMemoryDisplayParamsChanged(wxCommandEvent& evt)
+	{
+		RefreshMemoryDisplayMode();
+	}
+
+	// TODO: move	
+
+	void ProjectTraceTab::OnMemoryDisplayAddressChanged(wxCommandEvent& evt)
+	{
+		const auto* addressBox = XRCCTRL(*this, "MemoryAddress", wxTextCtrl);
+
+		wxString text = addressBox->GetValue();
+		uint64 newAddress = 0;
+		if (ParseAddress(text, newAddress))
+		{
+			m_memoryTraceView->SetAddress(newAddress);
+		}
+		else
+		{
+			wxBell();
+		}
+	}
+
+	void ProjectTraceTab::OnTraceMemoryWrites(wxCommandEvent& evt)
+	{
+		const auto* modeBox = XRCCTRL(*this, "MemoryDisplayMode", wxChoice);
+		const auto displayMode = (MemoryDisplayMode)(modeBox->GetSelection());
+
+		const auto* endianessBox = XRCCTRL(*this, "MemoryEndianess", wxChoice);
+		const auto displayEndianess = (MemoryEndianess)(endianessBox->GetSelection());
+
+		uint64 memoryStart = 0, memoryEnd = 0;
+		if (!m_memoryTraceView->GetSelection(memoryStart, memoryEnd))
+		{
+			wxMessageBox("Please select some memory range from the memory window", "Memory history", wxICON_ERROR, this);
+			return;
+		}
+
+		std::vector<trace::MemoryAccessInfo> history;
+		if (!m_data->GetMemoryWriteHistory(memoryStart, memoryEnd - memoryStart, history))
+		{
+			wxMessageBox("Unable to get history for selected memory range", "Memory history", wxICON_ERROR, this);
+			return;
+		}
+
+
+		auto* view = new MemoryHistoryView(m_timeMachineTabs, this);
+		if (!view->FillTable(GetProjectWindow()->GetProject().get(), *m_data, history, displayMode, displayEndianess))
+		{ 
+			delete view;
+			wxBell();
+			return;
+		}
+
+		m_timeMachineTabs->AddPage(view, wxString::Format("Memory (0x%08llX + %u)", memoryStart, memoryEnd - memoryStart), true);
+	}
+
+	void ProjectTraceTab::OnTraceMemoryFull(wxCommandEvent& evt)
+	{
+		const auto* modeBox = XRCCTRL(*this, "MemoryDisplayMode", wxChoice);
+		const auto displayMode = (MemoryDisplayMode)(modeBox->GetSelection());
+
+		const auto* endianessBox = XRCCTRL(*this, "MemoryEndianess", wxChoice);
+		const auto displayEndianess = (MemoryEndianess)(endianessBox->GetSelection());
+	}
+
+	void ProjectTraceTab::RefreshMemoryDisplayMode()
+	{
+		const auto* modeBox = XRCCTRL(*this, "MemoryDisplayMode", wxChoice);
+		if (modeBox->GetSelection() == -1)
+			return;
+
+		const auto* sizeBox = XRCCTRL(*this, "MemoryRowSize", wxChoice);
+		if (sizeBox->GetSelection() == -1)
+			return;
+
+		const auto* endianessBox = XRCCTRL(*this, "MemoryEndianess", wxChoice);
+		if (endianessBox->GetSelection() == -1)
+			return;
+
+		const auto displayMode = (MemoryDisplayMode)(modeBox->GetSelection());
+		const auto displayRowSize = 8 << sizeBox->GetSelection();
+		const auto displayEndianess = (MemoryEndianess)(endianessBox->GetSelection());
+
+		m_memoryTraceView->SetDisplayMode(displayMode, displayRowSize, displayEndianess);
+	}
+
+	void ProjectTraceTab::SyncMemoryView()
+	{
+		m_memoryTraceView->SetTraceFrame(m_currentEntry);	
+	}
+
 	void ProjectTraceTab::RefreshState()
 	{
 
@@ -389,13 +575,13 @@ namespace tools
 			case NavigationType::HistoryBack:
 			{
 				const auto newAddress = m_addressHistory.NavigateBack();
-				return NavigateToAddress(newAddress, false);
+				return NavigateToCodeAddress(newAddress, false);
 			}
 
 			case NavigationType::HistoryForward:
 			{
 				const auto newAddress = m_addressHistory.NavigateForward();
-				return NavigateToAddress(newAddress, false);
+				return NavigateToCodeAddress(newAddress, false);
 			}
 
 			case NavigationType::ToggleBreakpoint:
@@ -421,7 +607,7 @@ namespace tools
 
 				const uint32 branchTargetAddress = image->GetEnvironment().GetDecodingContext()->GetAddressMap().GetReferencedAddress(lowAddres);
 				if (branchTargetAddress)
-					return NavigateToAddress(branchTargetAddress, true);
+					return NavigateToCodeAddress(branchTargetAddress, true);
 
 				return false;
 			}
@@ -456,7 +642,7 @@ namespace tools
 					menu.Bind(wxEVT_MENU, [this, sourceAddresses](const wxCommandEvent& evt)
 					{
 						const auto it = evt.GetId() - 16000;
-						return NavigateToAddress(sourceAddresses[it], true);
+						return NavigateToCodeAddress(sourceAddresses[it], true);
 					});
 
 					PopupMenu(&menu);
@@ -525,17 +711,12 @@ namespace tools
 
 			case NavigationType::GlobalStart:
 			{
-				return NavigateToFrame(0);
+				return NavigateToFrame(m_data->GetFirstFrame());
 			}
 
 			case NavigationType::GlobalEnd:
 			{
-				const auto lastFrame = m_data->GetNumDataFrames() - 1;
-				const auto& entry = m_data->GetFrame(lastFrame);
-				if (entry.GetType() != trace::FrameType::Invalid && entry.GetAddress())
-					return NavigateToFrame(lastFrame);
-				else
-					return false;
+				return NavigateToFrame(m_data->GetLastFrame());
 			}
 
 			case NavigationType::SyncPos:
@@ -652,7 +833,7 @@ namespace tools
 		return m_disassemblyPanel;
 	}
 
-	bool ProjectTraceTab::NavigateToAddress(const uint64 address, const bool addToHistory)
+	bool ProjectTraceTab::NavigateToCodeAddress(const uint64 address, const bool addToHistory)
 	{
 		if (address == INVALID_ADDRESS)
 			return false;
@@ -705,6 +886,17 @@ namespace tools
 		return true;
 	}
 		
+	bool ProjectTraceTab::NavigateToMemoryAddress(const uint64 address)
+	{
+		auto* addressBox = XRCCTRL(*this, "MemoryAddress", wxTextCtrl);
+		addressBox->SetValue(wxString::Format("%08llX", address));
+
+		auto* traceTabs = XRCCTRL(*this, "TraceTabs", wxNotebook);
+		m_memoryTraceView->SetAddress(address);
+		traceTabs->SetSelection(2);
+		return true;
+	}
+
 	bool ProjectTraceTab::NavigateToFrame(const TraceFrameID seq)
 	{
 		if (m_currentEntry != seq)
@@ -718,13 +910,14 @@ namespace tools
 			SyncImageView();
 			SyncRegisterView();
 			SyncTraceView();
+			SyncMemoryView();
 
-			if (frame.GetType() == trace::FrameType::CpuInstruction)
+			if (frame.GetType() == trace::FrameType::CpuInstruction || frame.GetType() == trace::FrameType::ExternalMemoryWrite)
 			{
 				const auto address = frame.GetAddress();
 				m_addressHistory.Reset(address);
 
-				if (!NavigateToAddress(address, false))
+				if (!NavigateToCodeAddress(address, false))
 					return false;
 			}
 		}

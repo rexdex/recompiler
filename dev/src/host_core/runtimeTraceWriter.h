@@ -15,6 +15,13 @@ namespace runtime
 		TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, const char* name);
 		~TraceWriter();
 
+		//--
+
+		// get owning file
+		inline TraceFile* GetParentFile() const { return m_owner; }
+
+		//--
+
 		// flush any partial blocks
 		void LocalFlush();
 

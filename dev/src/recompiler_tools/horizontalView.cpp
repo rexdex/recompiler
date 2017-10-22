@@ -60,43 +60,43 @@ namespace tools
 		if (!context)
 			return false;
 
-		// decode the instruction
-		if (0 == context->DecodeInstruction(wxTheApp->GetLogWindow(), address, op, false))
-			return false;
-
-		// get instruction information
-		decoding::InstructionExtendedInfo info;
-		if (!op.GetExtendedInfo(frame.GetAddress(), *context, info))
-			return false;
-
-		// list dependencies as "Ins"
-		std::vector<const platform::CPURegister*> inRegisters;
-		for (uint32 i = 0; i < info.m_registersDependenciesCount; ++i)
-			inRegisters.push_back(info.m_registersDependencies[i]);
-
-		// and modified registers as "outs"
-		std::vector<const platform::CPURegister*> outRegisters;
-		for (uint32 i = 0; i < info.m_registersModifiedCount; ++i)
-			outRegisters.push_back(info.m_registersModified[i]);
-
-		// clear the list
+		// clear the list and add headers
 		m_list->Freeze();
 		m_list->DeleteAllColumns();
 		m_list->AppendColumn("Order", wxLIST_FORMAT_LEFT, 80);
 		m_list->AppendColumn("Trace", wxLIST_FORMAT_LEFT, 100);
+		m_list->AppendColumn("Context", wxLIST_FORMAT_LEFT, 150);
 
-		// columns for in-registers
-		for (const auto* reg : inRegisters)
+		// decode the instruction to get extra info
+		std::vector<const platform::CPURegister*> inRegisters, outRegisters;
+		if (0 != context->DecodeInstruction(wxTheApp->GetLogWindow(), address, op, false))
 		{
-			const auto name = wxString("In ") + reg->GetName();
-			m_list->AppendColumn(name, wxLIST_FORMAT_LEFT, 200);
-		}
+			// get instruction information
+			decoding::InstructionExtendedInfo info;
+			if (op.GetExtendedInfo(frame.GetAddress(), *context, info))
+			{
+				// list dependencies as "Ins"
+				for (uint32 i = 0; i < info.m_registersDependenciesCount; ++i)
+					inRegisters.push_back(info.m_registersDependencies[i]);
 
-		// columns for out-registers
-		for (const auto* reg : outRegisters)
-		{
-			const auto name = wxString("Out ") + reg->GetName();
-			m_list->AppendColumn(name, wxLIST_FORMAT_LEFT, 200);
+				// and modified registers as "outs"
+				for (uint32 i = 0; i < info.m_registersModifiedCount; ++i)
+					outRegisters.push_back(info.m_registersModified[i]);
+
+				// columns for in-registers
+				for (const auto* reg : inRegisters)
+				{
+					const auto name = wxString("In ") + reg->GetName();
+					m_list->AppendColumn(name, wxLIST_FORMAT_LEFT, 200);
+				}
+
+				// columns for out-registers
+				for (const auto* reg : outRegisters)
+				{
+					const auto name = wxString("Out ") + reg->GetName();
+					m_list->AppendColumn(name, wxLIST_FORMAT_LEFT, 200);
+				}
+			}
 		}
 
 		// gather data
@@ -115,9 +115,18 @@ namespace tools
 			m_list->SetItemData(itemId, seq);
 			m_list->SetItem(itemId, 1, wxString::Format("%llu", seq));
 
+			// context info
+			const auto contextInfo = file.GetContextList()[curFrame.GetLocationInfo().m_contextId];
+			if (contextInfo.m_type == trace::ContextType::Thread)
+				m_list->SetItem(itemId, 2, wxString::Format("Thread%u", contextInfo.m_threadId));
+			else if (contextInfo.m_type == trace::ContextType::IRQ)
+				m_list->SetItem(itemId, 2, wxString::Format("IRQ %u", contextInfo.m_id));
+			else if (contextInfo.m_type == trace::ContextType::APC)
+				m_list->SetItem(itemId, 2, wxString::Format("APC %u", contextInfo.m_id));
+
 			// create the entries with the values
 			// the IN registers use the current frame value
-			uint32_t columnIndex = 2;
+			uint32_t columnIndex = 3;
 			for (const auto* reg : inRegisters)
 			{
 				RegValue value;

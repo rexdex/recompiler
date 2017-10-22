@@ -17,6 +17,8 @@ namespace trace
 		: m_rawTrace(&rawTrace)
 		, m_decodingContextQueryFunc(decodingContextQuery)
 		, m_memoryTraceBuilder(new MemoryTraceBuilder())
+		, m_firstSeq(INVALID_TRACE_FRAME_ID)
+		, m_lastSeq(INVALID_TRACE_FRAME_ID)
 	{
 		m_blob.push_back(0); // make sure the blob offset 0 will mean "invalid"
 		m_callFrames.push_back(CallFrame());
@@ -38,6 +40,7 @@ namespace trace
 		context.m_first.m_seq = seq;
 		context.m_first.m_ip = ip;
 		context.m_first.m_time = 0;
+		context.m_rootCallFrame = 0;
 
 		// set context name
 		strcpy_s(context.m_name, name);
@@ -52,16 +55,6 @@ namespace trace
 
 		// create the compression context
 		m_deltaContextData.AllocAt(writerId) = new DeltaContext();
-
-		// create the call frame
-		CallFrame callFrame;
-		callFrame.m_enterLocation = context.m_first;
-		callFrame.m_parentFrame = 0;
-		const auto callEntryIndex = m_callFrames.push_back(callFrame);
-		context.m_rootCallFrame = (uint32_t)callEntryIndex;
-
-		// create the call stack context
-		m_callstackBuilders.AllocAt(writerId) = new CallStackBuilder((uint32_t)callEntryIndex);
 
 		// create the context builder
 		m_codeTraceBuilders.AllocAt(writerId) = new CodeTraceBuilder();
@@ -79,12 +72,15 @@ namespace trace
 
 		// end call stack by forcibly finishing all open functions
 		auto* callstackBuilder = m_callstackBuilders[writerId];
-		for (auto callEntryId : callstackBuilder->m_callFrames)
+		if (callstackBuilder != nullptr)
 		{
-			auto& entry = m_callFrames[callEntryId];
-			entry.m_leaveLocation = context.m_last;
+			for (auto callEntryId : callstackBuilder->m_callFrames)
+			{
+				auto& entry = m_callFrames[callEntryId];
+				entry.m_leaveLocation = context.m_last;
+			}
+			callstackBuilder->m_callFrames.clear();
 		}
-		callstackBuilder->m_callFrames.clear();
 
 		// emit the code trace data
 		auto* codeTraceBuilder = m_codeTraceBuilders[writerId];
@@ -102,34 +98,73 @@ namespace trace
 		// get the offset to data
 		const auto dataOffset = m_blob.size();
 
+		// update ranges
+		if (m_firstSeq == INVALID_TRACE_FRAME_ID)
+		{
+			m_firstSeq = seq;
+			m_lastSeq = seq;
+		}
+		else
+		{ 
+			m_lastSeq = std::max(seq, m_lastSeq);
+		}
+
 		// write the blob header
 		DataFile::BlobInfo blobInfo;
 		blobInfo.m_ip = frame.m_ip;
 		blobInfo.m_localSeq = deltaContext->m_localSeq;
 		blobInfo.m_time = frame.m_timeStamp;
-		WriteToBlob(&blobInfo, sizeof(blobInfo));
+		const auto blobOffset = WriteToBlob(&blobInfo, sizeof(blobInfo));
+
+		// define entry
+		auto& entry = m_entries.AllocAt(seq);
+		entry.m_base = INVALID_TRACE_FRAME_ID;
+		entry.m_prevThread = deltaContext->m_prevSeq;
+		entry.m_nextThread = INVALID_TRACE_FRAME_ID;
+		entry.m_offset = dataOffset;
+		entry.m_context = writerId;
+		entry.m_type = frame.m_type;
+
+		// update the delta context
+		if (deltaContext->m_prevSeq != INVALID_TRACE_FRAME_ID)
+		{
+			auto& prevEntry = m_entries[deltaContext->m_prevSeq];
+			prevEntry.m_nextThread = seq;
+			deltaContext->m_prevSeq = INVALID_TRACE_FRAME_ID;
+		}
 
 		// cpu frame
 		if (frame.m_type == (uint8)FrameType::CpuInstruction)
 		{
+			// update previous memory writes
+			for (auto* ptr : deltaContext->m_unresolvedIPAddresses)
+				*ptr = blobInfo.m_ip;
+			deltaContext->m_unresolvedIPAddresses.clear();
+			deltaContext->m_lastValidResolvedIP = frame.m_ip;
+
 			// write the delta compressed data
 			TraceFrameID baseFrameId = INVALID_TRACE_FRAME_ID;
 			DeltaCompress(*deltaContext, frame, baseFrameId);
 
-			// define entry
-			auto& entry = m_entries.AllocAt(seq);
+			// set entry type
 			entry.m_base = baseFrameId;
-			entry.m_prevThread = deltaContext->m_prevSeq;
-			entry.m_nextThread = INVALID_TRACE_FRAME_ID;
-			entry.m_type = (uint8_t)FrameType::CpuInstruction;
-			entry.m_offset = dataOffset;
-			entry.m_context = writerId;
 
-			// update the delta context
-			if (deltaContext->m_prevSeq != INVALID_TRACE_FRAME_ID)
+			// create callstack builder on first instruction
+			if (context.m_rootCallFrame == 0)
 			{
-				auto& prevEntry = m_entries[deltaContext->m_prevSeq];
-				prevEntry.m_nextThread = seq;
+				// create the call frame
+				CallFrame callFrame;
+				callFrame.m_enterLocation.m_contextId = context.m_id;
+				callFrame.m_enterLocation.m_contextSeq = blobInfo.m_localSeq;
+				callFrame.m_enterLocation.m_time = frame.m_timeStamp;
+				callFrame.m_enterLocation.m_ip = frame.m_ip;
+				callFrame.m_enterLocation.m_seq = frame.m_seq;
+				callFrame.m_parentFrame = 0;
+				const auto callEntryIndex = m_callFrames.push_back(callFrame);
+				context.m_rootCallFrame = (uint32_t)callEntryIndex;
+
+				// create the call stack context
+				m_callstackBuilders.AllocAt(writerId) = new CallStackBuilder((uint32_t)callEntryIndex);
 			}
 
 			// extract call structure
@@ -146,6 +181,18 @@ namespace trace
 		// external memory write
 		else if (frame.m_type == (uint8)FrameType::ExternalMemoryWrite)
 		{
+			// try to assign a matching IP to the memory write
+			auto* writtenBlobInfo = (DataFile::BlobInfo*)&m_blob[blobOffset];
+			if (deltaContext->m_lastValidResolvedIP)
+			{
+				// update with the IP of the previous instruction (this is more useful)
+				writtenBlobInfo->m_ip = deltaContext->m_lastValidResolvedIP;
+			}
+			else
+			{
+				deltaContext->m_unresolvedIPAddresses.push_back(&writtenBlobInfo->m_ip);
+			}
+
 			// write the text length
 			const auto stringLength = (uint8_t)(frame.m_desc.length());
 			WriteToBlob(stringLength);
@@ -170,6 +217,7 @@ namespace trace
 	DataBuilder::DeltaContext::DeltaContext()
 		: m_localSeq(0)
 		, m_prevSeq(INVALID_TRACE_FRAME_ID)
+		, m_lastValidResolvedIP(0)
 	{}
 
 	void DataBuilder::DeltaContext::RetireExpiredReferences()
@@ -185,11 +233,13 @@ namespace trace
 		}
 	}
 
-	void DataBuilder::WriteToBlob(const void* data, const uint32_t size)
+	uint64_t DataBuilder::WriteToBlob(const void* data, const uint32_t size)
 	{
+		uint64_t offset = m_blob.size();
 		const auto* writePtr = (const uint8_t*)data;
 		for (uint32 i = 0; i < size; ++i)
 			m_blob.push_back(writePtr[i]);
+		return offset;
 	}
 
 	uint32_t DataBuilder::DeltaWrite(const uint8_t* referenceData, const uint8_t* currentData)
@@ -464,6 +514,11 @@ namespace trace
 			uint64_t memoryWriteAddress = 0;
 			if (info.ComputeMemoryAddress(dataFetch, memoryWriteAddress))
 			{
+				if (memoryWriteAddress == 0x40093FC4)
+				{
+					fprintf(stderr, "Crap!\n");
+				}
+
 				// get the register that with the value that is being written
 				const platform::CPURegister* reg0 = op.GetArg0().m_reg;
 
@@ -475,7 +530,7 @@ namespace trace
 				const auto dataPtr = (const uint8_t*)&writtenValue;
 				for (uint32_t i = 0; i < dataSize; ++i)
 				{
-					m_memoryTraceBuilder->RegisterWrite(frame.m_seq, memoryWriteAddress, dataPtr[i]);
+					m_memoryTraceBuilder->RegisterWrite(frame.m_seq, memoryWriteAddress + i, dataPtr[i]);
 				}
 			}
 		}
@@ -528,6 +583,8 @@ namespace trace
 		outNumCodePages = (uint32_t) m_codeTracePages.size() - outFirstCodePage;
 	}
 
+#pragma optimize("",off)
+
 	void DataBuilder::EmitMemoryTracePages()
 	{
 		// get pages from map, we need sorted pages later
@@ -549,6 +606,7 @@ namespace trace
 			// export address chains
 			for (uint32 i = 0; i < MemoryTracePage::NUM_ADDRESSES_PER_PAGE; ++i)
 			{
+				const auto address = page->m_baseMemoryAddress + i;
 				const auto& seqChain = page->m_seqChain[i];
 				if (!seqChain.empty())
 				{
