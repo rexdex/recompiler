@@ -110,16 +110,6 @@ bool CXenonGPUState::IssueDraw( IXenonGPUAbstractLayer* abstractLayer, IXenonGPU
 		return IssueCopy( abstractLayer, traceDump, regs );
 	}
 
-	// clear only
-	/*if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && ds.m_indexCount == 3)
-	{
-		if (!UpdateViewportState(abstractLayer, regs))
-			return ReportFailedDraw("UpdateViewport failed");
-		if (!UpdateRenderTargets(abstractLayer, regs))
-			return ReportFailedDraw("UpdateRenderTargets failed");
-		return abstractLayer->DrawGeometry(regs, traceDump, ds);
-	}*/
-
 	// prepare drawing conditions
 	if (!UpdateViewportState(abstractLayer, regs))
 		return ReportFailedDraw("UpdateViewport failed");
@@ -370,8 +360,8 @@ bool CXenonGPUState::UpdateRenderTargets( IXenonGPUAbstractLayer* abstractLayer,
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_DEPTH_INFO, m_rtState.regDepthInfo );
 
 	// check if state is up to date
-	/*if ( !stateChanged )
-		return true;*/
+	if ( !stateChanged )
+		return true;
 
 	// apply the state
 	return ApplyRenderTargets( abstractLayer, m_rtState, m_physicalRenderWidth, m_physicalRenderHeight );
@@ -395,8 +385,8 @@ bool CXenonGPUState::UpdateViewportState( IXenonGPUAbstractLayer* abstractLayer,
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_PA_CL_VPORT_ZSCALE, m_viewState.regPaClVportZscale );
 
 	// check if state is up to date
-	/*if ( !stateChanged )
-		return true;*/
+	if ( !stateChanged )
+		return true;
 
 	// apply the state
 	return ApplyViewportState( abstractLayer, m_viewState, m_physicalRenderWidth, m_physicalRenderHeight );
@@ -412,8 +402,8 @@ bool CXenonGPUState::UpdateRasterState( IXenonGPUAbstractLayer* abstractLayer, c
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_VGT_MULTI_PRIM_IB_RESET_INDX, m_rasterState.regMultiPrimIbResetIndex );
 
 	// check if state is up to date
-	/*if ( !stateChanged )
-		return true;*/
+	if ( !stateChanged )
+		return true;
 
 	// apply the state
 	return ApplyRasterState( abstractLayer, m_rasterState );
@@ -433,8 +423,8 @@ bool CXenonGPUState::UpdateBlendState( IXenonGPUAbstractLayer* abstractLayer, co
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_BLEND_ALPHA, m_blendState.regRbBlendRGBA[3] );
 
 	// check if state is up to date
-	/*if ( !stateChanged )
-		return true;*/
+	if ( !stateChanged )
+		return true;
 
 	// apply the state
 	return ApplyBlendState( abstractLayer, m_blendState );
@@ -448,8 +438,8 @@ bool CXenonGPUState::UpdateDepthState( IXenonGPUAbstractLayer* abstractLayer, co
 	stateChanged |= Helper::UpdateRegister( regs, XenonGPURegister::REG_RB_STENCILREFMASK, m_depthState.regRbStencilRefMask );
 
 	// check if state is up to date
-	/*if ( !stateChanged )
-		return true;*/
+	if ( !stateChanged )
+		return true;
 
 	// apply the state
 	return ApplyDepthState( abstractLayer, m_depthState );
@@ -461,8 +451,8 @@ bool CXenonGPUState::ApplyRenderTargets( IXenonGPUAbstractLayer* abstractLayer, 
 	// http://fossies.org/dox/MesaLib-10.3.5/fd2__gmem_8c_source.html
 
 	// extract specific settings
-	const XenonModeControl enableMode = (XenonModeControl)( rtState.regModeControl & 0x7 );
-	const XenonMsaaSamples surfaceMSAA = XenonMsaaSamples::MSSA1X;// (XenonMsaaSamples)((rtState.regSurfaceInfo >> 16) & 3);
+	const auto enableMode = (XenonModeControl)( rtState.regModeControl & 0x7 );
+	const auto surfaceMSAA = (XenonMsaaSamples)((rtState.regSurfaceInfo >> 16) & 3);
 	const uint32 surfacePitch = rtState.regSurfaceInfo & 0x3FFF;
 
 	// NOTE: this setup is all f*cked, the MSAA is not supported ATM
