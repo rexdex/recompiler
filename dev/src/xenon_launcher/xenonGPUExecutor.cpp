@@ -37,6 +37,7 @@
 #include "xenonGPUTraceWriter.h"
 
 #include "dx11AbstractLayer.h"
+#include "../host_core/launcherCommandline.h"
 
 //-----------
 
@@ -52,13 +53,13 @@ CXenonGPUExecutor::CXenonGPUExecutor(IXenonGPUAbstractLayer* abstractionLayer, c
 	, m_traceDumpFile(nullptr)
 	, m_logWriter(nullptr)
 {
-	/*if (cmdLine.HasOption("gpulog"))
+	if (cmdLine.HasOption("gpulog"))
 	{
 		std::wstring gpuLogFile = cmdLine.GetOptionValueW("gpulog");
 		GLog.Log("GPU: Logging gpu activity to '%ls'", gpuLogFile.c_str());
 
 		m_logWriter = CXenonGPUTraceWriter::Create(gpuLogFile);
-	}*/
+	}
 }
 
 CXenonGPUExecutor::~CXenonGPUExecutor()

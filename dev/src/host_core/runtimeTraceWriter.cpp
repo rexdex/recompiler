@@ -9,7 +9,7 @@
 namespace runtime
 {
 
-	TraceWriter::TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, const char* name)
+	TraceWriter::TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, std::atomic<bool>& pausedFlag, const char* name, const uint64 triggerAdddress)
 		: m_owner(owner)
 		, m_frameIndex(0)
 		, m_localWriteBufferPos(0)
@@ -17,6 +17,8 @@ namespace runtime
 		, m_threadId(threadId)
 		, m_lastValidIp(0)
 		, m_sequenceNumber(&sequenceNumber)
+		, m_pausedFlag(&pausedFlag)
+		, m_triggerAdddress(triggerAdddress)
 		, m_name(name)
 	{
 		static std::atomic<uint32_t> WriterIDAllocator(0);
@@ -63,6 +65,20 @@ namespace runtime
 		// do no add empty frames
 		if (!ip)
 			return;
+
+		// we are paused
+		if (*m_pausedFlag)
+		{
+			if (ip == m_triggerAdddress)
+			{
+				GLog.Warn("Trace: Trace trigger addres 0x%08llX was hit, starting trace", m_triggerAdddress);
+				*m_pausedFlag = false;
+			}
+			else
+			{
+				return;
+			}
+		}
 
 		// when starting the block, write the full frame
 		if (m_localWriteBufferPos == 0)

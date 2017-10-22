@@ -133,7 +133,7 @@ namespace trace
 	static const RegDisplayFormat GetBestFormat(const platform::CPURegister* reg)
 	{
 		if (reg->GetType() == platform::CPURegisterType::Wide)
-			return RegDisplayFormat::Hex; // we can use forced mode to show it 
+			return RegDisplayFormat::FloatingPoint;
 		else if (reg->GetType() == platform::CPURegisterType::FloatingPoint)
 			return RegDisplayFormat::FloatingPoint;
 
@@ -232,15 +232,20 @@ namespace trace
 
 			PrependString(str, "%lld", (int64*)unsignedVal);
 		}
-		else if (format == RegDisplayFormat::FloatingPoint && (bitSize == 32))
+		else if (format == RegDisplayFormat::FloatingPoint && (bitSize == 32) && (reg->GetType() == platform::CPURegisterType::FloatingPoint))
 		{
 			const auto val = *(const float*)rawData;
 			PrependString(str, "%f", (double)val);
 		}
-		else if (format == RegDisplayFormat::FloatingPoint && (bitSize == 64))
+		else if (format == RegDisplayFormat::FloatingPoint && (bitSize == 64) && (reg->GetType() == platform::CPURegisterType::FloatingPoint))
 		{
 			const auto val = *(const double*)rawData;
 			PrependString(str, "%f", val);
+		}
+		else if (format == RegDisplayFormat::FloatingPoint && (reg->GetType() == platform::CPURegisterType::Wide))
+		{
+			const auto& val = (const float*)rawData;
+			PrependString(str, "%f %f %f %f", (double)val[0], (double)val[1], (double)val[2], (double)val[3]);
 		}
 		else if (format == RegDisplayFormat::Hex)
 		{

@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-verbose -image=Q:\git\projects\recompiler\projects\xenon\dolphin\.temp\dolphin_0xC89B668F6DB04974\cpp_msvc_debug\code.bin -fsroot=Q:\git\projects\recompiler\projects\xenon\dolphin -trace=X:\crap.rawtrace</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-verbose -image=Q:\git\projects\recompiler\projects\xenon\mesh\.temp\SkinnedCharacter_0x956E5687AC07C062\cpp_msvc_debug\code.bin -fsroot=Q:\git\projects\recompiler\projects\xenon\mesh\ -trace=X:\render5.rawtrace -traceTrigger=82072C28</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

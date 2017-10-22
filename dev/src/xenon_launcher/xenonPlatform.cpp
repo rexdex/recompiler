@@ -266,8 +266,16 @@ namespace xenon
 				// stats
 				GLog.Log("Runtime: Tracing executed instructions to '%ls'", traceFileName.c_str());
 
+				// get the trigger address
+				uint64_t triggerAddress = 0;
+				const auto triggerAddressText = commandline.GetOptionValueA("traceTrigger");
+				if (!triggerAddressText.empty())
+				{
+					triggerAddress = strtoull(triggerAddressText.c_str(), nullptr, 16);
+				}
+
 				// create the trace file
-				m_traceFile = runtime::TraceFile::Create(CPU_RegisterBankInfo::GetInstance(), traceFileName);
+				m_traceFile = runtime::TraceFile::Create(CPU_RegisterBankInfo::GetInstance(), traceFileName, triggerAddress);
 				if (!m_traceFile)
 				{
 					GLog.Err("Runtime: Failed to create the trace file");
@@ -345,16 +353,16 @@ namespace xenon
 				break;
 			}
 
-#ifdef PLATFORM_WINDOWS
+#if defined(_WIN32) || defined(_WIN64)
 			// exit
-			if ((GetAsyncKeyState(VK_F10) & 0x8000) && (GetAsyncKeyState(VK_F12) & 0x8000))
+			if (GetAsyncKeyState(VK_F10) & 0x8000)
 			{
 				GLog.Err("Runtime: External request to quit");
 				break;
 			}
 
 			// on demand trace dump
-			if ((GetAsyncKeyState(VK_F3) & 0x8000))
+			if ((GetAsyncKeyState(VK_F3) & 0x8001))
 			{
 				GLog.Err("Runtime: Requesting trace dump");
 				m_graphics->RequestTraceDump();
@@ -385,7 +393,8 @@ namespace xenon
 		if (!GMemoryTraceWriter)
 		{
 			auto* traceFile = GPlatform.GetTraceFile();
-			GMemoryTraceWriter = traceFile->CreateInterruptWriter("SYSTEM");
+			if (traceFile)
+				GMemoryTraceWriter = traceFile->CreateInterruptWriter("SYSTEM");
 		}
 	}
 

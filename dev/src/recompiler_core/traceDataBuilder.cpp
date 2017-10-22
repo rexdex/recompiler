@@ -8,7 +8,6 @@
 #include "platformCPU.h"
 #include "traceUtils.h"
 
-#pragma optimize("",off)
 
 namespace trace
 {
@@ -27,6 +26,25 @@ namespace trace
 	void DataBuilder::FlushData()
 	{
 		EmitMemoryTracePages();
+	}
+
+	static inline bool ComparePtr(const uint8* a, const uint8* b, const uint32 size)
+	{
+		const auto end = a + size;
+		while (a < end)
+			if (*a++ != *b++)
+				return false;
+
+		return true;
+	}
+
+	static inline void CopyPtr(void* writePtr, const void* readPtr, uint32 size)
+	{
+		auto* writerPtrX = (uint8_t*)writePtr;
+		auto* readPtrX = (const uint8_t*)readPtr;
+		const auto end = readPtrX + size;
+		while (readPtrX < end)
+			*writerPtrX++ = *readPtrX++;
 	}
 
 	void DataBuilder::StartContext(ILogOutput& log, const uint32 writerId, const uint32 threadId, const uint64 ip, const TraceFrameID seq, const char* name)
@@ -74,6 +92,8 @@ namespace trace
 		auto* callstackBuilder = m_callstackBuilders[writerId];
 		if (callstackBuilder != nullptr)
 		{
+			context.m_rootCallFrame = callstackBuilder->m_rootCallFrame;
+
 			for (auto callEntryId : callstackBuilder->m_callFrames)
 			{
 				auto& entry = m_callFrames[callEntryId];
@@ -254,19 +274,18 @@ namespace trace
 
 		// compare register by register, collect list of registers to save
 		const auto numRegs = m_rawTrace->GetRegisters().size();
-		for (uint32_t i = 0; i < numRegs; ++i)
+		const auto* regInfo = &m_rawTrace->GetRegisters()[0];
+		for (uint32_t i = 0; i < numRegs; ++i, ++regInfo)
 		{
-			const auto& regInfo = m_rawTrace->GetRegisters()[i];
-
 			// compare the data against the reference
 			if (nullptr != referenceData)
 			{
-				if (0 == memcmp(referenceData + regInfo.m_dataOffset, currentData + regInfo.m_dataOffset, regInfo.m_dataSize))
+				if (ComparePtr(referenceData + regInfo->m_dataOffset, currentData + regInfo->m_dataOffset, regInfo->m_dataSize))
 					continue; // register data is up to date
 			}
 			else
 			{
-				if (0 == memcmp(zeroReference, currentData + regInfo.m_dataOffset, regInfo.m_dataSize))
+				if (ComparePtr(zeroReference, currentData + regInfo->m_dataOffset, regInfo->m_dataSize))
 					continue; // register data is zeroed
 			}
 
@@ -327,13 +346,32 @@ namespace trace
 	{
 		if (builder.m_callFrames.size() == 1)
 		{
-			log.Error("Trace: Return from function found at 0x%08llX (#%llu) but there's nowhere to return to. Ignoring.", locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);
-			return;
+			log.Error("Trace: Return from function found at 0x%08llX (#%llu) but there's nowhere to return to. Creating fake one.", locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);
+
+			auto curTopFrameIndex = builder.m_callFrames.front();
+			auto& curTopFrame = m_callFrames[curTopFrameIndex];
+
+			// create a new call frame
+			CallFrame newTopFrame;
+			newTopFrame.m_enterLocation = curTopFrame.m_enterLocation;
+			newTopFrame.m_functionStart = curTopFrame.m_functionStart;
+			newTopFrame.m_parentFrame = 0;
+			newTopFrame.m_nextChildFrame = 0;
+			newTopFrame.m_firstChildFrame = curTopFrameIndex;
+			const auto newToFrameIndex = m_callFrames.push_back(newTopFrame);
+
+			// link
+			curTopFrame.m_parentFrame = (uint32_t)newToFrameIndex;
+			builder.m_callFrames.insert(builder.m_callFrames.begin(), (uint32_t)newToFrameIndex);
+			builder.m_lastChildFrames.insert(builder.m_lastChildFrames.begin(), (uint32_t)curTopFrameIndex);
+
+			// make the new top frame
+			builder.m_rootCallFrame = (uint32_t)newToFrameIndex;
 		}
 
-		/*log.Log("Trace: CallStack[%u->%u]: Returning from function at 0x%08llX (#%llu)",
+		log.Log("Trace: CallStack[%u->%u]: Returning from function at 0x%08llX (#%llu)",
 			builder.m_callFrames.size(), builder.m_callFrames.size()-1,
-			locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);*/
+			locationOfReturnInstruction.m_ip, locationOfReturnInstruction.m_seq);
 
 		auto& topFrame = m_callFrames[builder.m_callFrames.back()];
 		topFrame.m_leaveLocation = locationOfReturnInstruction;;
@@ -355,9 +393,9 @@ namespace trace
 		builder.m_callFrames.push_back((uint32_t)callEntryIndex);
 		builder.m_lastChildFrames.push_back(0);
 
-		/*log.Log("Trace: CallStack[%u->%u]: Entering function at 0x%08llX (#%llu)", 
+		log.Log("Trace: CallStack[%u->%u]: Entering function at 0x%08llX (#%llu)", 
 			builder.m_callFrames.size()-1, builder.m_callFrames.size(),
-			locationOfFirstFunctionInstruction.m_ip, locationOfFirstFunctionInstruction.m_seq);*/
+			locationOfFirstFunctionInstruction.m_ip, locationOfFirstFunctionInstruction.m_seq);
 
 		// link as a children of parent
 		if (builder.m_lastChildFrames[topFrameIndex] == 0)
@@ -411,23 +449,23 @@ namespace trace
 			}
 		}
 
-		// get info about instruction
-		auto memInfo = decodingContext->GetMemoryMap().GetMemoryInfo(codeAddress);
-		if (memInfo.IsExecutable() && memInfo.GetInstructionFlags().IsImportFunction())
-		{
-			builder.m_speculatedLocation = LocationInfo();
-			builder.m_speculatedCallNotTakenAddress = 0;
-			builder.m_speculatedReturnNotTakenAddress = 0;
-
-			ReturnFromFunction(log, builder, locInfo);
-			return true;
-		}
-
 		// decode instruction
 		decoding::Instruction op;
 		const auto opSize = decodingContext->DecodeInstruction(ILogOutput::DevNull(), codeAddress, op, false);
 		if (!opSize)
 		{
+			// get info about instruction
+			auto memInfo = decodingContext->GetMemoryMap().GetMemoryInfo(codeAddress);
+			if (memInfo.IsExecutable() && memInfo.GetInstructionFlags().IsImportFunction())
+			{
+				builder.m_speculatedLocation = LocationInfo();
+				builder.m_speculatedCallNotTakenAddress = 0;
+				builder.m_speculatedReturnNotTakenAddress = 0;
+
+				ReturnFromFunction(log, builder, locInfo);
+				return true;
+			}
+
 			log.Error("CallStack: Instruction at %08llXh is invalid", codeAddress);
 			return false;
 		}
@@ -470,6 +508,26 @@ namespace trace
 		return true;
 	}
 
+	inline const void Swap2(uint8* ptr)
+	{
+		std::swap(ptr[0], ptr[1]);
+	}
+
+	inline const void Swap4(uint8* ptr)
+	{
+		std::swap(ptr[0], ptr[3]);
+		std::swap(ptr[1], ptr[2]);
+	}
+
+	inline const void Swap8(uint8* ptr)
+	{
+		std::swap(ptr[0], ptr[7]);
+		std::swap(ptr[1], ptr[6]);
+		std::swap(ptr[2], ptr[5]);
+		std::swap(ptr[3], ptr[4]);
+	}
+
+#pragma optimize("",off)
 	bool DataBuilder::ExtractMemoryWritesFromInstructions(ILogOutput& log, const RawTraceFrame& frame)
 	{
 		const auto seq = frame.m_seq;
@@ -507,31 +565,76 @@ namespace trace
 			const auto dataFetch = [&frame](const platform::CPURegister* reg, void* outData)
 			{
 				const auto ofs = reg->GetTraceDataOffset();
-				memcpy(outData, (char*)frame.m_data.data() + ofs, reg->GetBitSize() / 8);
+				CopyPtr(outData, (char*)frame.m_data.data() + ofs, reg->GetBitSize() / 8);
 				return true;
 			};
 
 			uint64_t memoryWriteAddress = 0;
 			if (info.ComputeMemoryAddress(dataFetch, memoryWriteAddress))
 			{
-				if (memoryWriteAddress == 0x40093FC4)
-				{
-					fprintf(stderr, "Crap!\n");
-				}
-
 				// get the register that with the value that is being written
 				const platform::CPURegister* reg0 = op.GetArg0().m_reg;
 
 				// get the written value
-				const auto writtenValue = trace::GetRegisterValueInteger(reg0, dataFetch, false);
+				uint8_t fullData[64];
+				dataFetch(reg0, fullData);
+
+				// HACK FOR DOUBLES
+				if (reg0->GetType() == platform::CPURegisterType::FloatingPoint && reg0->GetBitSize() == 64 && info.m_memorySize == 4)
+				{
+					const auto dbl = *(const double*)&fullData;
+					*(float*)&fullData = (float)dbl;
+				}
+
+				// Endianess hack
+				switch (reg0->GetBitSize()/8)
+				{
+					case 2:
+						Swap2(fullData);
+						break;
+
+					case 4:
+						Swap4(fullData);
+						break;
+
+					case 8:
+						Swap8(fullData);
+						break;
+
+					case 16:
+						Swap4(fullData+0);
+						Swap4(fullData+4);
+						Swap4(fullData+8);
+						Swap4(fullData+16);
+						break;
+				}
+
+				// compute the data to write
+				uint8_t writeOffset = 0;
+				uint8_t regOffset = 0;
+				uint8_t writeCount = info.m_memorySize;
+
+				// adjustments for LVX/RVX writes
+				if (info.m_memoryWriteMode == decoding::InstructionExtendedInfo::eMemoryWriteMode_LeftAligned)
+				{
+					const auto unalignedOffset = (uint8_t)(memoryWriteAddress % info.m_memorySize);
+
+					regOffset = 0;
+					writeOffset = unalignedOffset;
+					writeCount = info.m_memorySize - writeOffset;
+				}
+				else if (info.m_memoryWriteMode == decoding::InstructionExtendedInfo::eMemoryWriteMode_RightAligned)
+				{
+					const auto unalignedOffset = 16 - (uint8_t)(memoryWriteAddress % info.m_memorySize);
+
+					regOffset = unalignedOffset;
+					writeOffset = 0;
+					writeCount = info.m_memorySize - unalignedOffset;
+				}
 
 				// write it into the trace, byte at a time
-				const auto dataSize = info.m_memorySize;
-				const auto dataPtr = (const uint8_t*)&writtenValue;
-				for (uint32_t i = 0; i < dataSize; ++i)
-				{
-					m_memoryTraceBuilder->RegisterWrite(frame.m_seq, memoryWriteAddress + i, dataPtr[i]);
-				}
+				for (uint32_t i = 0; i < writeCount; ++i)
+					m_memoryTraceBuilder->RegisterWrite(frame.m_seq, memoryWriteAddress + i + writeOffset, fullData[i + regOffset]);
 			}
 		}
 
@@ -582,8 +685,6 @@ namespace trace
 		}
 		outNumCodePages = (uint32_t) m_codeTracePages.size() - outFirstCodePage;
 	}
-
-#pragma optimize("",off)
 
 	void DataBuilder::EmitMemoryTracePages()
 	{

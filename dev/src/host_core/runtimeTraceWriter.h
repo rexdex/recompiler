@@ -12,7 +12,7 @@ namespace runtime
 	class LAUNCHER_API TraceWriter
 	{
 	public:
-		TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, const char* name);
+		TraceWriter(TraceFile* owner, const uint32_t threadId, std::atomic<uint32_t>& sequenceNumber, std::atomic<bool>& pausedFlag, const char* name, const uint64 triggerAdddress);
 		~TraceWriter();
 
 		//--
@@ -48,6 +48,8 @@ namespace runtime
 		uint64 m_lastValidIp;
 
 		std::atomic<uint32_t>* m_sequenceNumber;
+		std::atomic<bool>* m_pausedFlag;
+		uint64 m_triggerAdddress;
 
 		uint8 m_prevData[MAX_REGS_TO_WRITE * MAX_REG_DATA]; // enough memory for all registers
 

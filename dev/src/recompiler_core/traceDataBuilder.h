@@ -78,9 +78,11 @@ namespace trace
 
 			uint64_t m_speculatedReturnNotTakenAddress;
 			uint64_t m_speculatedCallNotTakenAddress;
+			uint32_t m_rootCallFrame;
 
 			inline CallStackBuilder(uint32_t rootEntry)
 			{
+				m_rootCallFrame = rootEntry;
 				m_speculatedReturnNotTakenAddress = 0;
 				m_speculatedCallNotTakenAddress = 0;
 				m_callFrames.push_back(rootEntry);

@@ -764,6 +764,31 @@ public:
 	}
 };
 
+class CInstructiondDecoderXenon_MEM_STORE_LVX : public CInstructiondDecoderXenon_MEM_STORE<128, false, EMemoryType::eMemoryType_VMLX>
+{
+public:
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	{
+		if (!CInstructiondDecoderXenon_MEM_STORE<128, false, EMemoryType::eMemoryType_VMLX>::GetExtendedInfo(op, codeAddress, context, outInfo))
+			return false;
+		outInfo.m_memoryWriteMode = decoding::InstructionExtendedInfo::eMemoryWriteMode_LeftAligned;
+		return true;
+	}
+
+};
+
+class CInstructiondDecoderXenon_MEM_STORE_RVX : public CInstructiondDecoderXenon_MEM_STORE<128, false, EMemoryType::eMemoryType_VMRX>
+{
+public:
+	virtual bool GetExtendedInfo(const class decoding::Instruction& op, const uint64 codeAddress, const decoding::Context& context, class decoding::InstructionExtendedInfo& outInfo) const override
+	{
+		if (!CInstructiondDecoderXenon_MEM_STORE<128, false, EMemoryType::eMemoryType_VMRX>::GetExtendedInfo(op, codeAddress, context, outInfo))
+			return false;
+		outInfo.m_memoryWriteMode = decoding::InstructionExtendedInfo::eMemoryWriteMode_RightAligned;
+		return true;
+	}
+};
+
 //---------------------------------------------------------------------------
 
 class CInstructiondDecoderXenon_DCBZ : public IInstructiondDecompilerXenon
@@ -2780,10 +2805,10 @@ CPU_XenonPPC::CPU_XenonPPC()
 		MOUNT__( lvxl, CInstructiondDecoderXenon_MEM_LOAD<128, 0, eMemoryType_VMX>() );
 
 		// VMX store
-		MOUNT__( stvlx, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMLX>() );
-		MOUNT__( stvlxl, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMLX>() );
-		MOUNT__( stvrx, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMRX>() );
-		MOUNT__( stvrxl, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMRX>() );
+		MOUNT__( stvlx, CInstructiondDecoderXenon_MEM_STORE_LVX() );
+		MOUNT__( stvlxl, CInstructiondDecoderXenon_MEM_STORE_LVX() );
+		MOUNT__( stvrx, CInstructiondDecoderXenon_MEM_STORE_RVX() );
+		MOUNT__( stvrxl, CInstructiondDecoderXenon_MEM_STORE_RVX() );
 		MOUNT__( stvx, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMX>() );
 		MOUNT__( stvxl, CInstructiondDecoderXenon_MEM_STORE<128, 0, eMemoryType_VMX>() );
 

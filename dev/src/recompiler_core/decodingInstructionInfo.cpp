@@ -23,6 +23,7 @@ namespace decoding
 		, m_branchTargetAddress(0)
 		, m_branchTargetReg(NULL)
 		, m_memoryAddressMask(0xFFFFFFFF)
+		, m_memoryWriteMode(eMemoryWriteMode_Normal)
 	{}
 
 	bool InstructionExtendedInfo::AddRegister(const platform::CPURegister* reg, const ERegDependencyMode mode)

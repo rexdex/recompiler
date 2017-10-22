@@ -10,13 +10,15 @@ namespace runtime
 {
 	///---
 
-	TraceFile::TraceFile(const runtime::RegisterBankInfo& bankInfo, std::unique_ptr<std::ofstream>& outputFile)
+	TraceFile::TraceFile(const runtime::RegisterBankInfo& bankInfo, std::unique_ptr<std::ofstream>& outputFile, const uint64 traceTriggerAddress)
 		: m_writeFile(std::move(outputFile))
+		, m_traceTriggerAddress(traceTriggerAddress)
 		, m_numRegsToWrite(0)
 		, m_writeFailed(false)
 		, m_writeRequestExit(false)
 		, m_writePendingCount(0)
 		, m_sequenceNumber(0)
+		, m_paused(false)
 	{
 		// write header
 		common::TraceFileHeader header;
@@ -45,6 +47,18 @@ namespace runtime
 
 		GLog.Log("Trace: Trace contains %d registers to write (%d bytes in full frame)", m_numRegsToWrite, fullWriteSize);
 
+		// start trace immediately if no trigger address was specified
+		if (m_traceTriggerAddress == 0)
+		{
+			GLog.Log("Trace: No trace trigger was specified, tracing starts immediatly!");
+			m_paused = false;
+		}
+		else
+		{
+			GLog.Warn("Trace: Trace trigger address was set to 0x%08llX", m_traceTriggerAddress);
+			m_paused = true;
+		}
+
 		// start writing thread
 		m_writeThread.reset(new std::thread(&TraceFile::WriteThreadFunc, this));
 	}
@@ -65,6 +79,24 @@ namespace runtime
 
 		// free all temporary memory blocks
 		utils::ClearPtr(m_freeBlocks);
+	}
+
+	void TraceFile::Pause()
+	{
+		if (!m_paused)
+		{
+			GLog.Warn("Trace: Trace collection paused");
+			m_paused = true;
+		}
+	}
+
+	void TraceFile::Resume()
+	{
+		if (m_paused)
+		{
+			GLog.Warn("Trace: Trace collection resumed");
+			m_paused = false;
+		}
 	}
 
 	void TraceFile::WriteThreadFunc()
@@ -240,17 +272,17 @@ namespace runtime
 	{
 		char buf[16];
 		sprintf_s(buf, "Thread%u", threadId);
-		return new TraceWriter(this, threadId, m_sequenceNumber, buf);
+		return new TraceWriter(this, threadId, m_sequenceNumber, m_paused, buf, m_traceTriggerAddress);
 	}
 
 	TraceWriter* TraceFile::CreateInterruptWriter(const char* name)
 	{
-		return new TraceWriter(this, 0, m_sequenceNumber, name);
+		return new TraceWriter(this, 0, m_sequenceNumber, m_paused, name, m_traceTriggerAddress);
 	}
 
 	//--
 
-	TraceFile* TraceFile::Create(const runtime::RegisterBankInfo& bankInfo, const std::wstring& outputFile)
+	TraceFile* TraceFile::Create(const runtime::RegisterBankInfo& bankInfo, const std::wstring& outputFile, const uint64 traceTriggerAddress)
 	{
 		// open the target file
 		auto file = std::make_unique<std::ofstream>(outputFile, std::ios_base::out | std::ios_base::binary);
@@ -258,7 +290,7 @@ namespace runtime
 			return nullptr;
 
 		// create the write
-		return new TraceFile(bankInfo, file);
+		return new TraceFile(bankInfo, file, traceTriggerAddress);
 	}
 
 

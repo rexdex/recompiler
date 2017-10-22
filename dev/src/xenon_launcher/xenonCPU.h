@@ -1258,17 +1258,16 @@ namespace cpu
 		template< int SH >
 		static inline void stvlx_helper(VReg* value, const VReg& srcValueX)
 		{
-			VReg srcValue;
+			/*VReg srcValue;
 			srcValue.AsUint32<0>() = _byteswap_ulong(srcValueX.AsUint32<0>());
 			srcValue.AsUint32<1>() = _byteswap_ulong(srcValueX.AsUint32<1>());
 			srcValue.AsUint32<2>() = _byteswap_ulong(srcValueX.AsUint32<2>());
-			srcValue.AsUint32<3>() = _byteswap_ulong(srcValueX.AsUint32<3>());
+			srcValue.AsUint32<3>() = _byteswap_ulong(srcValueX.AsUint32<3>());*/
 
 			uint8* dest = (uint8*)value;
-			const uint8* src = (const uint8*)&srcValue;
 
 			for (int i = 0; i < 16 - SH; ++i)
-				dest[i + SH] = src[i];
+				dest[i + SH] = srcValueX.AsUint8(i);
 		}
 
 		static inline void stvlx(CpuRegs& regs, VReg src, const TAddr addr)
@@ -1300,17 +1299,16 @@ namespace cpu
 		template< int SH >
 		static inline void stvrx_helper(VReg* value, const VReg& srcValueX)
 		{
-			VReg srcValue;
+			/*VReg srcValue;
 			srcValue.AsUint32<0>() = _byteswap_ulong(srcValueX.AsUint32<0>());
 			srcValue.AsUint32<1>() = _byteswap_ulong(srcValueX.AsUint32<1>());
 			srcValue.AsUint32<2>() = _byteswap_ulong(srcValueX.AsUint32<2>());
-			srcValue.AsUint32<3>() = _byteswap_ulong(srcValueX.AsUint32<3>());
+			srcValue.AsUint32<3>() = _byteswap_ulong(srcValueX.AsUint32<3>());*/
 
 			uint8* dest = (uint8*)value;
-			const uint8* src = (const uint8*)&srcValue;
 
 			for (int i = 0; i < SH; ++i)
-				dest[i] = src[(16 - SH) + i];
+				dest[i] = srcValueX.AsUint8((16 - SH) + i);
 		}
 
 		static inline void stvrx(CpuRegs& regs, VReg src, const TAddr addr)
@@ -4010,15 +4008,27 @@ namespace cpu
 			if (MODE == 0)
 			{
 				const uint32 val = (a.AsUint32<3>());
-				const uint32 x = (val >> 16) & 0xFF;
-				const uint32 y = (val >> 8) & 0xFF;
-				const uint32 z = (val >> 0) & 0xFF;
-				const uint32 w = (val >> 24) & 0xFF;
 
-				out->AsFloat<0>() = x / 255.0f;
-				out->AsFloat<1>() = y / 255.0f;
-				out->AsFloat<2>() = z / 255.0f;
-				out->AsFloat<3>() = w / 255.0f;
+				union
+				{
+					float f;
+					uint32 u;
+				} x, y, z, w;
+
+				x.f = 1.0f;
+				y.f = 1.0f;
+				z.f = 1.0f;
+				w.f = 1.0f;
+
+				x.u |= (val >> 16) & 0xFF;
+				y.u |= (val >> 8) & 0xFF;
+				z.u |= (val >> 0) & 0xFF;
+				w.u |= (val >> 24) & 0xFF;
+
+				out->AsFloat<0>() = x.f;
+				out->AsFloat<1>() = y.f;
+				out->AsFloat<2>() = z.f;
+				out->AsFloat<3>() = w.f;
 			}
 			else if (MODE == 1)
 			{

@@ -27,11 +27,22 @@ namespace runtime
 
 		//---
 
+		// is the trace collection paused ?
+		inline const bool IsPaused() const { return m_paused; }
+
+		// pause trace collection
+		void Pause();
+
+		// resume trace collection
+		void Resume();
+
+		//---
+
 		// create trace file at given location, requires CPU register bank for the CPU you will be storing
-		static TraceFile* Create(const runtime::RegisterBankInfo& bankInfo, const std::wstring& outputFile);
+		static TraceFile* Create(const runtime::RegisterBankInfo& bankInfo, const std::wstring& outputFile, const uint64 traceTriggerAddress);
 
 	private:
-		TraceFile(const runtime::RegisterBankInfo& bankInfo, std::unique_ptr<std::ofstream>& outputFile);
+		TraceFile(const runtime::RegisterBankInfo& bankInfo, std::unique_ptr<std::ofstream>& outputFile, const uint64 traceTriggerAddress);
 
 		static const uint32 MAX_REGS_TO_WRITE = 512;
 		static const uint32 MEMORY_BLOCK_SIZE = 64 * 1024;
@@ -45,7 +56,10 @@ namespace runtime
 		RegToWrite m_registersToWrite[MAX_REGS_TO_WRITE];
 		uint32 m_numRegsToWrite;
 
+		uint64 m_traceTriggerAddress;
+
 		std::atomic<uint32_t> m_sequenceNumber;
+		std::atomic<bool> m_paused;
 
 		//---------
 
