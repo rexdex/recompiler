@@ -37,6 +37,9 @@
     <OutDir>$(SolutionDir)..\..\_bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\_temp\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
       <OutputFile>$(TargetDir)$(ProjectName)$(TargetExt)</OutputFile>
