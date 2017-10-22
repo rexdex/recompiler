@@ -197,34 +197,80 @@ bool CDX11SurfaceManager::RealizeSetup(uint32& outMainWidth, uint32& outMainHeig
 	// detach rendering surfaces
 	m_context->OMSetRenderTargets(0, NULL, NULL);
 
+#if 1
 	// we must ensure the EDRAM data is consistent:
 	// find surfaces that are currently bound but are not in the incoming setup
 	{
 		// can we reuse the memory without flushing ?
-		if (!m_incomingSetup.m_depth.IsMatching(m_runtimeSetup.m_surfaceDepth))
+		//if (!m_incomingSetup.m_depth.IsMatching(m_runtimeSetup.m_surfaceDepth))
 		{
 			auto* ds = m_runtimeSetup.m_surfaceDepth;
 			m_runtimeSetup.m_surfaceDepth = nullptr;
 
 			// release the surface EDRAM binding (this allows it to be reused for something else)
-			ds->SetEDRAMPlacement(-1);
+			if (ds)
+				ds->SetEDRAMPlacement(-1);
 		}
 
 		// flush or keep color surfaces
 		for (uint32 rtIndex = 0; rtIndex < 4; ++rtIndex)
 		{
 			// can we reuse the memory without flushing ?
-			if (!m_incomingSetup.m_color[rtIndex].IsMatching(m_runtimeSetup.m_surfaceColor[rtIndex]))
+			//if (!m_incomingSetup.m_color[rtIndex].IsMatching(m_runtimeSetup.m_surfaceColor[rtIndex]))
 			{
 				auto* rt = m_runtimeSetup.m_surfaceColor[rtIndex];
 				m_runtimeSetup.m_surfaceColor[rtIndex] = nullptr;
 
 				// release the surface EDRAM binding (this allows it to be reused for something else)
-				rt->SetEDRAMPlacement(-1);
+				if (rt)
+					rt->SetEDRAMPlacement(-1);
 			}
 		}
 	}
 
+	// make the actual setup the incoming setup (we may still have render targets that are not yet allocated)
+	m_runtimeSetup.m_desc = m_incomingSetup;
+
+	// allocate render targets for new setup and signal to copy existing EDRAM content into the surfaces (unless it's cleared right away)
+	std::vector<uint32> usedEDRAMOffsets;
+	{
+		// allocate color surfaces
+		for (uint32 rtIndex = 0; rtIndex < 4; ++rtIndex)
+		{
+			const auto& setup = m_incomingSetup.m_color[rtIndex];
+			auto& surfaceRef = m_runtimeSetup.m_surfaceColor[rtIndex];
+			DEBUG_CHECK(surfaceRef == nullptr);
+
+			if (setup.IsValid())
+			{
+				// allocate depth/stencil surface if it's not already allocated
+				if (surfaceRef == nullptr && std::find(usedEDRAMOffsets.begin(), usedEDRAMOffsets.end(), setup.m_base) == usedEDRAMOffsets.end())
+				{
+					// allocate from surface cache
+					usedEDRAMOffsets.push_back(setup.m_base);
+					surfaceRef = m_cache->GetRenderTarget(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
+					DEBUG_CHECK(surfaceRef != nullptr);
+				}
+			}
+		}
+
+		// allocate depth surface first
+		const auto& setup = m_incomingSetup.m_depth;
+		if (setup.IsValid())
+		{
+			// allocate depth/stencil surface if it's not already allocated
+			if (m_runtimeSetup.m_surfaceDepth == nullptr && std::find(usedEDRAMOffsets.begin(), usedEDRAMOffsets.end(), setup.m_base) == usedEDRAMOffsets.end())
+			{
+				// allocate from surface cache
+				usedEDRAMOffsets.push_back(setup.m_base);
+				m_runtimeSetup.m_surfaceDepth = m_cache->GetDepthStencil(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
+				DEBUG_CHECK(m_runtimeSetup.m_surfaceDepth != nullptr);
+			}
+		}
+	}
+
+	
+#else
 	// make the actual setup the incoming setup (we may still have render targets that are not yet allocated)
 	m_runtimeSetup.m_desc = m_incomingSetup;
 
@@ -234,29 +280,18 @@ bool CDX11SurfaceManager::RealizeSetup(uint32& outMainWidth, uint32& outMainHeig
 		const auto& setup = m_incomingSetup.m_depth;
 		if (setup.IsValid())
 		{
-			// allocate depth/stencil surface if it's not already allocated
-			if (m_runtimeSetup.m_surfaceDepth == nullptr)
-			{
-				// allocate from surface cache
-				m_runtimeSetup.m_surfaceDepth = m_cache->GetDepthStencil(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
-				DEBUG_CHECK(m_runtimeSetup.m_surfaceDepth != nullptr);
-			}
-			else
-			{
-				// it should be placed at the right address
-				DEBUG_CHECK(m_runtimeSetup.m_surfaceDepth->GetEDRAMPlacement() == setup.m_base);
-			}
-
-			// we must match
-			DEBUG_CHECK(setup.IsMatching(m_runtimeSetup.m_surfaceDepth));
+			// allocate from surface cache
+			m_runtimeSetup.m_surfaceDepth = m_cache->GetDepthStencil(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
+			DEBUG_CHECK(m_runtimeSetup.m_surfaceDepth != nullptr);
 		}
 		else
 		{
 			// we should not have any surface bound
-			DEBUG_CHECK(m_runtimeSetup.m_surfaceDepth == nullptr);
+			m_runtimeSetup.m_surfaceDepth = nullptr;
 		}
 
 		// allocate color surfaces
+		std::vector<CDX11AbstractRenderTarget*> userRenderTargets;
 		for (uint32 rtIndex = 0; rtIndex < 4; ++rtIndex)
 		{
 			const auto& setup = m_incomingSetup.m_color[rtIndex];
@@ -264,29 +299,28 @@ bool CDX11SurfaceManager::RealizeSetup(uint32& outMainWidth, uint32& outMainHeig
 
 			if (setup.IsValid())
 			{
-				// allocate depth/stencil surface if it's not already allocated
-				if (surfaceRef == nullptr)
+				// allocate from surface cache
+				surfaceRef = m_cache->GetRenderTarget(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
+				DEBUG_CHECK(surfaceRef != nullptr);
+
+				// set only if unique
+				if (userRenderTargets.end() == std::find(userRenderTargets.begin(), userRenderTargets.end(), surfaceRef))
 				{
-					// allocate from surface cache
-					surfaceRef = m_cache->GetRenderTarget(setup.m_format, setup.m_msaa, setup.m_pitch, setup.m_base);
-					DEBUG_CHECK(surfaceRef != nullptr);
+					userRenderTargets.push_back(surfaceRef);
 				}
 				else
 				{
-					// it should be placed at the right address
-					DEBUG_CHECK(surfaceRef->GetEDRAMPlacement() == setup.m_base);
+					surfaceRef = nullptr;
 				}
-
-				// we must match
-				DEBUG_CHECK(setup.IsMatching(surfaceRef));
 			}
 			else
 			{
 				// we should not have any surface bound
-				DEBUG_CHECK(surfaceRef == nullptr);
+				surfaceRef = nullptr;
 			}
 		}
 	}
+#endif
 
 	// set the actual rendering
 	{

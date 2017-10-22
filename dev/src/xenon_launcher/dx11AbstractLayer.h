@@ -128,6 +128,10 @@ private:
 	XenonMsaaSamples			m_colorMSAA[4];
 	XenonMsaaSamples			m_depthMSAA;
 
+	// hacks - pixel/vertex shader hashes
+	uint32						m_pixelShaderHash;
+	uint32						m_vertexShaderHash;
+
 	struct ModeInfo
 	{
 		uint32					m_width;
@@ -204,5 +208,5 @@ private:
 	bool CreateSwapchain();
 
 	// handle hacky clear
-	void HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds);
+	bool HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds);
 };

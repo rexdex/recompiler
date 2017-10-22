@@ -1003,14 +1003,28 @@ bool CDX11AbstractLayer::RealizeRasterState()
 
 //---------------------------------------------------------------------------
 
+
 void CDX11AbstractLayer::SetPixelShader( const void* microcode, const uint32 numWords )
 {
+	extern uint32 XenonGPUCalcCRC(const void* memory, const uint32 memorySize);
+
 	m_drawer->SetPixelShaderdCode( microcode, numWords );
+
+	if (microcode)
+		m_vertexShaderHash = XenonGPUCalcCRC(microcode, numWords * sizeof(uint32));
+	else
+		m_vertexShaderHash = 0;
+
 }
 
 void CDX11AbstractLayer::SetVertexShader( const void* microcode, const uint32 numWords )
 {
 	m_drawer->SetVertexShaderdCode( microcode, numWords );
+
+	if (microcode)
+		m_pixelShaderHash = XenonGPUCalcCRC(microcode, numWords * sizeof(uint32));
+	else
+		m_pixelShaderHash = 0;
 }
 
 void CDX11AbstractLayer::SetPixelShaderConsts( const uint32 firstVector, const uint32 numVectors, const float* values )
@@ -1085,7 +1099,7 @@ static const char* XenonGetPrimitiveTypeName(const XenonPrimitiveType pt)
 
 #pragma optimize ("",off)
 
-void CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds)
+bool CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds)
 {
 	DEBUG_CHECK(ds.m_indexCount == 3);
 
@@ -1110,7 +1124,7 @@ void CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXen
 	rectArea[2][2] = cpu::mem::loadAddr<float>(srcMemoryAddress + 56 + 8);
 
 	// in the MSAA_X4 mode that is sometimes used for clear we are writing 2x bigger image
-	if (m_colorMSAA[0] == XenonMsaaSamples::MSSA4X)
+	//if (m_colorMSAA[0] == XenonMsaaSamples::MSSA4X)
 	{
 		rectArea[0][0] *= 2.0f;
 		rectArea[0][1] *= 2.0f;
@@ -1136,15 +1150,7 @@ void CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXen
 
 	// get the Z to clear
 	const auto clearZ = rectArea[0][2];
-
-	// compensate for packed color
-	const float packMin = -32896.503f;
-	const float packRange = 32896.503f;
-	clearColor[0] = (clearColor[0] - packMin) / packRange;
-	clearColor[1] = (clearColor[1] - packMin) / packRange;
-	clearColor[2] = (clearColor[2] - packMin) / packRange;
-	clearColor[3] = (clearColor[3] - packMin) / packRange;
-
+	
 	// update colors
 	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 0, clearColor[0]);
 	cpu::mem::storeAddr<float>(srcMemoryAddress + 12 + 4, clearColor[1]);
@@ -1161,9 +1167,10 @@ void CDX11AbstractLayer::HACK_ClearFromDraw(const CXenonGPURegisters& regs, IXen
 	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 8, clearColor[2]);
 	cpu::mem::storeAddr<float>(srcMemoryAddress + 56 + 12 + 12, clearColor[3]);
 
-	// pass to the edram - clear the EDRAM itself
+	// direct clear
 	//m_surfaceManager->ClearColor(0, clearColor, true);
 	//m_surfaceManager->ClearDepth(clearZ, 0, true);
+	return false;
 }
 
 bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPUDumpWriter* traceDump, const CXenonGPUState::DrawIndexState& ds )
@@ -1171,8 +1178,8 @@ bool CDX11AbstractLayer::DrawGeometry( const CXenonGPURegisters& regs, IXenonGPU
 	// clear shader - HACK
 	if ( ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && ds.m_indexCount == 3 )
 	{
-		HACK_ClearFromDraw(regs, traceDump, ds);
-		//return true;
+		if (HACK_ClearFromDraw(regs, traceDump, ds))
+			return true;
 	}
 
 	// draw
