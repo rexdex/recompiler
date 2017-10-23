@@ -786,98 +786,25 @@ Commandline::Commandline()
 {
 }
 
-Commandline::Commandline(const wchar_t* cmd)
-{
-	Parse(cmd);
-}
-
-Commandline::Commandline(const wchar_t** argv, const int argc)
-{
-	std::wstring fullCommandLine;
-
-	for (int i = 1; i < argc; ++i)
-	{
-		fullCommandLine += argv[i];
-		fullCommandLine += L" ";
-	}
-
-	Parse(fullCommandLine.c_str());
-}
-
 Commandline::Commandline(const char** argv, const int argc)
 {
-	std::string fullCommandLine;
-
-	for (int i = 1; i < argc; ++i)
-	{
-		fprintf(stdout, "Argv[%u]: '%hs'\n", i, argv[i]);
-		fflush(stdout);
-
-		fullCommandLine += argv[i];
-		fullCommandLine += " ";
-	}
-
-	Parse(AnsiToUnicode(fullCommandLine).c_str());
-}
-
-void Commandline::Parse(const wchar_t* cmdLine)
-{
-	const auto* pos = cmdLine;
-	while (*pos)
-	{
-		const auto ch = *pos++;
-
-		// skip white spaces
-		if (ch <= 32)
-			continue;
-
-		// extract values
-		if (ch == '-')
-		{
-			// extract the key
-			const auto* start = pos;
-			while (*pos > 32 && *pos != '=')
-				pos += 1;
-
-			// extract into string
-			const std::string optionName = UnicodeToAnsi(std::wstring(start, pos - start));
-
-			// option value ?
-			if (*pos == '=')
-			{
-				pos += 1; // skip the "="
-
-						  // extract option from quotes
-				if (*pos == '\"')
-				{
-					// skip till past the quotes
-					start = pos;
-					while (*pos && *pos != '\"')
-						pos += 1;
-
-					// get the full value
-					const std::wstring optionValue(start, pos - start);
-					AddOption(optionName, optionValue);
-				}
-				else
-				{
-					// skip till a while space is found
-					start = pos;
-					while (*pos > 32)
-						pos += 1;
-
-					// get the full value
-					const std::wstring optionValue(start, pos - start);
-					AddOption(optionName, optionValue);
-				}
-			}
-			else
-			{
-				// option with no value
-				AddOption(optionName, std::wstring());
-			}
-		}
-	}
+    // argv contains strings of the format "-varName=value". We loop over all args and find valid ones.
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string s(argv[i]);
+        std::size_t equalsSign = 0;
+        // Find the equals sign; only proceed if it really exists
+        equalsSign = s.find("=");
+        if (equalsSign != std::string::npos) {
+            // Get the option name from the string
+            std::string part1 = s.substr(0, equalsSign);
+            // If it was a valid option name (if it had a hyphen in the front) then proceed
+            if (part1.at(0) == '-') {
+                std::string part2 = s.substr(equalsSign + 1, std::string::npos);
+                AddOption(part1.substr(1, std::string::npos), AnsiToUnicode(part2));
+            }
+        }
+    }
 }
 
 const bool Commandline::HasOption(const char* name) const
