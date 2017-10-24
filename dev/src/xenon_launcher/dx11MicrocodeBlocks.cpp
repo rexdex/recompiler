@@ -536,7 +536,7 @@ Shader* Shader::DecompileMicroCode( const void* code, const uint32 codeLength, X
 		const int index = exp->GetExportInterpolatorIndex( exp->GetExportReg() );
 		if ( index >= 0 )
 		{
-			ret->m_numUsedInterpolators = max( (uint32)index+1, ret->m_numUsedInterpolators );
+			ret->m_numUsedInterpolators = std::max( (uint32)index+1, ret->m_numUsedInterpolators );
 		}
 	}
 

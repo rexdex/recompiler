@@ -205,8 +205,8 @@ void CDX11SurfaceMemory::CopyIntoEDRAM(class CDX11AbstractRenderTarget* rt)
 	// determine copy placement
 	const uint32 copyX = 0;
 	const uint32 copyY = 0;
-	const uint32 copyWidth = min(texDesc.Width, rt->GetMemoryPitch());
-	const uint32 copyHeight = min(texDesc.Height, tailingHeight);
+	const uint32 copyWidth = std::min<uint32>(texDesc.Width, rt->GetMemoryPitch());
+	const uint32 copyHeight = std::min<uint32>(texDesc.Height, tailingHeight);
 
 	// configure EDRAM placement
 	m_settings.Get().m_edramBaseAddr = rt->GetEDRAMPlacement();
@@ -284,8 +284,8 @@ void CDX11SurfaceMemory::CopyFromEDRAM(class CDX11AbstractRenderTarget* rt)
 	// determine copy placement
 	const uint32 copyX = 0;
 	const uint32 copyY = 0;
-	const uint32 copyWidth = min(texDesc.Width, rt->GetMemoryPitch());
-	const uint32 copyHeight = min(texDesc.Height, tailingHeight);
+	const uint32 copyWidth = std::min<uint32>(texDesc.Width, rt->GetMemoryPitch());
+	const uint32 copyHeight = std::min<uint32>(texDesc.Height, tailingHeight);
 
 	// configure EDRAM placement
 	m_settings.Get().m_edramBaseAddr = rt->GetEDRAMPlacement();
@@ -305,9 +305,9 @@ void CDX11SurfaceMemory::CopyFromEDRAM(class CDX11AbstractRenderTarget* rt)
 
 	// limit copiable size
 	uint32 maxCopyWidth = copyWidth;
-	maxCopyWidth = min(maxCopyWidth, texDesc.Width - copyX);
+	maxCopyWidth = std::min<uint32>(maxCopyWidth, texDesc.Width - copyX);
 	uint32 maxCopyHeight = copyHeight;
-	maxCopyHeight = min(maxCopyHeight, texDesc.Height - copyY);
+	maxCopyHeight = std::min<uint32>(maxCopyHeight, texDesc.Height - copyY);
 
 	// dispatch the copy from EDRAM into the texture
 	// TODO: add support for 64-bit formats
@@ -378,9 +378,9 @@ void CDX11SurfaceMemory::Resolve(const XenonColorRenderTargetFormat srcFormat, c
 
 	// limit copiable size
 	uint32 maxCopyWidth = width;
-	maxCopyWidth = min(maxCopyWidth, destSurf->GetWidth() - destX);
+	maxCopyWidth = std::min<uint32>(maxCopyWidth, destSurf->GetWidth() - destX);
 	uint32 maxCopyHeight = height;
-	maxCopyHeight = min(maxCopyHeight, destSurf->GetHeight() - destY);
+	maxCopyHeight = std::min<uint32>(maxCopyHeight, destSurf->GetHeight() - destY);
 
 	// dispatch the copy from EDRAM into the texture
 	// TODO: add support for floating point formats

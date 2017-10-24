@@ -143,8 +143,8 @@ bool CDX11RenderingWindow::CreateThreadWindow( const char* title, const uint32 w
 
 	// Try to plane in center
 	RECT windowRect;
-	windowRect.left = max( 0, desktopX/2 - width/2 );
-	windowRect.top = max( 0, desktopY/2 - height/2 );
+	windowRect.left = std::max<int32>( 0, desktopX/2 - width/2 );
+	windowRect.top = std::max<int32>( 0, desktopY/2 - height/2 );
 	windowRect.right = windowRect.left + width;
 	windowRect.bottom = windowRect.top + height;
 

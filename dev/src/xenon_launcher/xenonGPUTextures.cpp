@@ -210,7 +210,7 @@ void XenonTextureInfo::GetPackedTileOffset(uint32& outOffsetX, uint32& outOffset
 	// The minimum dimension is what matters most: if either width or height
 	// is <= 16 this mode kicks in.
 
-	if (min(m_size2D.m_logicalWidth, m_size2D.m_logicalHeight) > 16)
+	if (std::min<uint32> (m_size2D.m_logicalWidth, m_size2D.m_logicalHeight) > 16)
 	{
 		// Too big, not packed.
 		outOffsetX = 0;

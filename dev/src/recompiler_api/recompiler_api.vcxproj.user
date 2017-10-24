@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-command=recompile  -generator=cpp_msvc -in="Q:\git\projects\recompiler\projects\xenon\doplhin\dolphin.pdi" -out="Q:\git\projects\recompiler\projects\xenon\doplhin\.temp\dolphin_0xC89B668F6DB04974\cpp_msvc_debug\\"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-command=recompile  -generator=cpp_msvc -in="Q:\git\projects\recompiler\projects\xenon\jayc\default.pdi" -out="Q:\crap\"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-command=recompile  -generator=cpp_msvc -in="Q:\\git\\projects\\recompiler\\projects\\xenon\\doplhin\\dolphin.pdi" -out="Q:\\git\\projects\\recompiler\\projects\\xenon\\doplhin\\.temp\\dolphin_0xC89B668F6DB04974\\cpp_msvc_debug\\" -O0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-verbose -command=recompile -in=Q:\git\projects\recompiler\tests\xenon\.temp\xvector\image.pdi -out=Q:\git\projects\recompiler\tests\xenon\.temp\xvector\out\ -generator=cpp_msvc -O0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
