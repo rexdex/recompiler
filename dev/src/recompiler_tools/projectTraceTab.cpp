@@ -86,7 +86,7 @@ namespace tools
 		// the trace data
 		{
 			auto* panel = XRCCTRL(*this, "TraceDataPanel", wxPanel);
-			m_traceInfoView = new TraceInfoView(panel, *m_data, GetProjectWindow()->GetProject().get(), this);
+			m_traceInfoView = new TraceInfoView(panel, *m_data, GetProject().get(), this);
 			panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 			panel->GetSizer()->Add(m_traceInfoView, 1, wxEXPAND, 0);
 		}
@@ -349,7 +349,7 @@ namespace tools
 
 		// get more human readable info about the file
 		auto codeAddressName = wxString::Format("0x%08llX", codeAddress);
-		if (const auto* context = GetProjectWindow()->GetProject()->GetDecodingContext(codeAddress))
+		if (const auto* context = GetProject()->GetDecodingContext(codeAddress))
 		{
 			std::string functionName;
 			uint64 functionBase;
@@ -363,7 +363,7 @@ namespace tools
 		// create the horizontal list
 		auto* view = new HorizontalRegisterView(m_timeMachineTabs, this);
 		const auto name = wxString::Format("Slice %hs at %hs (%llu)", title.c_str().AsChar(), codeAddressName.c_str().AsChar(), seq);
-		if (!view->FillTable(GetProjectWindow()->GetProject().get(), *m_data, seq, sequenceList))
+		if (!view->FillTable(GetProject().get(), *m_data, seq, sequenceList))
 		{
 			delete view;
 			return false;
@@ -400,7 +400,7 @@ namespace tools
 		}
 
 		// retrieve decoding context for current image
-		auto context = GetProjectWindow()->GetProject()->GetDecodingContext(frame.GetAddress());
+		auto context = GetProject()->GetDecodingContext(frame.GetAddress());
 		if (!context)
 			return false;
 
@@ -511,7 +511,7 @@ namespace tools
 
 
 		auto* view = new MemoryHistoryView(m_timeMachineTabs, this);
-		if (!view->FillTable(GetProjectWindow()->GetProject().get(), *m_data, history, displayMode, displayEndianess))
+		if (!view->FillTable(GetProject().get(), *m_data, history, displayMode, displayEndianess))
 		{ 
 			delete view;
 			wxBell();
@@ -587,7 +587,7 @@ namespace tools
 			case NavigationType::ToggleBreakpoint:
 			{
 				const auto currentAddress = m_disassemblyPanel->GetCurrentRVA();
-				GetProjectWindow()->GetProject()->GetBreakpoints().ToggleBreakpoint(currentAddress);
+				GetProject()->GetBreakpoints().ToggleBreakpoint(currentAddress);
 				return true;
 			}
 
@@ -779,7 +779,7 @@ namespace tools
 			{
 				ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
 
-				const auto* breakpointList = &GetProjectWindow()->GetProject()->GetBreakpoints();
+				const auto* breakpointList = &GetProject()->GetBreakpoints();
 
 				TraceFrameID curSeq = m_currentEntry;
 				TraceFrameID newSeq = INVALID_TRACE_FRAME_ID;
@@ -801,7 +801,7 @@ namespace tools
 			{
 				ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
 
-				const auto* breakpointList = &GetProjectWindow()->GetProject()->GetBreakpoints();
+				const auto* breakpointList = &GetProject()->GetBreakpoints();
 
 				TraceFrameID curSeq = m_currentEntry;
 				TraceFrameID newSeq = INVALID_TRACE_FRAME_ID;
@@ -842,7 +842,7 @@ namespace tools
 			return true;
 
 		// get project image for given address
-		auto projectImage = GetProjectWindow()->GetProject()->FindImageForAddress(address);
+		auto projectImage = GetProject()->FindImageForAddress(address);
 		if (!projectImage)
 			return false;
 
@@ -854,7 +854,7 @@ namespace tools
 			// change the disassembly to new image
 			delete m_disassemblyView;
 			if (projectImage)
-				m_disassemblyView = new TraceMemoryView(GetProjectWindow()->GetProject(), projectImage, this, *m_data);
+				m_disassemblyView = new TraceMemoryView(GetProject(), projectImage, this, *m_data);
 			else
 				m_disassemblyView = nullptr;
 

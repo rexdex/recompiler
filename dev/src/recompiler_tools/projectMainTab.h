@@ -19,6 +19,7 @@ namespace tools
 		wxTimer m_refreshTimer;
 
 		void OnAddImage(wxCommandEvent& evt);
+		void OnAddExistingImage(wxCommandEvent& evt);
 		void OnRemoveImages(wxCommandEvent& evt);
 		void OnShowImageDetails(wxListEvent& evt);
 
@@ -31,6 +32,12 @@ namespace tools
 		void OnImportTrace(wxCommandEvent& evt);
 		void OnKill(wxCommandEvent& evt);
 		void OnRefreshTimer(wxTimerEvent & evt);
+
+		void GetSelectedImages(std::vector<std::shared_ptr<ProjectImage>>& outImages);
+
+		bool ImportImage(const std::wstring& imageImportPath);
+		bool ImportExistingImage(const std::wstring& imageImportPath);
+		bool RemoveImages(const std::vector<std::shared_ptr<ProjectImage>>& images);
 
 		void RefreshState();
 		void RefreshUI();

@@ -272,6 +272,47 @@ namespace tools
 		return true;
 	}
 
+	std::shared_ptr<ProjectImage> ProjectImage::Load(ILogOutput& log, Project* project, const std::wstring& decodedImagePath)
+	{
+		// get the image name
+		const std::string imageName = wxFileName(decodedImagePath.c_str()).GetName().c_str().AsChar();
+		if (imageName.empty())
+		{
+			log.Error("Project: Unable to import file '%ls' because the file name is invalid");
+			return nullptr;
+		}
+
+		// get the load path as relative path to the project file
+		wxFileName relativePath(decodedImagePath);
+		wxFileName basePath(project->GetProjectDirectory());
+		if (!relativePath.MakeRelativeTo(basePath.GetFullPath()))
+		{
+			log.Error("Project: Unable to import file '%ls' because there's no relative path from project to the file", decodedImagePath.c_str());
+			return nullptr;
+		}
+
+		// stats
+		const std::wstring loadPath = relativePath.GetFullPath().wc_str();
+		log.Log("Project: Relative image path: '%ls'", loadPath.c_str());
+
+		// load the environment
+		auto env = decoding::Environment::Load(log, decodedImagePath);
+		if (!env)
+		{
+			log.Error("Project: Unable to import file '%ls' because the image could not be decoded", decodedImagePath.c_str());
+			return nullptr;
+		}
+
+		// create the project image
+		std::shared_ptr<ProjectImage> ret(new ProjectImage(project));
+		ret->m_env = env;
+		ret->m_loadPath = loadPath;
+		ret->m_displayName = imageName;
+		ret->m_addressHistory.Reset(env->GetImage()->GetEntryAddress());
+		ret->PostLoad();
+		return ret;
+	}
+
 	std::shared_ptr<ProjectImage> ProjectImage::Create(ILogOutput& log, Project* project, const std::wstring& imageImportPath)
 	{
 		// get the image name
@@ -288,9 +329,10 @@ namespace tools
 
 		// get the load path as relative path to the project file
 		wxFileName relativePath(decodedImagePath);
-		if (!relativePath.MakeRelativeTo(project->GetProjectDirectory()))
+		wxFileName basePath(project->GetProjectDirectory());
+		if (!relativePath.MakeRelativeTo(basePath.GetFullPath()))
 		{
-			log.Error("Project: Unable to import file '%ls' because there's no relative path from project to the file");
+			log.Error("Project: Unable to import file '%ls' because there's no relative path from project to the file", imageImportPath.c_str());
 			return nullptr;
 		}
 

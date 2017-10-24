@@ -15,22 +15,7 @@ namespace tools
 		TraceSession,
 	};
 
-	// tab in the project window
-	class ProjectTab : public wxPanel
-	{
-		DECLARE_EVENT_TABLE();
-
-	public:
-		ProjectTab(ProjectWindow* projectWindow, wxWindow* tabs, const ProjectTabType tabType);
-
-		inline const ProjectTabType GetTabType() const { return m_tabType; }
-
-		inline ProjectWindow* GetProjectWindow() const { return m_projectWindow; }
-
-	private:
-		ProjectWindow* m_projectWindow;
-		ProjectTabType m_tabType;
-	};
+	class ProjectTab;
 
 	// main project frame
 	class ProjectWindow : public wxFrame
@@ -51,9 +36,6 @@ namespace tools
 		// navigate to address, this will find image matching this address and go there
 		// if no image is found this function returns false
 		bool NavigateToStaticAddress(const uint64 address);
-
-		// add image to the project
-		bool ImportImage(const std::wstring& imageImportPath);
 
 		//--
 
@@ -121,6 +103,25 @@ namespace tools
 
 		// loaded project
 		std::shared_ptr<Project> m_project;
+	};
+
+	// tab in the project window
+	class ProjectTab : public wxPanel
+	{
+		DECLARE_EVENT_TABLE();
+
+	public:
+		ProjectTab(ProjectWindow* projectWindow, wxWindow* tabs, const ProjectTabType tabType);
+
+		inline const ProjectTabType GetTabType() const { return m_tabType; }
+
+		inline ProjectWindow* GetProjectWindow() const { return m_projectWindow; }
+
+		inline const std::shared_ptr<Project>& GetProject() const { return m_projectWindow->GetProject(); }
+
+	private:
+		ProjectWindow* m_projectWindow;
+		ProjectTabType m_tabType;
 	};
 
 } // tools

@@ -19,6 +19,7 @@ namespace tools
 
 	BEGIN_EVENT_TABLE(ProjectMainTab, ProjectTab)
 		EVT_BUTTON(XRCID("ImageAdd"), ProjectMainTab::OnAddImage)
+		EVT_BUTTON(XRCID("ImageAttach"), ProjectMainTab::OnAddExistingImage)
 		EVT_BUTTON(XRCID("ImageRemove"), ProjectMainTab::OnRemoveImages)
 		EVT_LIST_ITEM_ACTIVATED(XRCID("ImageList"), ProjectMainTab::OnShowImageDetails)
 		EVT_TOOL(XRCID("openLog"), ProjectMainTab::OnShowLog)
@@ -64,7 +65,7 @@ namespace tools
 	{
 		// fill the image extensions
 		std::vector< platform::FileFormat > executableFormats;
-		GetProjectWindow()->GetProject()->GetPlatform()->EnumerateImageFormats(executableFormats);
+		GetProject()->GetPlatform()->EnumerateImageFormats(executableFormats);
 
 		// build the file enumeration string
 		wxString filterString;
@@ -87,11 +88,141 @@ namespace tools
 
 		// import image
 		const auto imagePath = loadDialog.GetPath();
-		GetProjectWindow()->ImportImage(imagePath.wc_str());
+		ImportImage(imagePath.wc_str());
+	}
+
+	bool ProjectMainTab::ImportImage(const std::wstring& imageImportPath)
+	{
+		std::shared_ptr<ProjectImage> importedImage;
+
+		// load the image
+		{
+			auto* projectOwner = GetProject().get();
+
+			ProgressDialog progress(this, GetProjectWindow()->GetApp()->GetLogWindow(), false);
+			progress.RunLongTask([&importedImage, imageImportPath, projectOwner](ILogOutput& log)
+			{
+				// load the image
+				importedImage = ProjectImage::Create(log, projectOwner, imageImportPath);
+				return 0;
+			});
+		}
+
+		// image not imported
+		if (!importedImage)
+		{
+			wxMessageBox(wxT("Failed to import image from selected file. Inspect log for details."), wxT("Import image"), wxICON_ERROR, this);
+			return false;
+		}
+
+		// add to project
+		GetProject()->AddImage(importedImage);
+		RefreshImageList();
+
+		// done
+		return true;
+	}
+
+	void ProjectMainTab::OnAddExistingImage(wxCommandEvent& evt)
+	{
+		// ask user for the file name
+		const char* filterString = "Recompiler project image (*.pdi)|*.pdi";
+		wxFileDialog loadDialog(this, "Import existing image into project", "", wxEmptyString, filterString, wxFD_OPEN);
+		if (loadDialog.ShowModal() == wxID_CANCEL)
+			return;
+
+		auto importPath = loadDialog.GetPath();
+		ImportExistingImage(importPath.wc_str());
+	}
+
+	bool ProjectMainTab::ImportExistingImage(const std::wstring& imageImportPath)
+	{
+		// load the image
+		std::shared_ptr<ProjectImage> projectImage;
+		{
+			auto* projectOwner = GetProject().get();
+
+			ProgressDialog progress(this, GetProjectWindow()->GetApp()->GetLogWindow(), false);
+			progress.RunLongTask([&projectImage, projectOwner, imageImportPath](ILogOutput& log)
+			{
+				// load the image
+				projectImage = ProjectImage::Load(log, projectOwner, imageImportPath);
+				return 0;
+			});
+		}
+
+		// image not imported
+		if (!projectImage)
+		{
+			wxMessageBox(wxT("Failed to import image from selected file. Inspect log for details."), wxT("Import image"), wxICON_ERROR, this);
+			return false;
+		}
+
+		// check if image with that name already exists
+		for (const auto& curImage : GetProject()->GetImages())
+		{
+			if (curImage->GetDisplayName() == projectImage->GetDisplayName())
+			{
+				wxMessageBox(wxT("Image existing in project with the same display name '") + curImage->GetDisplayName() + wxT("'. Duplicate?"), wxT("Import image"), wxICON_ERROR, this);
+				return false;
+			}
+			if (curImage->GetLoadPath() == projectImage->GetLoadPath())
+			{
+				wxMessageBox(wxT("Image existing in project with the same relative path '") + curImage->GetLoadPath() + wxT("'. Duplicate?"), wxT("Import image"), wxICON_ERROR, this);
+				return false;
+			}
+		}
+
+		// add to project
+		GetProject()->AddImage(projectImage);
+
+		// refresh the list
+		RefreshImageList();
+		return true;
+	}
+
+	bool ProjectMainTab::RemoveImages(const std::vector<std::shared_ptr<ProjectImage>>& images)
+	{
+		for (const auto& img : images)
+			GetProject()->RemoveImage(img);
+
+		RefreshImageList();
+		return true;
+	}
+
+	void ProjectMainTab::GetSelectedImages(std::vector<std::shared_ptr<ProjectImage>>& outImages)
+	{
+		const auto& images = GetProject()->GetImages();
+
+		// not the most convenient interface :)
+		long item = -1;
+		for (;;)
+		{
+			item = m_imageList->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+			if (item == -1)
+				break;
+
+			const auto imgIndex = (int)m_imageList->GetItemData(item);
+			outImages.push_back(images[imgIndex]);
+		}
 	}
 
 	void ProjectMainTab::OnRemoveImages(wxCommandEvent& evt)
 	{
+		std::vector<std::shared_ptr<ProjectImage>> images;
+		GetSelectedImages(images);
+
+		if (images.empty())
+		{
+			wxMessageBox(wxT("Please select images to remove"), wxT("Remove images"), wxICON_ERROR, this);
+		}
+		else
+		{
+			if (wxNO == wxMessageBox(wxT("Sure to remove images from the project? They won't be deleted from disk, just detached"), wxT("Remove images"), wxICON_QUESTION | wxYES_NO, this))
+				return;
+
+			RemoveImages(images);
+		}
 	}
 
 	void ProjectMainTab::RefreshImageList()
@@ -101,7 +232,7 @@ namespace tools
 		m_imageList->DeleteAllItems();
 
 		// add image informations
-		const auto& images = GetProjectWindow()->GetProject()->GetImages();
+		const auto& images = GetProject()->GetImages();
 		for (uint32 i = 0; i < images.size(); ++i)
 		{
 			const auto image = images[i];
@@ -125,6 +256,7 @@ namespace tools
 			m_imageList->SetItem(index, 4, type);
 			m_imageList->SetItem(index, 5, status);
 			m_imageList->SetItem(index, 6, image->GetLoadPath());
+			m_imageList->SetItemData(index, index);
 		}
 
 		// done
@@ -133,8 +265,8 @@ namespace tools
 
 	void ProjectMainTab::OnShowImageDetails(wxListEvent& event)
 	{
-		const auto& images = GetProjectWindow()->GetProject()->GetImages();
-		const auto& img = images[event.GetItem().GetId()];
+		const auto& images = GetProject()->GetImages();
+		const auto& img = images[(int)event.GetItem().GetData()];
 		GetProjectWindow()->GetImageTab(img, true, true);
 	}
 
@@ -164,7 +296,7 @@ namespace tools
 
 		// collect dirty images
 		std::vector<std::shared_ptr<ProjectImage>> dirtyImages;
-		const auto& images = GetProjectWindow()->GetProject()->GetImages();
+		const auto& images = GetProject()->GetImages();
 		for (const auto& img : images)
 		{
 			if (img->CanCompile() && img->RequiresRecompilation())
@@ -195,7 +327,7 @@ namespace tools
 	{
 		// check if have a non-debug configurations
 		wxString nonDebugProjects;
-		const auto& images = GetProjectWindow()->GetProject()->GetImages();
+		const auto& images = GetProject()->GetImages();
 		for (const auto& img : images)
 		{
 			if (!img->GetSettings().m_emulationEnabled)
@@ -263,7 +395,7 @@ namespace tools
 		{
 			std::vector<BuildTask> buildTasks;
 
-			const auto& images = GetProjectWindow()->GetProject()->GetImages();
+			const auto& images = GetProject()->GetImages();
 			for (const auto& img : images)
 			{
 				if (img->GetSettings().m_emulationEnabled)
@@ -289,7 +421,7 @@ namespace tools
 		}
 
 		// get the project launcher from the platform
-		const auto launcherPath = GetProjectLauncherExecutable(*GetProjectWindow()->GetProject()->GetPlatform());
+		const auto launcherPath = GetProjectLauncherExecutable(*GetProject()->GetPlatform());
 		if (!wxFileExists(launcherPath))
 		{
 			wxMessageBox(wxT("Unable to locate launcher for current platform"), wxT("Run project"), wxICON_ERROR, 0);
@@ -303,12 +435,12 @@ namespace tools
 		commandLine += " ";
 
 		// bind file system
-		const auto projectDirectory = GetProjectWindow()->GetProject()->GetProjectDirectory();
+		const auto projectDirectory = GetProject()->GetProjectDirectory();
 		commandLine += "-fsroot=\"" + EscapePath(projectDirectory) += "\" ";
 
 		// add the images to run
 		bool hasAppImages = false;
-		const auto& images = GetProjectWindow()->GetProject()->GetImages();
+		const auto& images = GetProject()->GetImages();
 		for (const auto& img : images)
 		{
 			if (!img->CanRun())
@@ -383,7 +515,7 @@ namespace tools
 
 		// get the images to run
 		std::vector<std::shared_ptr<ProjectImage>> startupImages;
-		GetProjectWindow()->GetProject()->GetStartupImages(startupImages);
+		GetProject()->GetStartupImages(startupImages);
 
 		// build the base name
 		wxString sampleFileName;
@@ -542,7 +674,7 @@ namespace tools
 		// compile full trace
 		std::unique_ptr<trace::DataFile> traceData;
 		{
-			auto* project = GetProjectWindow()->GetProject().get();
+			auto* project = GetProject().get();
 			const auto* cpuInfo = project->GetPlatform()->GetCPU(0);
 
 			ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
@@ -591,7 +723,7 @@ namespace tools
 		// compile full trace
 		std::unique_ptr<trace::DataFile> traceData;
 		{
-			const auto* cpuInfo = GetProjectWindow()->GetProject()->GetPlatform()->GetCPU(0);
+			const auto* cpuInfo = GetProject()->GetPlatform()->GetCPU(0);
 
 			ProgressDialog dlg(this, GetProjectWindow()->GetApp()->GetLogWindow(), true);
 			dlg.RunLongTask([&traceData, cpuInfo, traceFilePath](ILogOutput& log)

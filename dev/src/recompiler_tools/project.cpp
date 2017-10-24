@@ -128,8 +128,12 @@ namespace tools
 
 	void Project::RemoveImage(const std::shared_ptr<ProjectImage>& image)
 	{
-		std::remove(m_images.begin(), m_images.end(), image);
-		MarkAsModified();
+		auto it = std::find(m_images.begin(), m_images.end(), image);
+		if (it != m_images.end())
+		{
+			m_images.erase(it);
+			MarkAsModified();
+		}
 	}
 
 	void Project::GetStartupImages(std::vector<std::shared_ptr<ProjectImage>>& outImages) const

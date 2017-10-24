@@ -119,31 +119,7 @@ namespace tools
 			m_tabs->AddPage(m_mainTab, wxT("Project"));
 		}
 
-		/*		// create the memory tab
-				{
-					m_memoryView = new MemoryView(m_tabs);
-					m_tabs->AddPage(m_memoryView, wxT("Image"));
-				}
-
-				// Create the log window
-				{
-					m_logView = new LogDisplayBuffer(m_bottomTabs);
-					m_bottomTabs->AddPage(m_logView, wxT("Log"));
-				}
-
-				// Create the register view window
-				{
-					m_regView = new RegisterView(m_bottomTabs);
-					m_topTabs->AddPage(m_regView, wxT("Registers"));
-				}
-
-				// Create the trace view window
-				{
-					m_traceView = new TraceInfoView(m_bottomTabs);
-					m_topTabs->AddPage(m_traceView, wxT("Trace"));
-				}*/
-
-				// update initial format
+		// update initial format
 		UpdateUI();
 
 		// update the layout once again
@@ -277,39 +253,7 @@ namespace tools
 		UpdateUI();
 
 		return projectTraceTab;
-	}
-
-	bool ProjectWindow::ImportImage(const std::wstring& imageImportPath)
-	{
-		std::shared_ptr<ProjectImage> importedImage;
-
-		// load the image
-		{
-			auto* projectOwner = m_project.get();
-
-			ProgressDialog progress(this, m_app->GetLogWindow(), false);
-			progress.RunLongTask([&importedImage, imageImportPath, projectOwner](ILogOutput& log)
-			{
-				// load the image
-				importedImage = ProjectImage::Create(log, projectOwner, imageImportPath);
-				return 0;
-			});
-		}
-
-		// image not imported
-		if (!importedImage)
-		{
-			wxMessageBox(wxT("Failed to import image from selected file. Inspect log for details."), wxT("Import image"), wxICON_ERROR, this);
-			return false;
-		}
-
-		// add to project
-		m_project->AddImage(importedImage);
-		m_mainTab->RefreshImageList();
-
-		// done
-		return true;
-	}
+	}	
 
 	void ProjectWindow::OnProjectSave(wxCommandEvent& event)
 	{

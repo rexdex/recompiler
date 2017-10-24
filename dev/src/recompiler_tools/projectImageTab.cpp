@@ -444,7 +444,7 @@ namespace tools
 			case NavigationType::ToggleBreakpoint:
 			{
 				const auto currentAddress = m_disassemblyPanel->GetCurrentRVA();
-				GetProjectWindow()->GetProject()->GetBreakpoints().ToggleBreakpoint(currentAddress);
+				GetProject()->GetBreakpoints().ToggleBreakpoint(currentAddress);
 				return true;
 			}
 		}
