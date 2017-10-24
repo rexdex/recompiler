@@ -393,7 +393,7 @@ namespace decoding
 		}
 		else
 		{
-			log.Error("Address %08Xh is outside the memory map range", rva);
+			log.Error("Address %08llXh is outside the memory map range (0x%08llX-0x%08llX)", rva, m_baseAddress, m_baseAddress+m_memorySize);
 			return false;
 		}
 	}
@@ -448,7 +448,7 @@ namespace decoding
 		}
 		else
 		{
-			log.Error("Address %08Xh is outside the memory map range", rva);
+			log.Error("Address %08llXh is outside the memory map range (0x%08llX-0x%08llX)", rva, m_baseAddress, m_baseAddress + m_memorySize);
 			return false;
 		}
 	}

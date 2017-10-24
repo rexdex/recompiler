@@ -1,5 +1,6 @@
 #include "xenonCPU.h"
 
+#pragma optimize ("",off)
 //---------------------------------------------------------------------------
 
 #define REPORT_DECODING_ERRORS
@@ -63,6 +64,7 @@ private:
 #ifdef REPORT_DECODING_ERRORS
 
 	extern "C" __declspec(dllimport) void __stdcall OutputDebugStringA(const char* lpOutputString);
+	extern "C" __declspec(dllimport) void __stdcall DebugBreak();
 
 	void ReportDecodingError(const char* txt, ...)
 	{
@@ -75,6 +77,7 @@ private:
 
 		strcat_s(buf, "\n");
 		OutputDebugStringA(buf);
+		//DebugBreak();
 	}
 
 	#define ERROR(x,...) ReportDecodingError(x, __VA_ARGS__); return false;
@@ -407,6 +410,7 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 1036: EMIT(vslo, VREG(b6), VREG(b11), VREG(b16));
 				case 1100: EMIT(vsro, VREG(b6), VREG(b11), VREG(b16));
 
+				case 452: EMIT(vsl, VREG(b6), VREG(b11), VREG(b16));
 				case 708: EMIT(vsr, VREG(b6), VREG(b11), VREG(b16));
 				case 772: EMIT(vsrab, VREG(b6), VREG(b11), VREG(b16)); 
 				case 836: EMIT(vsrah, VREG(b6), VREG(b11), VREG(b16)); 

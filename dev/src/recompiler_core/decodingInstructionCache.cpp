@@ -128,10 +128,12 @@ namespace decoding
 
 		// decode instruction into the full form
 		const uint32 size = m_cachedCPU->DecodeInstruction( log, memoryStart, outInstruction );
-		if (cached && size)
-		{
+		if (!size)
+			return 0;
+
+		// add to cache
+		if (cached)
 			m_decodedInstructions[ codeAddress ] = outInstruction;
-		}
 
 		// return decoded instruction
 		return size;

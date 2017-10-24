@@ -1124,6 +1124,7 @@ public:
 		outInfo.m_codeFlags |= decoding::InstructionExtendedInfo::eInstructionFlag_Jump;
 		outInfo.m_codeFlags |= decoding::InstructionExtendedInfo::eInstructionFlag_Static;
 		outInfo.m_branchTargetAddress = Absolute ? op.GetArg0().m_imm : (codeAddress + op.GetArg0().m_imm);
+		outInfo.m_branchTargetAddress &= 0xFFFFFFFFU;
 
 		return true;
 	}
@@ -1159,6 +1160,7 @@ public:
 		outInfo.m_codeFlags |= decoding::InstructionExtendedInfo::eInstructionFlag_Call;
 		outInfo.m_codeFlags |= decoding::InstructionExtendedInfo::eInstructionFlag_Static;
 		outInfo.m_branchTargetAddress = Absolute ? op.GetArg0().m_imm : (codeAddress + op.GetArg0().m_imm);
+		outInfo.m_branchTargetAddress &= 0xFFFFFFFFU;
 		return true;
 	}
 
@@ -1497,6 +1499,7 @@ public:
 
 		// compute branch target
 		outInfo.m_branchTargetAddress = A ? op.GetArg2().m_imm : (codeAddress + op.GetArg2().m_imm);
+		outInfo.m_branchTargetAddress &= 0xFFFFFFFFU;
 		return true;
 	}
 
