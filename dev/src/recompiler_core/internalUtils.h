@@ -208,8 +208,6 @@ class RECOMPILER_API Commandline
 public:
 	Commandline();
 	Commandline(const char** argv, const int argc);
-	Commandline(const wchar_t** argv, const int argc);
-	Commandline(const wchar_t* cmd);
 
 	/// do we have an option specified ?
 	const bool HasOption(const char* name) const;
@@ -231,7 +229,6 @@ private:
 	TOptions	m_options;
 
 	void AddOption(const std::string& name, const std::wstring& value);
-	void Parse(const wchar_t* cmdLine);
 };
 //---------------------------------------------------------------------------
 

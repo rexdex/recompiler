@@ -39,6 +39,9 @@
     <IntDir>$(SolutionDir)..\..\_temp\$(Configuration)\$(ProjectName)\</IntDir>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\external\wxWidgets-3.1.0\include;$(SolutionDir)..\external\wxWidgets-3.1.0\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

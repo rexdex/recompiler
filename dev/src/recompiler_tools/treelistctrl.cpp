@@ -3222,7 +3222,7 @@ wxTreeItemId wxTreeListMainWindow::FindItem (const wxTreeItemId& item, int colum
 
     // start checking the next items
     wxString itemText;
-    int col, col_start, col_end;
+    int col = 0, col_start = 0, col_end = 0;
     if (column >= 0) { col_start = col_end = col; }
     else { col_start = 0; col_end = GetColumnCount() - 1; }
     while (next.IsOk() && (next != item)) {
