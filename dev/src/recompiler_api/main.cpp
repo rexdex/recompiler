@@ -106,8 +106,8 @@ const int RunDecompiler(const Commandline& cmdLine, ILogOutput& log)
     }
 
     // get the output directory name where we will output data
-    const auto outputDirPath = cmdLine.GetOptionValueW("out");
-    if (outputDirPath.empty())
+    const auto outputPath = cmdLine.GetOptionValueW("out");
+    if (outputPath.empty())
     {
         log.Error("Decompiler: Output path to directory with compiled data (-out) not specified");
         return -2;
@@ -126,7 +126,6 @@ const int RunDecompiler(const Commandline& cmdLine, ILogOutput& log)
     }
 
     // if we got here then the image was loaded successfully; let's try to decode it and save the .pdi file
-    const auto outPath = outputDirPath + L"\\output.pdi";
     const auto env = decoding::Environment::Create(log, platformDefinition, bin, outPath);
     if (!env)
     {
