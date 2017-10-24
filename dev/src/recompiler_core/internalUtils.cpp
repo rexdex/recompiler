@@ -788,22 +788,32 @@ Commandline::Commandline()
 
 Commandline::Commandline(const char** argv, const int argc)
 {
-    // argv contains strings of the format "-varName=value". We loop over all args and find valid ones.
+    // argv contains strings of the format "-varName=value" or flags "-flag". We loop over all args and find valid ones.
     for (int i = 1; i < argc; ++i)
     {
         std::string s(argv[i]);
-        std::size_t equalsSign = 0;
+
+		// we are interested only in command arguments starting with '-'
+		if (s.at(0) != '-')
+			continue;
+		s = s.substr(1);
+
         // Find the equals sign; only proceed if it really exists
-        equalsSign = s.find("=");
-        if (equalsSign != std::string::npos) {
+        const auto equalsSign = s.find("=");
+        if (equalsSign != std::string::npos)
+		{
             // Get the option name from the string
             std::string part1 = s.substr(0, equalsSign);
+
             // If it was a valid option name (if it had a hyphen in the front) then proceed
-            if (part1.at(0) == '-') {
-                std::string part2 = s.substr(equalsSign + 1, std::string::npos);
-                AddOption(part1.substr(1, std::string::npos), AnsiToUnicode(part2));
-            }
+			std::string part2 = s.substr(equalsSign + 1, std::string::npos);
+            AddOption(part1, AnsiToUnicode(part2));
         }
+		else
+		{
+			// It's a flag
+			AddOption(s, std::wstring());
+		}
     }
 }
 
