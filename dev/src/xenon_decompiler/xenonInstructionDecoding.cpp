@@ -450,6 +450,7 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 4: EMIT(vrlb, VREG(b6), VREG(b11), VREG(b16));
 				case 68: EMIT(vrlh, VREG(b6), VREG(b11), VREG(b16));
 				case 132: EMIT(vrlw, VREG(b6), VREG(b11), VREG(b16));
+				case 782: EMIT(vpkpx, VREG(b6), VREG(b11), VREG(b16));
 
 				case 590: CHECK(b11==0); EMIT(vupkhsh, VREG(b6), VREG(b16));
 				case 526: CHECK(b11==0); EMIT(vupkhsb, VREG(b6), VREG(b16));
@@ -457,6 +458,7 @@ uint32 CPU_XenonPPC::DecodeInstruction(const uint8* inputStream, class decoding:
 				case 974: CHECK(b11==0); EMIT(vupklpx, VREG(b6), VREG(b16));
 				case 654: CHECK(b11==0); EMIT(vupklsb, VREG(b6), VREG(b16));					
 				case 718: CHECK(b11 == 0); EMIT(vupklsh, VREG(b6), VREG(b16));
+					
 
 				case 330: CHECK(b11==0); EMIT(vrsqrtefp, VREG(b6), VREG(b16));
 			}

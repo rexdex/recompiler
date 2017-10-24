@@ -1377,43 +1377,44 @@ namespace cpu
 			union Bits
 			{
 				float f;
-				int si;
-				uint32 ui;
+				int32_t si;
+				uint32_t ui;
 			};
 
 			static int const shift = 13;
 			static int const shiftSign = 16;
 
-			static int const infN = 0x7F800000; // flt32 infinity
-			static int const maxN = 0x477FE000; // max flt16 normal as a flt32
-			static int const minN = 0x38800000; // min flt16 normal as a flt32
-			static int const signN = 0x80000000; // flt32 sign bit
+			static int32_t const infN = 0x7F800000; // flt32 infinity
+			static int32_t const maxN = 0x477FE000; // max flt16 normal as a flt32
+			static int32_t const minN = 0x38800000; // min flt16 normal as a flt32
+			static int32_t const signN = 0x80000000; // flt32 sign bit
 
-			static int const infC = infN >> shift;
-			static int const nanN = (infC + 1) << shift; // minimum flt16 nan as a flt32
-			static int const maxC = maxN >> shift;
-			static int const minC = minN >> shift;
-			static int const signC = signN >> shiftSign; // flt16 sign bit
+			static int32_t const infC = infN >> shift;
+			static int32_t const nanN = (infC + 1) << shift; // minimum flt16 nan as a flt32
+			static int32_t const maxC = maxN >> shift;
+			static int32_t const minC = minN >> shift;
+			static int32_t const signC = signN >> shiftSign; // flt16 sign bit
 
-			static int const mulN = 0x52000000; // (1 << 23) / minN
-			static int const mulC = 0x33800000; // minN / (1 << (23 - shift))
+			static int32_t const mulN = 0x52000000; // (1 << 23) / minN
+			static int32_t const mulC = 0x33800000; // minN / (1 << (23 - shift))
 
-			static int const subC = 0x003FF; // max flt32 subnormal down shifted
-			static int const norC = 0x00400; // min flt32 normal down shifted
+			static int32_t const subC = 0x003FF; // max flt32 subnormal down shifted
+			static int32_t const norC = 0x00400; // min flt32 normal down shifted
 
-			static int const maxD = infC - maxC - 1;
-			static int const minD = minC - subC - 1;
+			static int32_t const maxD = infC - maxC - 1;
+			static int32_t const minD = minC - subC - 1;
 
 		public:
-			static uint16 Compress(uint32 value)
+
+			static uint16_t compress(float value)
 			{
 				Bits v, s;
-				v.ui = value;
-				uint32 sign = v.si & signN;
+				v.f = value;
+				uint32_t sign = v.si & signN;
 				v.si ^= sign;
 				sign >>= shiftSign; // logical shift
 				s.si = mulN;
-				s.si = (int)(s.f * v.f); // correct subnormals
+				s.si = s.f * v.f; // correct subnormals
 				v.si ^= (s.si ^ v.si) & -(minN > v.si);
 				v.si ^= (infN ^ v.si) & -((infN > v.si) & (v.si > maxN));
 				v.si ^= (nanN ^ v.si) & -((nanN > v.si) & (v.si > infN));
@@ -1423,11 +1424,11 @@ namespace cpu
 				return v.ui | sign;
 			}
 
-			static uint32 Decompress(uint16 value)
+			static float decompress(uint16_t value)
 			{
 				Bits v;
 				v.ui = value;
-				int sign = v.si & signC;
+				int32_t sign = v.si & signC;
 				v.si ^= sign;
 				sign <<= shiftSign;
 				v.si ^= ((v.si + minD) ^ v.si) & -(v.si > subC);
@@ -1435,22 +1436,59 @@ namespace cpu
 				Bits s;
 				s.si = mulC;
 				s.f *= v.si;
-				int mask = -(norC > v.si);
+				int32_t mask = -(norC > v.si);
 				v.si <<= shift;
 				v.si ^= (s.si ^ v.si) & mask;
 				v.si |= sign;
-				return v.ui;
+				return v.f;
 			}
 		};
 
-		static inline uint32 FromHalf(const uint16 in)
+		static inline float FromHalf(const uint16 in)
 		{
-			return Float16Compressor::Decompress(in);
+			uint32_t t1;
+			uint32_t t2;
+			uint32_t t3;
+
+			t1 = in & 0x7fff;                       // Non-sign bits
+			t2 = in & 0x8000;                       // Sign bit
+			t3 = in & 0x7c00;                       // Exponent
+
+			t1 <<= 13;                              // Align mantissa on MSB
+			t2 <<= 16;                              // Shift sign bit into position
+
+			t1 += 0x38000000;                       // Adjust bias
+
+			t1 = (t3 == 0 ? 0 : t1);                // Denormals-as-zero
+
+			t1 |= t2;                               // Re-insert sign bit
+
+			return *(float*)&t1;
 		}
 
-		static inline uint16 ToHalf(const uint32 inu)
+		static inline uint16 ToHalf(const float in)
 		{
-			return Float16Compressor::Compress(inu);
+			uint32_t inu = *((uint32_t*)&in);
+			uint32_t t1;
+			uint32_t t2;
+			uint32_t t3;
+
+			t1 = inu & 0x7fffffff;                 // Non-sign bits
+			t2 = inu & 0x80000000;                 // Sign bit
+			t3 = inu & 0x7f800000;                 // Exponent
+
+			t1 >>= 13;                             // Align mantissa on MSB
+			t2 >>= 16;                             // Shift sign bit into position
+
+			t1 -= 0x1c000;                         // Adjust bias
+
+			t1 = (t3 > 0x38800000) ? 0 : t1;       // Flush-to-zero
+			t1 = (t3 < 0x8e000000) ? 0x7bff : t1;  // Clamp-to-max
+			t1 = (t3 == 0 ? 0 : t1);               // Denormals-as-zero
+
+			t1 |= t2;                              // Re-insert sign bit
+
+			return (uint16_t)t1;
 		}
 	}
 
@@ -4660,98 +4698,90 @@ namespace cpu
 			out->AsFloat<3>() = tmp;
 		}
 
+		static inline int16_t SignExtend10(uint32_t x)
+		{
+			if (x & 0x200)
+				x |= 0xFE00;
+			return (int16_t&)x;
+		}
+
+		static inline float MakePackedFloatSigned(const int32_t x)
+		{
+			union
+			{
+				float f;
+				int32_t i;
+			}
+			ret;
+
+			ret.f = 3.0f;
+			ret.i += x;
+			return ret.f;
+		}
+
+		static inline float MakePackedFloatUnsigned(const uint32_t x)
+		{
+			union
+			{
+				float f;
+				uint32_t u;
+			}
+			ret;
+
+			ret.f = 1.0f;
+			ret.u |= x;
+			return ret.f;
+		}
+
 		template <uint8 CTRL, uint8 MODE>
 		static inline void vupkd3d128(CpuRegs& regs, TVReg* out, const TVReg a)
 		{
 			ASM_CHECK(CTRL == 0);
-			ASM_CHECK(MODE == 0 || MODE == 1 || MODE == 2 || MODE == 5 || MODE == 3);
 
 			if (MODE == 0)
 			{
 				const uint32 val = (a.AsUint32<3>());
-
-				union
-				{
-					float f;
-					uint32 u;
-				} x, y, z, w;
-
-				x.f = 1.0f;
-				y.f = 1.0f;
-				z.f = 1.0f;
-				w.f = 1.0f;
-
-				x.u |= (val >> 16) & 0xFF;
-				y.u |= (val >> 8) & 0xFF;
-				z.u |= (val >> 0) & 0xFF;
-				w.u |= (val >> 24) & 0xFF;
-
-				out->AsFloat<0>() = x.f;
-				out->AsFloat<1>() = y.f;
-				out->AsFloat<2>() = z.f;
-				out->AsFloat<3>() = w.f;
+				out->AsFloat<0>() = MakePackedFloatUnsigned((val >> 16) & 0xFF);
+				out->AsFloat<1>() = MakePackedFloatUnsigned((val >> 8) & 0xFF);
+				out->AsFloat<2>() = MakePackedFloatUnsigned((val >> 0) & 0xFF);
+				out->AsFloat<3>() = MakePackedFloatUnsigned((val >> 24) & 0xFF);
 			}
 			else if (MODE == 1)
 			{
-				union
-				{
-					float f;
-					int i;
-				} x, y;
-
-				x.f = 3.0f;
-				y.f = 3.0f;
-
-				//fprintf(stdout, "Packed=%08X,%08X,%08X,%08X\n", a.AsUint32<0>(), a.AsUint32<1>(), a.AsUint32<2>(), a.AsUint32<3>());
-
-				x.i += (const short&)a.AsUint16<0>();
-				y.i += (const short&)a.AsUint16<1>();
-
-				out->AsFloat<0>() = x.f;
-				out->AsFloat<1>() = y.f;
+				out->AsFloat<0>() = MakePackedFloatSigned(a.AsInt16<6>());
+				out->AsFloat<1>() = MakePackedFloatSigned(a.AsInt16<7>());
 				out->AsFloat<2>() = 0.0f;
 				out->AsFloat<3>() = 1.0f;
-
-				//fprintf(stdout, "Unpacked=%f,%f,%f,%f\n", out->AsFloat<0>(), out->AsFloat<1>(), out->AsFloat<2>(), out->AsFloat<3>());
 			}
 			else if (MODE == 2)
 			{
 				const uint32 val = (a.AsUint32<3>());
 
-				union
-				{
-					float f;
-					uint32 u;
-				} x, y, z, w;
-
-				x.f = 1.0f;
-				y.f = 1.0f;
-				z.f = 1.0f;
-				w.f = 1.0f;
-
-				x.u |= (val >> 30) & 0x3;
-				y.u |= (val >> 20) & 0x3FF;
-				z.u |= (val >> 10) & 0x3FF;
-				w.u |= (val >> 0) & 0x3FF;
-
-				out->AsFloat<0>() = x.f;
-				out->AsFloat<1>() = y.f;
-				out->AsFloat<2>() = z.f;
-				out->AsFloat<3>() = w.f;
+				out->AsFloat<0>() = MakePackedFloatSigned(SignExtend10((val >> 0) & 0x3FF));
+				out->AsFloat<1>() = MakePackedFloatSigned(SignExtend10((val >> 10) & 0x3FF));
+				out->AsFloat<2>() = MakePackedFloatSigned(SignExtend10((val >> 20) & 0x3FF));
+				out->AsFloat<3>() = MakePackedFloatUnsigned((val >> 30) & 0x3);
 			}
 			else if (MODE == 3)
 			{
-				out->AsUint32<0>() = math::FromHalf(a.AsUint16<1>());
-				out->AsUint32<1>() = math::FromHalf(a.AsUint16<0>());
+				out->AsFloat<0>() = math::FromHalf(a.AsUint16<1>());
+				out->AsFloat<1>() = math::FromHalf(a.AsUint16<0>());
 				out->AsUint32<2>() = 0;
-				out->AsUint32<3>() = 0;
+				out->AsFloat<3>() = 1.0f;
+			}
+			else if (MODE == 4)
+			{
+				out->AsFloat<0>() = MakePackedFloatSigned(a.AsInt16<1>());
+				out->AsFloat<1>() = MakePackedFloatSigned(a.AsInt16<0>());
+				out->AsFloat<2>() = MakePackedFloatSigned(a.AsInt16<3>());
+				out->AsFloat<3>() = MakePackedFloatSigned(a.AsInt16<2>());
 			}
 			else if (MODE == 5)
 			{
-				out->AsUint32<0>() = math::FromHalf(a.AsUint16<1>());
-				out->AsUint32<1>() = math::FromHalf(a.AsUint16<0>());
-				out->AsUint32<2>() = math::FromHalf(a.AsUint16<3>());
-				out->AsUint32<3>() = math::FromHalf(a.AsUint16<2>());
+				out->AsFloat<0>() = math::FromHalf(a.AsUint16<1>());
+				out->AsFloat<1>() = math::FromHalf(a.AsUint16<0>());
+				out->AsFloat<2>() = math::FromHalf(a.AsUint16<3>());
+				out->AsFloat<3>() = math::FromHalf(a.AsUint16<2>());
 			}
 		}
 
@@ -4946,19 +4976,23 @@ namespace cpu
 			}
 			else if (MODE == 1) // NORM2
 			{
-				const uint16 x = (uint16)(a.AsUint32<0>() & 0xFFFF);
-				const uint16 y = (uint16)(a.AsUint32<1>() & 0xFFFF);
+				const uint16 x = a.AsUint16<3>(); // low word of the first float
+				const uint16 y = a.AsUint16<1>(); // low word of the second float
 				vpkd3d128_write2<MASK, SHIFT>(out, x, y);
 			}
 			else if (MODE == 2) // NORMPACKED2
 			{
-				const uint32 ret = 0;
+				const uint32 x = a.AsUint32<0>() & 0x3FF;
+				const uint32 y = a.AsUint32<1>() & 0x3FF;
+				const uint32 z = a.AsUint32<2>() & 0x3FF;
+				const uint32 w = a.AsUint32<3>() >> 8 & 0x3;
+				const uint32 ret = (w << 30) | (z << 20) | (y << 10) | (x << 0);
 				vpkd3d128_write2<MASK, SHIFT>(out, ret);
 			}
 			else if (MODE == 3) // FLOAT16_2
 			{
-				const uint16 v0 = math::ToHalf(a.AsUint32<0>());
-				const uint16 v1 = math::ToHalf(a.AsUint32<1>());
+				const uint16 v0 = math::ToHalf(a.AsFloat<0>());
+				const uint16 v1 = math::ToHalf(a.AsFloat<1>());
 				vpkd3d128_write2<MASK, SHIFT>(out, v0, v1);
 			}
 			else if (MODE == 4) // NORM4
@@ -4971,10 +5005,10 @@ namespace cpu
 			}
 			else if (MODE == 5) // FLOAT16_4
 			{
-				const uint16 v0 = math::ToHalf(a.AsUint32<0>());
-				const uint16 v1 = math::ToHalf(a.AsUint32<1>());
-				const uint16 v2 = math::ToHalf(a.AsUint32<2>());
-				const uint16 v3 = math::ToHalf(a.AsUint32<3>());
+				const uint16 v0 = math::ToHalf(a.AsFloat<0>());
+				const uint16 v1 = math::ToHalf(a.AsFloat<1>());
+				const uint16 v2 = math::ToHalf(a.AsFloat<2>());
+				const uint16 v3 = math::ToHalf(a.AsFloat<3>());
 				vpkd3d128_write4<MASK, SHIFT>(out, v0, v1, v2, v3);
 			}
 			else if (MODE == 6) // NORMPACKED64
@@ -5068,6 +5102,58 @@ namespace cpu
 			out->AsInt16<5>() = a.AsInt8<5>();
 			out->AsInt16<6>() = a.AsInt8<6>();
 			out->AsInt16<7>() = a.AsInt8<7>();
+		}
+
+		static inline uint16_t vpkpx(const uint32_t x)
+		{
+			const uint32_t a = (x >> 24) & 0x1;
+			const uint32_t r = (x >> 19) & 0x1F;
+			const uint32_t g = (x >> 11) & 0x1F;
+			const uint32_t b = (x >> 3) & 0x1F;
+			return (a << 15) | (r << 10) | (g << 5) | (b << 0);
+		}
+
+		template <uint8 CTRL>
+		static inline void vpkpx(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint16<0>() = vpkpx(a.AsUint32<0>());
+			out->AsUint16<1>() = vpkpx(a.AsUint32<1>());
+			out->AsUint16<2>() = vpkpx(a.AsUint32<2>());
+			out->AsUint16<3>() = vpkpx(a.AsUint32<3>());
+			out->AsUint16<4>() = vpkpx(b.AsUint32<0>());
+			out->AsUint16<5>() = vpkpx(b.AsUint32<1>());
+			out->AsUint16<6>() = vpkpx(b.AsUint32<2>());
+			out->AsUint16<7>() = vpkpx(b.AsUint32<3>());
+		}
+
+		static inline uint32_t vupkhpx(const uint16_t x)
+		{
+			uint32_t a = (x >> 15) & 0x1 ? 0xFF : 0x00;
+			uint32_t r = (x >> 10) & 0x1F;
+			uint32_t g = (x >> 5) & 0x1F;
+			uint32_t b = (x >> 0) & 0x1F;
+			return (a << 24) | (r << 16) | (g << 8) | (b << 0);
+		}
+
+		template <uint8 CTRL>
+		static inline void vupkhpx(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint32<0>() = vupkhpx(a.AsUint16<0>());
+			out->AsUint32<1>() = vupkhpx(a.AsUint16<1>());
+			out->AsUint32<2>() = vupkhpx(a.AsUint16<2>());
+			out->AsUint32<3>() = vupkhpx(a.AsUint16<3>());
+		}
+
+		template <uint8 CTRL>
+		static inline void vupklpx(CpuRegs& regs, TVReg* out, const TVReg a)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint32<0>() = vupkhpx(a.AsUint16<4>());
+			out->AsUint32<1>() = vupkhpx(a.AsUint16<5>());
+			out->AsUint32<2>() = vupkhpx(a.AsUint16<6>());
+			out->AsUint32<3>() = vupkhpx(a.AsUint16<7>());
 		}
 
 		template <uint8 CTRL>
