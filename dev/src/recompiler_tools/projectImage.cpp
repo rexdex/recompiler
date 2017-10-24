@@ -177,6 +177,7 @@ namespace tools
 		task.m_command = wxTheApp->GetCommandLineTool();
 
 		task.m_commandLine = " -command=recompile ";
+		task.m_commandLine += " -verbose ";
 
 		task.m_commandLine += " -generator=";
 		task.m_commandLine += m_settings.m_recompilationTool;
