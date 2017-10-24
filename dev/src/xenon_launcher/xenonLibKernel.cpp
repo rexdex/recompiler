@@ -1726,12 +1726,13 @@ uint64 __fastcall XboxKernel_XNotifyGetNext(uint64 ip, cpu::CpuRegs& regs)
 	RETURN_ARG(0);
 }
 
-void XboxKernel_Interrupt20(uint64 ip, cpu::CpuRegs& regs)
+void XboxKernel_Interrupt20(const uint64_t ip, const uint32_t index, const cpu::CpuRegs& regs)
 {
-
+	const char* msg = (const char*)regs.R3;
+	GPlatform.DebugTrace(msg);
 }
 
-void XboxKernel_Interrupt22(uint64 ip, cpu::CpuRegs& regs)
+void XboxKernel_Interrupt22(const uint64_t ip, const uint32_t index, const cpu::CpuRegs& regs)
 {
 
 }

@@ -32,6 +32,7 @@ namespace xenon
 		, m_ioTable(nullptr)
 		, m_userExitRequested(false)
 		, m_traceFile(nullptr)
+		, m_platformLogFileEnabled(false)
 	{
 	}
 
@@ -110,7 +111,7 @@ namespace xenon
 			case 1: cpu::mem::storeAddr<uint8>((const uint32_t)address, *(const uint8_t*)inPtr); break;
 		}
 
-		xenon::TagMemoryWrite(address, size, "MappedMemWrite");
+		xenon::TagMemoryWrite(address, (uint32_t)size, "MappedMemWrite");
 	}
 
 	static void GlobalPortReadFunc(const uint64_t ip, const uint16_t portIndex, const uint64_t size, void* outPtr)
@@ -284,6 +285,28 @@ namespace xenon
 			}
 		}
 
+		// create platform log
+		{
+			const auto platformLogFileName = commandline.GetOptionValueW("platformLog");
+			if (!platformLogFileName.empty())
+			{
+				// stats
+				GLog.Log("Runtime: Platform log will be written to '%ls'", platformLogFileName.c_str());
+
+				// open the file
+				m_platformLogFile.open(platformLogFileName, std::ios::out);
+				if (m_platformLogFile.fail())
+				{
+					GLog.Err("Runtime: Failed to create platform log file");
+					return false;
+				}
+				else
+				{
+					m_platformLogFileEnabled = true;
+				}
+			}
+		}
+
 		GLog.Log("Runtime: Xenon platform initialized");
 		return true;
 	}
@@ -326,6 +349,18 @@ namespace xenon
 	void Platform::RequestUserExit()
 	{
 		m_userExitRequested = true;
+	}
+
+	void Platform::DebugTrace(const char* txt)
+	{
+		if (m_platformLogFileEnabled)
+		{
+			m_platformLogFile << txt;
+		}
+		else
+		{
+			GLog.Log("OutputDebugString: %hs", txt);
+		}
 	}
 
 	int Platform::RunImage(const runtime::Image& image)
@@ -371,6 +406,10 @@ namespace xenon
 
 			// wait before iterations so we don't consume to much CPU
 			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+			// flush the file
+			if (m_platformLogFileEnabled)
+				m_platformLogFile.flush();
 		}
 
 		// exit

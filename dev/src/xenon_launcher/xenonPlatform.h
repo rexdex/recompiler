@@ -62,6 +62,7 @@ namespace xenon
 		//---
 
 		void RequestUserExit();
+		void DebugTrace(const char* txt);
 
 	private:
 		// subsystems
@@ -90,6 +91,10 @@ namespace xenon
 
 		// trace file (may be null)
 		runtime::TraceFile*		m_traceFile;
+
+		// output log file
+		std::ofstream m_platformLogFile;
+		bool m_platformLogFileEnabled;
 
 		// external exit
 		bool m_userExitRequested;
