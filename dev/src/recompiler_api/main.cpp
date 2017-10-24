@@ -126,7 +126,7 @@ const int RunDecompiler(const Commandline& cmdLine, ILogOutput& log)
     }
 
     // if we got here then the image was loaded successfully; let's try to decode it and save the .pdi file
-    const auto env = decoding::Environment::Create(log, platformDefinition, bin, outPath);
+    const auto env = decoding::Environment::Create(log, platformDefinition, bin, outputPath);
     if (!env)
     {
         log.Error("Decompiler: Unable to import file '%ls' because the image could not be decoded");
