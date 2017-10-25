@@ -170,9 +170,9 @@ void CDX11AbstractSurface::Upload(const void* srcTextureData, void* destData, ui
 					uint8* destWrite = (uint8*)targetData;
 					for (uint32 x = 0; x<copyWidth; ++x, ++tempPtr, destWrite += 4)
 					{
-						destWrite[0] = ((*tempPtr >> 0) & 0xF) << 4;
+						destWrite[0] = ((*tempPtr >> 8) & 0xF) << 4;
 						destWrite[1] = ((*tempPtr >> 4) & 0xF) << 4;
-						destWrite[2] = ((*tempPtr >> 8) & 0xF) << 4;
+						destWrite[2] = ((*tempPtr >> 0) & 0xF) << 4;
 						destWrite[3] = ((*tempPtr >> 12) & 0xF) << 4;
 					}
 				}

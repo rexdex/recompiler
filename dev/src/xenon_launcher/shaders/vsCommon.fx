@@ -105,9 +105,9 @@ uint4 FetchVertex_8_8_8_8( Buffer<uint> b, uint offset, uint stride, uint index 
 	uint data = b.Load( CalcFetchPosition( offset, stride, index ) );
 
 	uint4 ret;
-	ret.x = (data >> 16) & 0xFF;
+	ret.x = (data >> 0) & 0xFF;
 	ret.y = (data >> 8) & 0xFF;
-	ret.z = (data >> 0) & 0xFF;
+	ret.z = (data >> 16) & 0xFF;
 	ret.w = (data >> 24) & 0xFF;
 
 	return ret;
