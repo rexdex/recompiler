@@ -137,9 +137,9 @@
     <ClCompile Include="xenonLibErrors.cpp" />
     <ClCompile Include="xenonLibFiles.cpp" />
     <ClCompile Include="xenonLibInput.cpp" />
+    <ClCompile Include="xenonLibMemory.cpp" />
     <ClCompile Include="xenonLibNatives.cpp" />
     <ClCompile Include="xenonLibNet.cpp" />
-    <ClCompile Include="xenonLibThreads.cpp" />
     <ClCompile Include="xenonLib.cpp" />
     <ClCompile Include="xenonLibVideo.cpp" />
     <ClCompile Include="xenonLibKernel.cpp" />

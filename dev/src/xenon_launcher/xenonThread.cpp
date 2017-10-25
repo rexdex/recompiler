@@ -258,7 +258,7 @@ namespace xenon
 		{
 			// Get APC entry (offset for LIST_ENTRY offset) and cache what we need.
 			// Calling the routine may delete the memory/overwrite it.
-			const uint32 apcAddress = (const uint32)m_apcList->Pop() - 8;
+			const uint32 apcAddress = (const uint32)m_apcList->Pop().GetAddress().GetAddressValue() - 8;
 			const uint32 kernelRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 16);
 			const uint32 normalRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 24);
 			const uint32 normalContext = cpu::mem::loadAddr<uint32>(apcAddress + 28);
@@ -339,7 +339,7 @@ namespace xenon
 		{
 			// Get APC entry (offset for LIST_ENTRY offset) and cache what we need.
 			// Calling the routine may delete the memory/overwrite it.
-			const uint32 apcAddress = m_apcList->Pop() - 8;
+			const uint32 apcAddress = m_apcList->Pop().GetAddress().GetAddressValue() - 8;
 			const uint32 rundownRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 20);
 
 			// Mark as uninserted so that it can be reinserted again by the routine.

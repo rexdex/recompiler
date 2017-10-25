@@ -133,79 +133,63 @@ namespace xenon
 	//-----------------------------------------------------------------------------
 
 	KernelList::KernelList()
-		: m_headAddr(0)
-	{
-	}
+		: m_headAddr()
+	{}
 
-	void KernelList::Insert(const uint32 listEntryPtr)
+	void KernelList::Insert(Pointer<KernelListEntry> listData)
 	{
-		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, m_headAddr);
-		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, m_headAddr);
-		xenon::TagMemoryWrite(listEntryPtr, 8, "KERNEL_LIST_INSERT");
+		listData->m_flink = m_headAddr;
+		listData->m_blink = m_headAddr;
 
-		if (m_headAddr != INVALID)
+		if (m_headAddr.IsValid())
 		{
-			cpu::mem::storeAddr<uint32>(m_headAddr + 4, listEntryPtr);
-			xenon::TagMemoryWrite(m_headAddr, 4, "KERNEL_LIST_INSERT");
+			Pointer<KernelListEntry> headData(m_headAddr);
+			headData->m_blink = listData;
 		}
 	}
 
-	bool KernelList::IsQueued(const uint32 listEntryPtr)
+	bool KernelList::IsQueued(Pointer<KernelListEntry> listData)
 	{
-		const uint32 flink = cpu::mem::loadAddr<uint32>(listEntryPtr + 0);
-		const uint32 blink = cpu::mem::loadAddr<uint32>(listEntryPtr + 4);
-		return (m_headAddr == listEntryPtr) || (flink != 0) || (blink != 0);
+		return (m_headAddr == listData) || (listData->m_flink.IsValid()) || (listData->m_blink.IsValid());
 	}
 
-	void KernelList::Remove(const uint32 listEntryPtr)
+	void KernelList::Remove(Pointer<KernelListEntry> listData)
 	{
-		const uint32 flink = cpu::mem::loadAddr<uint32>(listEntryPtr + 0);
-		const uint32 blink = cpu::mem::loadAddr<uint32>(listEntryPtr + 4);
-
-		if (listEntryPtr == m_headAddr)
+		if (listData == m_headAddr)
 		{
-			m_headAddr = flink;
+			m_headAddr = listData->m_flink;
 
-			if (flink != 0)
-			{
-				cpu::mem::storeAddr<uint32>(flink + 4, 0);
-				xenon::TagMemoryWrite(flink + 4, 4, "KERNEL_LIST_REMOVE");
-			}
+			if (listData->m_flink.IsValid())
+				listData->m_flink = 0;
 		}
 		else
 		{
-			if (blink != 0)
-			{
-				cpu::mem::storeAddr<uint32>(blink + 0, flink);
-				xenon::TagMemoryWrite(blink + 0, 4, "KERNEL_LIST_REMOVE");
-			}
+			if (listData->m_blink.IsValid())
+				listData->m_blink->m_flink = 0;
 
-			if (flink != 0)
-			{
-				cpu::mem::storeAddr<uint32>(flink + 4, blink);
-				xenon::TagMemoryWrite(flink + 4, 4, "KERNEL_LIST_REMOVE");
-			}
+			if (listData->m_flink.IsValid())
+				listData->m_flink->m_blink = 0;
 		}
 
-		cpu::mem::storeAddr<uint32>(listEntryPtr + 0, 0);
-		cpu::mem::storeAddr<uint32>(listEntryPtr + 4, 0);
-		xenon::TagMemoryWrite(listEntryPtr + 0, 8, "KERNEL_LIST_REMOVE");
+		listData->m_blink = 0;
+		listData->m_flink = 0;
 	}
 
-	const uint32 KernelList::Pop()
+	const Pointer<KernelListEntry> KernelList::Pop()
 	{
-		if (!m_headAddr)
-			return 0;
+		if (!m_headAddr.IsValid())
+			return nullptr;
 
-		uint32 ptr = m_headAddr;
+		auto ptr = m_headAddr;
 		Remove(ptr);
+
 		DEBUG_CHECK(m_headAddr != ptr);
 		return ptr;
 	}
 
 	bool KernelList::HasPending() const
 	{
-		return (m_headAddr != INVALID) && (m_headAddr != NULL);
+		return (m_headAddr.IsValid()) && (m_headAddr.GetAddress().GetAddressValue() != INVALID);
 	}
 
 	//-----------------------------------------------------------------------------
@@ -857,13 +841,13 @@ namespace xenon
 
 				if (thread->HasCrashed())
 				{
-					GLog.Log("Kernel: Thread '%s' (ID=%d) has crashed", thread->GetName(), thread->GetIndex());
+					GLog.Err("Kernel: Thread '%s' (ID=%d) has crashed", thread->GetName(), thread->GetIndex());
 					hasCrashedThreads = true;
 				}
 
 				if (thread->HasStopped())
 				{
-					GLog.Log("Process: Thread '%s' (ID=%d) removed from thread list", thread->GetName(), thread->GetIndex());
+					GLog.Warn("Process: Thread '%s' (ID=%d) removed from thread list", thread->GetName(), thread->GetIndex());
 
 					delete thread;
 					it = m_threads.erase(it);
@@ -886,7 +870,7 @@ namespace xenon
 		// thread crashed
 		if (hasCrashedThreads)
 		{
-			GLog.Log("Process: A thread crashed during program execution. Killing process.");
+			GLog.Err("Process: A thread crashed during program execution. Killing process.");
 			return false;
 		}
 

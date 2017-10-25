@@ -28,7 +28,6 @@ namespace xenon
 		extern void RegisterXboxCRT(runtime::Symbols& symbols);
 		extern void RegisterXboxKernel(runtime::Symbols& symbols);
 		extern void RegisterXboxVideo(runtime::Symbols& symbols);
-		extern void RegisterXboxThreads(runtime::Symbols& symbols);
 		extern void RegisterXboxFiles(runtime::Symbols& symbols);
 		extern void RegisterXboxDebug(runtime::Symbols& symbols);
 		extern void RegisterXboxInput(runtime::Symbols& symbols);
@@ -37,6 +36,7 @@ namespace xenon
 		extern void RegisterXboxNetworking(runtime::Symbols& symbols);
 		extern void RegisterXboxConfig(runtime::Symbols& symbols);
 		extern void RegisterXboxErrors(runtime::Symbols& symbols);
+		extern void RegisterXboxMemory(runtime::Symbols& symbols);
 
 	} // lib
 
@@ -192,7 +192,6 @@ namespace xenon
 		lib::RegisterXboxCRT(symbols);
 		lib::RegisterXboxKernel(symbols);
 		lib::RegisterXboxVideo(symbols);
-		lib::RegisterXboxThreads(symbols);
 		lib::RegisterXboxFiles(symbols);
 		lib::RegisterXboxDebug(symbols);
 		lib::RegisterXboxInput(symbols);
@@ -201,6 +200,7 @@ namespace xenon
 		lib::RegisterXboxNetworking(symbols);
 		lib::RegisterXboxConfig(symbols);
 		lib::RegisterXboxErrors(symbols);
+		lib::RegisterXboxMemory(symbols);
 
 		// register the process native data
 
@@ -393,22 +393,6 @@ namespace xenon
 				GLog.Warn("Runtime: User exit requested");
 				break;
 			}
-
-#if defined(_WIN32) || defined(_WIN64)
-			// exit
-			if (GetAsyncKeyState(VK_F10) & 0x8000)
-			{
-				GLog.Err("Runtime: External request to quit");
-				break;
-			}
-
-			// on demand trace dump
-			if ((GetAsyncKeyState(VK_F3) & 0x8001))
-			{
-				GLog.Err("Runtime: Requesting trace dump");
-				m_graphics->RequestTraceDump();
-			}
-#endif
 
 			// wait before iterations so we don't consume to much CPU
 			std::this_thread::sleep_for(std::chrono::milliseconds(5));

@@ -15,7 +15,7 @@ namespace xenon
 		void Xbox_DbgBreakPoint()
 		{
 			GLog.Log( "DbgBreakPoint()" );
-			DebugBreak();			
+			throw new runtime::TerminateProcessException(0, 0);
 		}
 		
 		X_STATUS Xbox_DmAbortProfiling()

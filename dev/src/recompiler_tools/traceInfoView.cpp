@@ -106,7 +106,7 @@ namespace tools
 				context->DecodeInstruction(wxTheApp->GetLogWindow(), address, op, false);
 
 			// if it's an invalid instruction we may be at the import function stub
-			if (!op.IsValid() && context->GetMemoryMap().GetMemoryInfo(address).GetInstructionFlags().IsImportFunction())
+			if (!op.IsValid() || !context || context->GetMemoryMap().GetMemoryInfo(address).GetInstructionFlags().IsImportFunction())
 			{
 				// more info ?
 			}

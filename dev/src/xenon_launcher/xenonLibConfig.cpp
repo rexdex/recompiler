@@ -135,9 +135,23 @@ namespace xenon
 			return ERROR_INVALID_DATA;
 		}
 
+		uint32_t Xbox_XGetLanguage()
+		{
+			return 1;
+		}
+
+		uint64_t Xbox_XGetAVPack()
+		{
+			return 0x010000;
+		}
+
+		///---
+
 		void RegisterXboxConfig(runtime::Symbols& symbols)
 		{
 			REGISTER(ExGetXConfigSetting);
+			REGISTER(XGetLanguage);
+			REGISTER(XGetAVPack);
 		}
 
 	} // lib

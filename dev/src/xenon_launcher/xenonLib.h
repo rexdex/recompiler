@@ -2,10 +2,6 @@
 
 #include "../host_core/runtimeSymbols.h"
 
-#define RETURN() return (uint32)regs.LR; // return from native function
-#define RETURN_ARG(arg) { regs.R3 = arg; return (uint32)regs.LR; } 
-#define RETURN_DEFAULT() { GLog.Warn( "Visited empty function '%s'", __FUNCTION__ ); regs.R3 = 0; return (uint32)regs.LR; } 
-
 namespace xenon
 {
 

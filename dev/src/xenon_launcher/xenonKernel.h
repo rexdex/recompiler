@@ -163,6 +163,13 @@ namespace xenon
 
 	//---------------------------------------------------------------------------
 
+	/// entry in the list
+	struct KernelListEntry
+	{
+		Pointer<KernelListEntry> m_flink;
+		Pointer<KernelListEntry> m_blink;
+	};
+
 	/// List wrapper, all data big-endian
 	class KernelList
 	{
@@ -170,23 +177,23 @@ namespace xenon
 		KernelList();
 
 		// insert address to the list
-		void Insert(const uint32 listEntryPtr);
+		void Insert(Pointer<KernelListEntry> listEntryPtr);
 
 		// check if address is queued
-		bool IsQueued(const uint32 listEntryPtr);
+		bool IsQueued(Pointer<KernelListEntry> listEntryPtr);
 
 		// remove entry
-		void Remove(const uint32 listEntryPtr);
+		void Remove(Pointer<KernelListEntry> listEntryPtr);
 
 		// shift data
-		const uint32 Pop();
+		const Pointer<KernelListEntry> Pop();
 
 		// do we have pending data ?
 		bool HasPending() const;
 
 	private:
 		static const uint32 INVALID = 0xE0FE0FFF;
-		uint32 m_headAddr;
+		Pointer<KernelListEntry> m_headAddr;
 	};
 
 	//---------------------------------------------------------------------------

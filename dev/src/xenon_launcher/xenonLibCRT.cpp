@@ -351,22 +351,11 @@ namespace xenon
 		}
 
 		// copied from http://msdn.microsoft.com/en-us/library/ff552263
-		uint64 __fastcall Xbox_RtlFillMemoryUlong(uint64 ip, cpu::CpuRegs& regs)
+		void Xbox_RtlFillMemoryUlong(Pointer<uint32> destPtr, uint32 size, uint32 pattern)
 		{
-			// _Out_  PVOID Destination,
-			// _In_   SIZE_T Length,
-			// _In_   ULONG Pattern
-
-			const auto destPtr = Pointer<uint32>(regs.R3);
-			const auto size = (const uint32)regs.R4;
-			const auto pattern = (const uint32)regs.R5;
-
 			const auto count = size >> 2;
-
 			for (uint32 i = 0; i < count; ++i)
 				destPtr[i] = pattern;
-
-			RETURN();
 		}
 
 		X_STATUS Xbox_XexLoadImage(Pointer<char> modulePath, uint32_t flags, uint32_t loadVersion, Pointer<uint32> outHandle)

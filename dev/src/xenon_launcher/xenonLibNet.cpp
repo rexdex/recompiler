@@ -10,673 +10,673 @@ namespace xenon
 
 		// XNet------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XNetCleanup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetCleanup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetConnect(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetConnect()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetCreateKey(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetCreateKey()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetDnsLookup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetDnsLookup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetDnsRelease(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetDnsRelease()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetBroadcastVersionStatus(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetBroadcastVersionStatus()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetConnectStatus(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetConnectStatus()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetDebugXnAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetDebugXnAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetEthernetLinkStatus(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetEthernetLinkStatus()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetOpt(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetOpt()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetSystemLinkPort(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetSystemLinkPort()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetTitleXnAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetTitleXnAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetGetXnAddrPlatform(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetGetXnAddrPlatform()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetInAddrToServer(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetInAddrToServer()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetInAddrToString(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetInAddrToString()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetInAddrToXnAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetInAddrToXnAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetQosGetListenStats(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetQosGetListenStats()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetQosListen(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetQosListen()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetQosLookup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetQosLookup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetQosRelease(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetQosRelease()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetQosServiceLookup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetQosServiceLookup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetRandom(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetRandom()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetRegisterKey(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetRegisterKey()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetReplaceKey(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetReplaceKey()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetServerToInAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetServerToInAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetSetSystemLinkPort(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetSetSystemLinkPort()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetStartup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetStartup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetUnregisterInAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetUnregisterInAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetUnregisterKey(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetUnregisterKey()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetXnAddrToInAddr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetXnAddrToInAddr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XNetXnAddrToMachineId(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XNetXnAddrToMachineId()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XOnlineGetNatType(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XOnlineGetNatType()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// Winsock---------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_accept(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_accept()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_bind(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_bind()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_closesocket(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_closesocket()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_connect(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_connect()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_getpeername(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_getpeername()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_getsockname(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_getsockname()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_getsockopt(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_getsockopt()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_htonl(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_htonl()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_htons(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_htons()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_inet_addr(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_inet_addr()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_ioctlsocket(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_ioctlsocket()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_listen(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_listen()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_ntohl(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_ntohl()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_ntohs(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_ntohs()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_recv(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_recv()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_recvfrom(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_recvfrom()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_select(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_select()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_send(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_send()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_sendto(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_sendto()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_setsockopt(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_setsockopt()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_shutdown(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_shutdown()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_socket(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_socket()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSACancelOverlappedIO(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSACancelOverlappedIO()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSACleanup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSACleanup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSACloseEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSACloseEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSACreateEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSACreateEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAEventSelect(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAEventSelect()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll___WSAFDIsSet(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll___WSAFDIsSet()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAGetLastError(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAGetLastError()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAGetOverlappedResult(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAGetOverlappedResult()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSARecv(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSARecv()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSARecvFrom(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSARecvFrom()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAResetEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAResetEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSASend(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSASend()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSASendTo(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSASendTo()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSASetEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSASetEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSASetLastError(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSASetLastError()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAStartup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAStartup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_WSAWaitForMultipleEvents(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_WSAWaitForMultipleEvents()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// XRNM ---------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XrnmAllowInboundLinkRequests(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmAllowInboundLinkRequests()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCancelSends(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCancelSends()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCloseHandle(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCloseHandle()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCreateEndpoint(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCreateEndpoint()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCreateInboundLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCreateInboundLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCreateOutboundLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCreateOutboundLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmCreateSendChannel(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmCreateSendChannel()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmDenyInboundLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmDenyInboundLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmFlushSends(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmFlushSends()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetAlertSettings(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetAlertSettings()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetAllChannels(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetAllChannels()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetAllLinks(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetAllLinks()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetChannelUserData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetChannelUserData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetDefaultChannelComponents(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetDefaultChannelComponents()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetEndpointFromLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetEndpointFromLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetHandleStatus(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetHandleStatus()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetHandleUserData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetHandleUserData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetLocalAddressForEndpoint(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetLocalAddressForEndpoint()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetOpt(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetOpt()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmGetRemoteAddressForLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmGetRemoteAddressForLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmQueryInfo(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmQueryInfo()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmReturnEvent(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmReturnEvent()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmSend(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmSend()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmSetAlertSettings(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmSetAlertSettings()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmSetChannelUserData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmSetChannelUserData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmSetHandleUserData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmSetHandleUserData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmSetOpt(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmSetOpt()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmTerminateLink(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmTerminateLink()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XrnmTerminateSendChannel(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XrnmTerminateSendChannel()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// QNet ---------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_QNetCreateUsingXAudio2(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_QNetCreateUsingXAudio2()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// XHttp --------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XHttpCloseHandle(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpCloseHandle()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpConnect(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpConnect()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpCrackUrl(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpCrackUrl()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpCreateUrl(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpCreateUrl()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpDoWork(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpDoWork()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpOpen(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpOpen()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpOpenRequest(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpOpenRequest()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpQueryHeaders(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpQueryHeaders()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpQueryOption(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpQueryOption()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpReadData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpReadData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpReceiveResponse(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpReceiveResponse()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpSendRequest(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpSendRequest()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpSetOption(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpSetOption()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpSetStatusCallback(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpSetStatusCallback()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpShutdown(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpShutdown()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpStartup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpStartup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XHttpWriteData(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XHttpWriteData()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// XAuth --------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XAuthFreeToken(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthFreeToken()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XAuthGetRelyingPartyId(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthGetRelyingPartyId()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XAuthGetToken(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthGetToken()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XAuthInsecureSocketsAllowed(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthInsecureSocketsAllowed()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XAuthShutdown(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthShutdown()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XAuthStartup(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XAuthStartup()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// XJSON --------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XJSONDestroy(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XJSONDestroy()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XJSONGetTokenValue(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XJSONGetTokenValue()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XJSONInitialize(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XJSONInitialize()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XJSONReadToken(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XJSONReadToken()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
-		uint64 __fastcall Xbox_NetDll_XJSONSetBuffer(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XJSONSetBuffer()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		// Endpoint discovery--------------------------------------------------------------
 
-		uint64 __fastcall Xbox_NetDll_XGetServiceEndpoint(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NetDll_XGetServiceEndpoint()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		//---------------------------------------------------------------------------------
