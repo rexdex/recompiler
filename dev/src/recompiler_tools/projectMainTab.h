@@ -21,6 +21,7 @@ namespace tools
 		void OnAddImage(wxCommandEvent& evt);
 		void OnAddExistingImage(wxCommandEvent& evt);
 		void OnRemoveImages(wxCommandEvent& evt);
+		void OnCopyStartCommandline(wxCommandEvent& evt);
 		void OnShowImageDetails(wxListEvent& evt);
 
 		void OnShowLog(wxCommandEvent& evt);
@@ -48,6 +49,7 @@ namespace tools
 		const bool ImportTraceFile(const wxString& traceFilePath);
 		const bool LoadTraceFile(const wxString& traceFilePath);
 		const bool OpenTraceTab(std::unique_ptr<trace::DataFile>& traceData);
+		const bool GetStartCommandline(wxString& outCommandLine);
 	};
 
 } // tool

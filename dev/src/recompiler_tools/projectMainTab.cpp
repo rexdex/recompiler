@@ -21,6 +21,7 @@ namespace tools
 		EVT_BUTTON(XRCID("ImageAdd"), ProjectMainTab::OnAddImage)
 		EVT_BUTTON(XRCID("ImageAttach"), ProjectMainTab::OnAddExistingImage)
 		EVT_BUTTON(XRCID("ImageRemove"), ProjectMainTab::OnRemoveImages)
+		EVT_BUTTON(XRCID("CopyLaunchCommandLine"), ProjectMainTab::OnCopyStartCommandline)
 		EVT_LIST_ITEM_ACTIVATED(XRCID("ImageList"), ProjectMainTab::OnShowImageDetails)
 		EVT_TOOL(XRCID("openLog"), ProjectMainTab::OnShowLog)
 		EVT_TOOL(XRCID("codeBuild"), ProjectMainTab::OnCodeBuild)
@@ -379,6 +380,62 @@ namespace tools
 		}
 	}
 
+	const bool ProjectMainTab::GetStartCommandline(wxString& outCommandLine)
+	{
+		// get the project launcher from the platform
+		const auto launcherPath = GetProjectLauncherExecutable(*GetProject()->GetPlatform());
+		if (!wxFileExists(launcherPath))
+		{
+			wxMessageBox(wxT("Unable to locate launcher for current platform"), wxT("Run project"), wxICON_ERROR, 0);
+			GetProjectWindow()->GetApp()->GetLogWindow().Error("Project: Launcher '%ls' not found", launcherPath.wc_str());
+			return false;
+		}
+
+		// format the command line
+		wxString commandLine = launcherPath;
+		commandLine += " ";
+
+		// bind file system
+		const auto projectDirectory = GetProject()->GetProjectDirectory();
+		commandLine += "-fsroot=\"" + EscapePath(projectDirectory) += "\" ";
+
+		// add the images to run
+		bool hasAppImages = false;
+		const auto& images = GetProject()->GetImages();
+		for (const auto& img : images)
+		{
+			if (!img->CanRun())
+			{
+				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will not be loaded", img->GetDisplayName().c_str());
+				continue;
+			}
+
+			commandLine += "-image=\"" + EscapePath(img->GetFullPathToCompiledBinary()) + "\" ";
+
+			if (img->GetSettings().m_imageType == ProjectImageType::Application)
+			{
+				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will be loaded as application", img->GetDisplayName().c_str());
+				hasAppImages = true;
+			}
+			else
+			{
+				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will be loaded as dynamic library", img->GetDisplayName().c_str());
+			}
+		}
+
+		// no apps to run
+		if (!hasAppImages)
+		{
+			wxMessageBox(wxT("There are no applications to run in current project"), wxT("Run project"), wxICON_ERROR, 0);
+			GetProjectWindow()->GetApp()->GetLogWindow().Error("Project: No applications to run in current project");
+			return false;
+		}
+
+		// valid command line
+		outCommandLine = commandLine;
+		return true;
+	}
+
 	const bool ProjectMainTab::StartProject(const wxString& extraCommandLine)
 	{
 		// kill existing project
@@ -420,54 +477,16 @@ namespace tools
 			}
 		}
 
-		// get the project launcher from the platform
-		const auto launcherPath = GetProjectLauncherExecutable(*GetProject()->GetPlatform());
-		if (!wxFileExists(launcherPath))
-		{
-			wxMessageBox(wxT("Unable to locate launcher for current platform"), wxT("Run project"), wxICON_ERROR, 0);
-			GetProjectWindow()->GetApp()->GetLogWindow().Error("Project: Launcher '%ls' not found", launcherPath.wc_str());
+		// get the commandline to execute
+		wxString commandLine;
+		if (!GetStartCommandline(commandLine))
 			return false;
-		}
 
-		// format the command line
-		wxString commandLine = launcherPath;
-		commandLine += extraCommandLine;
-		commandLine += " ";
-
-		// bind file system
-		const auto projectDirectory = GetProject()->GetProjectDirectory();
-		commandLine += "-fsroot=\"" + EscapePath(projectDirectory) += "\" ";
-
-		// add the images to run
-		bool hasAppImages = false;
-		const auto& images = GetProject()->GetImages();
-		for (const auto& img : images)
+		// add extra options
+		if (!extraCommandLine.empty())
 		{
-			if (!img->CanRun())
-			{
-				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will not be loaded", img->GetDisplayName().c_str());
-				continue;
-			}
-
-			commandLine += "-image=\"" + EscapePath(img->GetFullPathToCompiledBinary()) + "\" ";
-
-			if (img->GetSettings().m_imageType == ProjectImageType::Application)
-			{ 
-				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will be loaded as application", img->GetDisplayName().c_str());
-				hasAppImages = true;
-			}
-			else
-			{
-				GetProjectWindow()->GetApp()->GetLogWindow().Log("Project: Image '%hs' will be loaded as dynamic library", img->GetDisplayName().c_str());
-			}
-		}
-
-		// no apps to run
-		if (!hasAppImages)
-		{
-			wxMessageBox(wxT("There are no applications to run in current project"), wxT("Run project"), wxICON_ERROR, 0);
-			GetProjectWindow()->GetApp()->GetLogWindow().Error("Project: No applications to run in current project");
-			return false;
+			commandLine += " ";
+			commandLine += extraCommandLine;
 		}
 
 		// start the application executable
@@ -548,6 +567,23 @@ namespace tools
 		extraCommandLine += EscapePath(traceFullPath);
 		extraCommandLine += "\" ";
 		StartProject(extraCommandLine);
+	}
+
+
+	void ProjectMainTab::OnCopyStartCommandline(wxCommandEvent& evt)
+	{
+		wxString commandLine;
+		if (GetStartCommandline(commandLine))
+		{
+			wxClipboard *clip = new wxClipboard();
+			if (clip->Open())
+			{
+				clip->Clear();
+				clip->SetData(new wxTextDataObject(commandLine));
+				clip->Flush();
+				clip->Close();
+			}
+		}
 	}
 
 	void ProjectMainTab::OnLoadTrace(wxCommandEvent& evt)
