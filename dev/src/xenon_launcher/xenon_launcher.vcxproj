@@ -106,6 +106,7 @@
     <ClCompile Include="dx11Utils.cpp" />
     <ClInclude Include="build.h" />
     <ClCompile Include="xenonAudio.cpp" />
+    <ClCompile Include="xenonBindings.cpp" />
     <ClCompile Include="xenonCPU.cpp" />
     <ClCompile Include="xenonCPUDevice.cpp" />
     <ClCompile Include="xenonInplaceExecution.cpp" />
@@ -133,6 +134,7 @@
     <ClCompile Include="xenonLibConfig.cpp" />
     <ClCompile Include="xenonLibCRT.cpp" />
     <ClCompile Include="xenonLibDebug.cpp" />
+    <ClCompile Include="xenonLibErrors.cpp" />
     <ClCompile Include="xenonLibFiles.cpp" />
     <ClCompile Include="xenonLibInput.cpp" />
     <ClCompile Include="xenonLibNatives.cpp" />
@@ -177,6 +179,7 @@
     <ClInclude Include="dx11Utils.h" />
     <ClInclude Include="shaders\edramCommon.h" />
     <ClInclude Include="xenonAudio.h" />
+    <ClInclude Include="xenonBindings.h" />
     <ClInclude Include="xenonCPUDevice.h" />
     <ClInclude Include="xenonInplaceExecution.h" />
     <ClInclude Include="xenonGPUAbstractLayer.h" />

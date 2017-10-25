@@ -1,6 +1,7 @@
 #include "build.h"
 #include "xenonLibNatives.h" 
 #include "xenonLib.h"  
+#include "xenonBindings.h"
 
 namespace xenon
 {
@@ -8,8 +9,22 @@ namespace xenon
 	{
 
 		///------------------
+		
+		struct ConfigSettings
+		{
+			char OnlineNetworkID[4]; //??key 0x6 4 bytes?? key 0x8 4 bytes?? NOT SURE WHICH, 0x8 or 0x6
+			uint8 MACAddress[6]; // key 0x1 6 bytes
+			uint32 AVRegion; // key 0x2 4 bytes - 00 00 10 00 can/usa
+			uint16 GameRegion; // key 0x3 2 bytes - 0x00FF can/usa
+			uint32 DVDRegion;// key 0x4 4 bytes - 0x00000001 can/usa
+			uint32 ResetKey;// key 0x5 4 bytes
+			uint32 SystemFlags;// ??key 0x6 4 bytes?? key 0x8 4 bytes?? NOT SURE WHICH, 0x8 or 0x6
+			xnative::XCONFIG_POWER_MODE PowerMode;// key 0x07 2 bytes
+			xnative::XCONFIG_POWER_VCS_CONTROL PowerVcsControl;// key 0x9 2 bytes
+			uint32 VideoMode;
+		};
 
-		xnative::XCONFIG_SECURED_SETTINGS GConfig;
+		ConfigSettings GConfig;
 
 		void InitConfig()
 		{
@@ -24,61 +39,49 @@ namespace xenon
 			GConfig.MACAddress[4] = 0xCA;
 			GConfig.MACAddress[5] = 0x16;
 			GConfig.DVDRegion = 1; // CAN/US
+			GConfig.VideoMode = 7;
 		}
 
 		///------------------
 
 		template< typename T >
-		static inline uint32 ExtractSetting(T value, cpu::CpuRegs& regs)
+		static HRESULT ExtractSetting(T value, MemoryAddress outputBufPtr, uint32_t outputBuffSize, Pointer<uint16> settingSizePtr)
 		{
-			auto outputPtr = Pointer<T>(regs.R5);
-			const uint32 outputBufSize = (uint32)regs.R6;
-			auto settingSizePtr = Pointer<uint16>(regs.R7);
-
 			// no buffer, extract size
-			if (!outputPtr.IsValid())
+			if (!outputBufPtr.IsValid())
 			{
 				// no size ptr :(
 				if (!settingSizePtr.IsValid())
-					RETURN_ARG(ERROR_INVALID_DATA);
+					return ERROR_INVALID_DATA;
 
 				*settingSizePtr = (uint16)sizeof(T);
-				RETURN_ARG(0);
+				return 0;
 			}
 
 			// buffer to small
-			if (outputBufSize < sizeof(T))
-				RETURN_ARG(ERROR_INVALID_DATA);
+			if (outputBuffSize < sizeof(T))
+				return ERROR_INVALID_DATA;
 
 			// output value
-			*outputPtr = value;
+			*Pointer<T>(outputBufPtr) = value;
 
 			// output size
 			if (settingSizePtr.IsValid())
 				*settingSizePtr = (uint16)sizeof(T);
 
 			// valid
-			RETURN_ARG(0);
+			return 0;
 		}
 
 		// HRESULT __stdcall ExGetXConfigSetting(u16 categoryNum, u16 settingNum, void* outputBuff, s32 outputBuffSize, u16* settingSize);
-		uint64 __fastcall Xbox_ExGetXConfigSetting(uint64 ip, cpu::CpuRegs& regs)
+		HRESULT Xbox_ExGetXConfigSetting(uint16_t categoryNum, uint16_t settingNum, MemoryAddress outputBufPtr, uint32_t outputBuffSize, Pointer<uint16> settingSizePtr)
 		{
-			const auto categoryNum = (uint16)regs.R3;
-			const auto settingNum = (uint16)regs.R4;
-			const auto outputAddress = (uint32)(regs.R5);
-			const auto outputBufSize = (uint32)regs.R6;
-			auto settingSizePtr = Pointer<uint16>(regs.R7);
-
 			// invalid category num
 			if (categoryNum >= xnative::XCONFIG_CATEGORY_MAX)
 			{
-				GLog.Log("XConfig: invalid category id(%d)");
-				RETURN_ARG(-1);
+				GLog.Warn("XConfig: invalid category id(%d)");
+				return -1;
 			}
-
-			// category type
-			GLog.Log("XConfig: Category type '%s' (%d)", xnative::XConfigNames[categoryNum], categoryNum);
 
 			// extract the setting
 			switch (categoryNum)
@@ -87,17 +90,32 @@ namespace xenon
 				{
 					switch (settingNum)
 					{
-						//case XCONFIG_SECURED_DATA:
-						case xnative::XCONFIG_SECURED_MAC_ADDRESS: return ExtractSetting(GConfig.MACAddress, regs);
-						case xnative::XCONFIG_SECURED_AV_REGION: return ExtractSetting(GConfig.AVRegion, regs);
-						case xnative::XCONFIG_SECURED_GAME_REGION: return ExtractSetting(GConfig.GameRegion, regs);
-						case xnative::XCONFIG_SECURED_DVD_REGION: return ExtractSetting(GConfig.DVDRegion, regs);
-						case xnative::XCONFIG_SECURED_RESET_KEY: return ExtractSetting(GConfig.ResetKey, regs);
-						case xnative::XCONFIG_SECURED_SYSTEM_FLAGS: return ExtractSetting(GConfig.SystemFlags, regs);
-						case xnative::XCONFIG_SECURED_POWER_MODE: return ExtractSetting(GConfig.PowerMode, regs);
-						case xnative::XCONFIG_SECURED_ONLINE_NETWORK_ID: return ExtractSetting(GConfig.OnlineNetworkID, regs);
-						case xnative::XCONFIG_SECURED_POWER_VCS_CONTROL: return ExtractSetting(GConfig.PowerVcsControl, regs);
-						default: break;
+						case xnative::XCONFIG_SECURED_MAC_ADDRESS: 
+							return ExtractSetting(GConfig.MACAddress, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_AV_REGION: 
+							return ExtractSetting(GConfig.AVRegion, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_GAME_REGION: 
+							return ExtractSetting(GConfig.GameRegion, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_DVD_REGION: 
+							return ExtractSetting(GConfig.DVDRegion, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_RESET_KEY: 
+							return ExtractSetting(GConfig.ResetKey, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_SYSTEM_FLAGS: 
+							return ExtractSetting(GConfig.SystemFlags, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_POWER_MODE: 
+							return ExtractSetting(GConfig.PowerMode, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_ONLINE_NETWORK_ID: 
+							return ExtractSetting(GConfig.OnlineNetworkID, outputBufPtr, outputBuffSize, settingSizePtr);
+
+						case xnative::XCONFIG_SECURED_POWER_VCS_CONTROL: 
+							return ExtractSetting(GConfig.PowerVcsControl, outputBufPtr, outputBuffSize, settingSizePtr);
 					}
 
 					break;
@@ -107,21 +125,19 @@ namespace xenon
 				{
 					switch (settingNum)
 					{
-						case xnative::XCONFIG_USER_VIDEO_FLAGS: return ExtractSetting((uint32)0x7, regs);
+						case xnative::XCONFIG_USER_VIDEO_FLAGS: 
+							return ExtractSetting(GConfig.VideoMode, outputBufPtr, outputBuffSize, settingSizePtr);
 					}
-				}
-
-				default:
 					break;
+				}
 			}
 
-			// invalid config settings
-			RETURN_ARG(ERROR_INVALID_DATA);
+			return ERROR_INVALID_DATA;
 		}
 
 		void RegisterXboxConfig(runtime::Symbols& symbols)
 		{
-			REGISTER_RAW(ExGetXConfigSetting);
+			REGISTER(ExGetXConfigSetting);
 		}
 
 	} // lib

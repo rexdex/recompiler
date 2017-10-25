@@ -2,6 +2,8 @@
 #include "xenonLib.h"  
 #include "xenonLibNatives.h"
 #include "xenonThread.h"
+#include "xenonMemory.h"
+#include "xenonBindings.h"
 
 namespace xenon
 { 
@@ -10,54 +12,59 @@ namespace xenon
 
 		//---------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_DbgBreakPoint( uint64 ip, cpu::CpuRegs& regs )
+		void Xbox_DbgBreakPoint()
 		{
 			GLog.Log( "DbgBreakPoint()" );
-			DebugBreak();
-			RETURN();
+			DebugBreak();			
+		}
+		
+		xnative::X_STATUS Xbox_DmAbortProfiling()
+		{
+			return xnative::X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_RtlUnwind( uint64 ip, cpu::CpuRegs& regs )
+		xnative::X_STATUS Xbox_DmAddUser(Pointer<char> userName, uint32_t accessLevel)
 		{
-			RETURN_DEFAULT();
+			return xnative::X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_RtlUnwind2( uint64 ip, cpu::CpuRegs& regs )
+		MemoryAddress Xbox_DmAllocatePool(uint32_t numBytes)
 		{
-			RETURN_DEFAULT();
+			return GPlatform.GetMemory().AllocateSmallBlock(numBytes);
 		}
 
-		uint64 __fastcall Xbox_DmAbortProfiling(uint64 ip, cpu::CpuRegs& regs)
+		MemoryAddress Xbox_DmAllocatePoolWithTag(uint32_t numBytes, uint32_t tag)
 		{
-			RETURN_ARG(0);
+			return GPlatform.GetMemory().AllocateSmallBlock(numBytes);
 		}
 
-		uint64 __fastcall Xbox_DmAddUser(uint64 ip, cpu::CpuRegs& regs)
+		xnative::X_STATUS Xbox_DmCaptureStackBackTrace(uint32_t numFrames, Pointer<uint32_t> callStack)
 		{
-			RETURN_ARG(0);
-		}
-
-		uint64 __fastcall Xbox_DmAllocatePool(uint64 ip, cpu::CpuRegs& regs)
-		{
-			const uint32 size = (uint32)regs.R3;
-			RETURN_ARG(0);
-		}
-
-		uint64 __fastcall Xbox_DmAllocatePoolWithTag(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_ARG(0);
+			return xnative::X_STATUS_UNSUCCESSFUL;
 		}
 
 		void RegisterXboxDebug(runtime::Symbols& symbols)
 		{
-			REGISTER_RAW(DbgBreakPoint);
-			REGISTER_RAW(RtlUnwind);
-			REGISTER_RAW(RtlUnwind2);
-			REGISTER_RAW(DmAbortProfiling);
-			REGISTER_RAW(DmAddUser);
-			REGISTER_RAW(DmAllocatePool);
-			REGISTER_RAW(DmAllocatePoolWithTag);
-	}
+			REGISTER(DbgBreakPoint);
+			REGISTER(DmAbortProfiling);
+			REGISTER(DmAddUser);
+			REGISTER(DmAllocatePool);
+			REGISTER(DmAllocatePoolWithTag);
+
+			NOT_IMPLEMENTED(RtlUnwind);
+			NOT_IMPLEMENTED(RtlUnwind2);
+			NOT_IMPLEMENTED(DmAutomationBindController);
+			NOT_IMPLEMENTED(DmAutomationClearGamepadQueue);
+			NOT_IMPLEMENTED(DmAutomationConnectController);
+			NOT_IMPLEMENTED(DmAutomationDisconnectController);
+			NOT_IMPLEMENTED(DmAutomationGetInputProcess);
+			NOT_IMPLEMENTED(DmAutomationGetUserDefaultProfile);
+			NOT_IMPLEMENTED(DmAutomationQueryGamepadQueue);
+			NOT_IMPLEMENTED(DmAutomationQueueGamepadState);
+			NOT_IMPLEMENTED(DmAutomationSetGamepadState);
+			NOT_IMPLEMENTED(DmAutomationSetUserDefaultProfile);
+			NOT_IMPLEMENTED(DmAutomationUnbindController);
+		}
 
 		//---------------------------------------------------------------------------
 

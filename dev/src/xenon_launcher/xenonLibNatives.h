@@ -6,6 +6,10 @@
 
 namespace xenon
 {
+	namespace lib
+	{
+		typedef uint64 HRESULT;
+	}
 
 	// Native structures and values used on xenon
 	namespace xnative
@@ -314,28 +318,7 @@ namespace xenon
 			uint16 Quiet : 4;
 			uint16 Fuse : 4;
 		};
-
-
-
-		struct XCONFIG_SECURED_SETTINGS
-		{
-			Field<uint32> Checksum; //0
-			Field<uint32> Version; //4
-			char OnlineNetworkID[4]; //??key 0x6 4 bytes?? key 0x8 4 bytes?? NOT SURE WHICH, 0x8 or 0x6
-			char Reserved1[8]; //12
-			char Reserved2[12]; //20
-			uint8 MACAddress[6]; // key 0x1 6 bytes
-			char Reserved3[2]; //38
-			Field<uint32> AVRegion; // key 0x2 4 bytes - 00 00 10 00 can/usa
-			Field<uint16> GameRegion; // key 0x3 2 bytes - 0x00FF can/usa
-			char Reserved4[6];//46
-			Field<uint32> DVDRegion;// key 0x4 4 bytes - 0x00000001 can/usa
-			Field<uint32> ResetKey;// key 0x5 4 bytes
-			Field<uint32> SystemFlags;// ??key 0x6 4 bytes?? key 0x8 4 bytes?? NOT SURE WHICH, 0x8 or 0x6
-			Field<XCONFIG_POWER_MODE> PowerMode;// key 0x07 2 bytes
-			Field<XCONFIG_POWER_VCS_CONTROL> PowerVcsControl;// key 0x9 2 bytes
-			char ReservedRegion[444];//68
-		};
+		
 
 		// http://www.nirsoft.net/kernel_struct/vista/DISPATCHER_HEADER.html
 		// http://www.nirsoft.net/kernel_struct/vista/KEVENT.html
@@ -431,6 +414,38 @@ namespace xenon
 #pragma pack(pop)
 
 		static_assert(sizeof(X_ANSI_STRING) == 8, "Size error");
+
+#pragma pack(push)
+#pragma pack(4)
+		class X_UNICODE_STRING
+		{
+		public:
+			Field<uint16>	Length;
+			Field<uint16>	MaximumLength;
+			Field<Pointer<wchar_t>> BufferPtr;
+
+			inline X_UNICODE_STRING()
+			{
+				Length = 0;
+				MaximumLength = 0;
+				BufferPtr = nullptr;
+			}
+
+			inline std::wstring Duplicate() const
+			{
+				if (BufferPtr == nullptr || Length == 0)
+					return L"";
+
+				std::wstring ret;
+				ret.resize(Length);
+
+				for (uint32 i = 0; i < Length; ++i)
+					ret[i] = BufferPtr.AsData().Get()[i];
+
+				return ret;
+			}
+		};
+#pragma pack(pop)
 
 		class X_OBJECT_ATTRIBUTES
 		{

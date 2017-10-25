@@ -6,9 +6,9 @@
 /// Known registers
 enum class XenonGPURegister : uint32
 {
-#define DECLARE_XENON_GPU_REGISTER_RAW(index, type, name) REG_##name = index,
+#define DECLARE_XENON_GPU_REGISTER(index, type, name) REG_##name = index,
 #include "xenonGPURegisterMap.h"
-#undef DECLARE_XENON_GPU_REGISTER_RAW	
+#undef DECLARE_XENON_GPU_REGISTER	
 };
 
 /// GPU Register map

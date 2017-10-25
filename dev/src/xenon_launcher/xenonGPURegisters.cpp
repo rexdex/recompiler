@@ -39,9 +39,9 @@ const CXenonGPURegisters::Info& CXenonGPURegisters::GetInfo( const uint32 index 
 	// initialize REG INFO table
 	if ( !RegInfoInitialized )
 	{
-#define DECLARE_XENON_GPU_REGISTER_RAW(index, type, name) RegInfo[index].m_type = type; RegInfo[index].m_name = #name;
+#define DECLARE_XENON_GPU_REGISTER(index, type, name) RegInfo[index].m_type = type; RegInfo[index].m_name = #name;
 #include "xenonGPURegisterMap.h"
-#undef DECLARE_XENON_GPU_REGISTER_RAW
+#undef DECLARE_XENON_GPU_REGISTER
 
 		RegInfoInitialized = true;
 	}

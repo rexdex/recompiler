@@ -183,6 +183,10 @@
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="xenonLib.cpp" />
+    <ClCompile Include="xenonBindings.cpp" />
+    <ClCompile Include="xenonLibErrors.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="xenonLibNatives.h">
@@ -363,6 +367,7 @@
       <Filter>devices\audio</Filter>
     </ClInclude>
     <ClInclude Include="xenonLib.h" />
+    <ClInclude Include="xenonBindings.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">

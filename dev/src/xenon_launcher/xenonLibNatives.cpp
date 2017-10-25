@@ -3,6 +3,7 @@
 #include "xenonLib.h"  
 #include "xenonPlatform.h"
 #include "xenonMemory.h"
+#include "xenonBindings.h"
 
 //---------------------------------------------------------------------------
 

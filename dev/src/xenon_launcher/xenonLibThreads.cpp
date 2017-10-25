@@ -4,6 +4,7 @@
 #include "xenonThread.h"
 #include "xenonKernel.h"
 #include "xenonPlatform.h"
+#include "xenonBindings.h"
 
 namespace xenon
 {
@@ -720,7 +721,7 @@ namespace xenon
 			const auto ptr = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
 			DEBUG_CHECK(ptr.IsValid());
 
-			const uint32 ptrAddr = ptr.GetAddress();
+			const auto ptrAddr = ptr.GetAddress();
 			const uint32 kernelMarker = ptr->Synchronization.RawEvent[0];
 			if (ptrAddr >= 0x82000000)
 			{
@@ -748,64 +749,64 @@ namespace xenon
 
 		void RegisterXboxThreads(runtime::Symbols& symbols)
 		{
-			REGISTER_RAW(NtClose);
+			REGISTER(NtClose);
 
-			REGISTER_RAW(RtlInitializeCriticalSection);
-			REGISTER_RAW(RtlInitializeCriticalSectionAndSpinCount);
-			REGISTER_RAW(RtlDeleteCriticalSection);
-			REGISTER_RAW(RtlEnterCriticalSection);
-			REGISTER_RAW(RtlLeaveCriticalSection);
+			REGISTER(RtlInitializeCriticalSection);
+			REGISTER(RtlInitializeCriticalSectionAndSpinCount);
+			REGISTER(RtlDeleteCriticalSection);
+			REGISTER(RtlEnterCriticalSection);
+			REGISTER(RtlLeaveCriticalSection);
 
-			REGISTER_RAW(KeTlsAlloc);
-			REGISTER_RAW(KeTlsFree);
-			REGISTER_RAW(KeTlsGetValue);
-			REGISTER_RAW(KeTlsSetValue);
+			REGISTER(KeTlsAlloc);
+			REGISTER(KeTlsFree);
+			REGISTER(KeTlsGetValue);
+			REGISTER(KeTlsSetValue);
 
-			REGISTER_RAW(ExCreateThread);
-			REGISTER_RAW(ExTerminateThread);
-			REGISTER_RAW(NtResumeThread);
-			REGISTER_RAW(KeResumeThread);
-			REGISTER_RAW(NtSuspendThread);
-			REGISTER_RAW(KeSetAffinityThread);
-			REGISTER_RAW(KeQueryBasePriorityThread);
-			REGISTER_RAW(KeSetBasePriorityThread);
-			REGISTER_RAW(KeDelayExecutionThread);
-			REGISTER_RAW(NtYieldExecution);
-			REGISTER_RAW(KeQuerySystemTime);
+			REGISTER(ExCreateThread);
+			REGISTER(ExTerminateThread);
+			REGISTER(NtResumeThread);
+			REGISTER(KeResumeThread);
+			REGISTER(NtSuspendThread);
+			REGISTER(KeSetAffinityThread);
+			REGISTER(KeQueryBasePriorityThread);
+			REGISTER(KeSetBasePriorityThread);
+			REGISTER(KeDelayExecutionThread);
+			REGISTER(NtYieldExecution);
+			REGISTER(KeQuerySystemTime);
 
-			REGISTER_RAW(NtCreateEvent);
-			REGISTER_RAW(KeSetEvent);
-			REGISTER_RAW(NtSetEvent);
-			REGISTER_RAW(KePulseEvent);
-			REGISTER_RAW(NtPulseEvent);
-			REGISTER_RAW(KeResetEvent);
-			REGISTER_RAW(NtClearEvent);
+			REGISTER(NtCreateEvent);
+			REGISTER(KeSetEvent);
+			REGISTER(NtSetEvent);
+			REGISTER(KePulseEvent);
+			REGISTER(NtPulseEvent);
+			REGISTER(KeResetEvent);
+			REGISTER(NtClearEvent);
 
-			REGISTER_RAW(NtCreateSemaphore);
-			REGISTER_RAW(KeInitializeSemaphore);
-			REGISTER_RAW(KeReleaseSemaphore);
-			REGISTER_RAW(NtReleaseSemaphore);
-			REGISTER_RAW(NtCreateMutant);
-			REGISTER_RAW(NtReleaseMutant);
-			REGISTER_RAW(NtCreateTimer);
-			REGISTER_RAW(NtSetTimerEx);
-			REGISTER_RAW(NtCancelTimer);
-			REGISTER_RAW(KeWaitForSingleObject);
-			REGISTER_RAW(NtWaitForSingleObjectEx);
-			REGISTER_RAW(KeWaitForMultipleObjects);
-			REGISTER_RAW(NtWaitForMultipleObjectsEx);
-			REGISTER_RAW(NtSignalAndWaitForSingleObjectEx);
-			REGISTER_RAW(KfAcquireSpinLock);
-			REGISTER_RAW(KfReleaseSpinLock);
-			REGISTER_RAW(KeAcquireSpinLockAtRaisedIrql);
-			REGISTER_RAW(KeReleaseSpinLockFromRaisedIrql);
-			REGISTER_RAW(KeEnterCriticalRegion);
-			REGISTER_RAW(KeLeaveCriticalRegion);
-			REGISTER_RAW(NtQueueApcThread);
-			REGISTER_RAW(KeInitializeApc);
-			REGISTER_RAW(KeInsertQueueApc);
-			REGISTER_RAW(KeRemoveQueueApc);
-			REGISTER_RAW(KiApcNormalRoutineNop);
+			REGISTER(NtCreateSemaphore);
+			REGISTER(KeInitializeSemaphore);
+			REGISTER(KeReleaseSemaphore);
+			REGISTER(NtReleaseSemaphore);
+			REGISTER(NtCreateMutant);
+			REGISTER(NtReleaseMutant);
+			REGISTER(NtCreateTimer);
+			REGISTER(NtSetTimerEx);
+			REGISTER(NtCancelTimer);
+			REGISTER(KeWaitForSingleObject);
+			REGISTER(NtWaitForSingleObjectEx);
+			REGISTER(KeWaitForMultipleObjects);
+			REGISTER(NtWaitForMultipleObjectsEx);
+			REGISTER(NtSignalAndWaitForSingleObjectEx);
+			REGISTER(KfAcquireSpinLock);
+			REGISTER(KfReleaseSpinLock);
+			REGISTER(KeAcquireSpinLockAtRaisedIrql);
+			REGISTER(KeReleaseSpinLockFromRaisedIrql);
+			REGISTER(KeEnterCriticalRegion);
+			REGISTER(KeLeaveCriticalRegion);
+			REGISTER(NtQueueApcThread);
+			REGISTER(KeInitializeApc);
+			REGISTER(KeInsertQueueApc);
+			REGISTER(KeRemoveQueueApc);
+			REGISTER(KiApcNormalRoutineNop);
 		}
 
 	} // lib

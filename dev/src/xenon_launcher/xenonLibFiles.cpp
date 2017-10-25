@@ -3,6 +3,7 @@
 #include "xenonFileSystem.h"
 #include "xenonKernel.h"
 #include "xenonPlatform.h"
+#include "xenonBindings.h"
 
 namespace xenon
 {
@@ -84,11 +85,11 @@ namespace xenon
 
 		uint64 __fastcall Xbox_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
 		{
-			uint32 handle_ptr = (const uint32)regs.R3;
+			MemoryAddress handle_ptr = (const uint32)regs.R3;
 			uint32 desired_access = (const uint32)regs.R4;
-			uint32 object_attributes_ptr = (const uint32)regs.R5;
-			uint32 io_status_block_ptr = (const uint32)regs.R6;
-			uint32 allocation_size_ptr = (const uint32)regs.R7;
+			MemoryAddress object_attributes_ptr = (const uint32)regs.R5;
+			MemoryAddress io_status_block_ptr = (const uint32)regs.R6;
+			MemoryAddress allocation_size_ptr = (const uint32)regs.R7;
 			uint32 file_attributes = (const uint32)regs.R8;
 			uint32 share_access = (const uint32)regs.R9;
 			uint32 creation_disposition = (const uint32)regs.R10;
@@ -100,13 +101,13 @@ namespace xenon
 
 		uint64 __fastcall Xbox_NtOpenFile(uint64 ip, cpu::CpuRegs& regs)
 		{
-			uint32 handle_ptr = (const uint32)regs.R3;
+			MemoryAddress handle_ptr = (const uint32)regs.R3;
 			uint32 desired_access = (const uint32)regs.R4;
-			uint32 object_attributes_ptr = (const uint32)regs.R5;
-			uint32 io_status_block_ptr = (const uint32)regs.R6;
+			MemoryAddress object_attributes_ptr = (const uint32)regs.R5;
+			MemoryAddress io_status_block_ptr = (const uint32)regs.R6;
 			uint32 options = (const uint32)regs.R7;
 
-			uint32 allocation_size_ptr = 0;
+			MemoryAddress allocation_size_ptr = nullptr;
 			uint32 file_attributes = 0;
 			uint32 share_access = 0;
 			uint32 creation_disposition = (uint32)xnative::XFileMode::Open;
@@ -485,17 +486,17 @@ namespace xenon
 
 		void RegisterXboxFiles(runtime::Symbols& symbols)
 		{
-			REGISTER_RAW(NtCreateFile);
-			REGISTER_RAW(NtOpenFile);
-			REGISTER_RAW(NtReadFile);
-			REGISTER_RAW(NtWriteFile);
-			REGISTER_RAW(NtSetInformationFile);
-			REGISTER_RAW(NtQueryInformationFile);
-			REGISTER_RAW(NtQueryVolumeInformationFile);
-			REGISTER_RAW(NtQueryDirectoryFile);
-			REGISTER_RAW(NtReadFileScatter);
-			REGISTER_RAW(NtQueryFullAttributesFile);
-			REGISTER_RAW(NtFlushBuffersFile);
+			REGISTER(NtCreateFile);
+			REGISTER(NtOpenFile);
+			REGISTER(NtReadFile);
+			REGISTER(NtWriteFile);
+			REGISTER(NtSetInformationFile);
+			REGISTER(NtQueryInformationFile);
+			REGISTER(NtQueryVolumeInformationFile);
+			REGISTER(NtQueryDirectoryFile);
+			REGISTER(NtReadFileScatter);
+			REGISTER(NtQueryFullAttributesFile);
+			REGISTER(NtFlushBuffersFile);
 		}
 
 	} // lib

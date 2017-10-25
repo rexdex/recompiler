@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../host_core/runtimeSymbols.h"
+
 #define RETURN() return (uint32)regs.LR; // return from native function
 #define RETURN_ARG(arg) { regs.R3 = arg; return (uint32)regs.LR; } 
 #define RETURN_DEFAULT() { GLog.Warn( "Visited empty function '%s'", __FUNCTION__ ); regs.R3 = 0; return (uint32)regs.LR; } 
@@ -121,6 +123,109 @@ namespace xenon
 
 	//----
 
+	// memory address, can be casted to any pointer
+	struct MemoryAddress
+	{
+	public:
+		inline MemoryAddress()
+			: m_address(0)
+		{}
+
+		template< typename T >
+		inline MemoryAddress(T* ptr)
+			: m_address(0)
+		{
+			// when initializing from normal pointer we MUST make sure it fits in 32-bits
+			const uint64_t address = (uint64_t)ptr;
+			DEBUG_CHECK(address <= 0xFFFFFFFF);
+			m_address = (uint32_t)address;
+		}
+
+		inline MemoryAddress(const uint64_t addr)
+			: m_address((uint32_t)addr)
+		{}
+
+		inline MemoryAddress(nullptr_t)
+			: m_address(0)
+		{}
+
+		inline const bool IsValid() const
+		{
+			return m_address != 0;
+		}
+
+		inline const uint32 GetAddressValue() const
+		{
+			return m_address;
+		}
+
+		inline void* GetNativePointer() const
+		{
+			return (void*)(uint64_t)m_address;
+		}
+
+		inline ptrdiff_t operator-(const MemoryAddress& other) const
+		{
+			return (ptrdiff_t)m_address - (ptrdiff_t)other.m_address;
+		}
+
+		inline MemoryAddress operator+(const int64_t index) const
+		{
+			return MemoryAddress((uint32)(m_address + index));
+		}
+
+		inline MemoryAddress operator-(const int64_t index) const
+		{
+			return MemoryAddress((uint32)(m_address - index));
+		}
+
+		inline MemoryAddress& operator+=(const int64_t index)
+		{
+			m_address = (uint32)(m_address + index);
+			return *this;
+		}
+
+		inline MemoryAddress& operator-=(const int64_t index)
+		{
+			m_address = (uint32)(m_address - index);
+			return *this;
+		}
+
+		inline const bool operator==(const MemoryAddress& other) const
+		{
+			return m_address == other.m_address;
+		}
+
+		inline const bool operator!=(const MemoryAddress& other) const
+		{
+			return m_address != other.m_address;
+		}
+
+		inline const bool operator<(const MemoryAddress& other) const
+		{
+			return m_address < other.m_address;
+		}
+
+		inline const bool operator>(const MemoryAddress& other) const
+		{
+			return m_address > other.m_address;
+		}
+
+		inline const bool operator<=(const MemoryAddress& other) const
+		{
+			return m_address <= other.m_address;
+		}
+
+		inline const bool operator>=(const MemoryAddress& other) const
+		{
+			return m_address >= other.m_address;
+		}
+
+	private:
+		uint32_t m_address;
+	};
+
+
 	// native value wrapper
 	template<typename T>
 	struct DataInMemory
@@ -129,35 +234,35 @@ namespace xenon
 			: m_address(0)
 		{}
 
-		inline DataInMemory(const uint32 address)
+		inline DataInMemory(const MemoryAddress address)
 			: m_address(address)
 		{}
 
-		inline const uint32 GetAddress() const
+		inline const MemoryAddress GetAddress() const
 		{
 			return m_address;
 		}
 
 		inline T Get() const
 		{
-			return DataMemoryAccess<T>::Read((void*)m_address);
+			return DataMemoryAccess<T>::Read(m_address.GetNativePointer());
 		}
 
 		inline operator T() const
 		{
-			DEBUG_CHECK(m_address != 0);
-			return DataMemoryAccess<T>::Read((void*)m_address);
+			DEBUG_CHECK(m_address.IsValid());
+			return DataMemoryAccess<T>::Read(m_address.GetNativePointer());
 		}
 
 		inline DataInMemory<T>& operator=(const T& value)
 		{
-			DEBUG_CHECK(m_address != 0);
-			DataMemoryAccess<T>::Write((void*)m_address, value);
+			DEBUG_CHECK(m_address.IsValid());
+			DataMemoryAccess<T>::Write(m_address.GetNativePointer(), value);
 			return *this;
 		}
 
 	private:
-		uint32 m_address;
+		MemoryAddress m_address;
 	};
 
 	// wrapper for memory pointer of given type
@@ -165,30 +270,28 @@ namespace xenon
 	struct Pointer
 	{
 		inline Pointer()
-			: m_address(0)
 		{}
 
-		inline Pointer(const uint64_t address)
-			: m_address((uint32_t)address)
+		inline Pointer(const MemoryAddress address)
+			: m_address(address)
 		{}
 
 		inline Pointer(nullptr_t)
-			: m_address(0)
 		{}
 
 		inline bool IsValid() const
 		{
-			return m_address != 0;
+			return m_address.IsValid();
 		}		
 
-		inline const uint32 GetAddress() const
+		inline const MemoryAddress GetAddress() const
 		{
 			return m_address;
 		}
 
 		inline T* GetNativePointer() const
 		{
-			return (T*)GetAddress();
+			return (T*)m_address.GetNativePointer();
 		}
 
 		inline DataInMemory<T> operator*() const
@@ -198,12 +301,12 @@ namespace xenon
 
 		inline const T* operator->() const
 		{
-			return (const T*)GetAddress();
+			return GetNativePointer();
 		}
 
 		inline T* operator->()
 		{
-			return (T*)GetAddress();
+			return GetNativePointer();
 		}
 
 		inline Pointer<T> operator+(const int64_t index) const
@@ -256,7 +359,7 @@ namespace xenon
 
 		inline ptrdiff_t operator-(const Pointer<T>& other) const
 		{
-			return (ptrdiff_t)m_address - (ptrdiff_t)other.m_address;
+			return m_address - other.m_address;
 		}
 
 		inline DataInMemory<T> operator[](const uint32_t index) const
@@ -295,7 +398,7 @@ namespace xenon
 		}
 
 	private:
-		uint32 m_address;
+		MemoryAddress m_address;
 	};
 
 	template<typename T>
@@ -364,108 +467,4 @@ namespace xenon
 		T m_rawData;
 	};
 
-	//----
-
-	enum class FunctionArgumentType
-	{
-		Generic,
-		FPU,
-	};
-
-	template<typename T>
-	struct FunctionArgumentTypeSelector
-	{};
-
-	// type selector for different basic types
-	template<> struct FunctionArgumentTypeSelector<uint8_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<uint16_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<uint32_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<uint64_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<int8_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<int16_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<int32_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<int64_t> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<> struct FunctionArgumentTypeSelector<float> { const FunctionArgumentType value = FunctionArgumentType::FPU; };
-	template<> struct FunctionArgumentTypeSelector<double> { const FunctionArgumentType value = FunctionArgumentType::FPU; };
-
-	// pointer
-	template<typename T>
-	struct FunctionArgumentTypeSelector<Pointer<T>> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-	template<typename T>
-	struct FunctionArgumentTypeSelector<DataInMemory<T>> { const FunctionArgumentType value = FunctionArgumentType::Generic; };
-
-	// argument fetcher - non implemented version
-	template<FunctionArgumentType T>
-	class FunctionArgumentFetcher
-	{
-	public:
-		template< typename T >
-		static inline T Fetch(const cpu::CpuRegs& regs, const uint32_t index)
-		{
-			DEBUG_CHECK(!"Invalid argument type");
-			return T(0);
-		}
-	};
-
-	// argument fetcher - non implemented version
-	template<>
-	class FunctionArgumentFetcher<FunctionArgumentType::Generic>
-	{
-	public:
-		template< typename T >
-		static inline T Fetch(const cpu::CpuRegs& regs, const uint32_t index)
-		{
-			const auto value = &regs.R3[index];
-			DEBUG_CHECK(!"Invalid argument type");
-			return T(value);
-		}
-	};
-
-	// argument fetcher - non implemented version
-	template<>
-	class FunctionArgumentFetcher<FunctionArgumentType::FPU>
-	{
-	public:
-		template< typename T >
-		static inline T Fetch(const cpu::CpuRegs& regs, const uint32_t index)
-		{
-			const auto value = &regs.FR0[index];
-			DEBUG_CHECK(!"Invalid argument type");
-			return T(value);
-		}
-	};
-
-	// function ABI
-	class FunctionInterface
-	{
-	public:
-		FunctionInterface(const uint64 ip, const cpu::CpuRegs& regs);
-
-		// fetch argument from the stack
-		template< typename T >
-		inline T GetArgument(const uint32_t index) const
-		{
-			return FunctionArgumentFetcher<FunctionArgumentTypeSelector<T>::value>::Fetch<T>(m_regs, index);
-		}
-
-		// get current instruction pointer
-		inline const uint64 GetInstructionPointer() const
-		{
-			return m_ip;
-		}
-
-		// return from function
-
-	private:
-		const cpu::CpuRegs& m_regs;
-		const uint64 m_ip;
-	};
-
-	// function reflection binding
-	namespace binding
-	{
-	}
-
 } // xenon
-
-#define REGISTER_RAW(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &Xbox_##x);

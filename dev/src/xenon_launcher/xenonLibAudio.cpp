@@ -4,59 +4,61 @@
 #include "xenonPlatform.h"
 #include "xenonKernel.h"
 #include "xenonMemory.h"
+#include "xenonBindings.h"
 
 namespace xenon
 {
 	namespace lib
 	{
 
-		uint64 __fastcall Xbox_XAudioSubmitRenderDriverFrame(uint64 ip, cpu::CpuRegs& regs)
+		int32_t Xbox_XAudioSubmitRenderDriverFrame()
 		{
-			RETURN_DEFAULT();
+			return 0;
 		}
 
-		uint64 __fastcall Xbox_XAudioUnregisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
+		uint32 Xbox_XAudioUnregisterRenderDriverClient(uint32 callbackAddress, Pointer<uint32> outputPtr)
 		{
-			auto callbackPtr = Pointer<uint32>(regs.R3);
-			auto outputPtr = Pointer<uint32>(regs.R4);
-
 			static uint32_t index = 0;
 			++index;
 
 			const uint32_t flags = 0x41550000;
 			*outputPtr = flags | index;
-			RETURN_ARG(0);
+			return 0;
 		}
 
-		uint64 __fastcall Xbox_XAudioRegisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
+		void Xbox_XAudioRegisterRenderDriverClient()
 		{
-			RETURN_DEFAULT();
 		}
 
-		uint64 __fastcall Xbox_XAudioGetSpeakerConfig(uint64 ip, cpu::CpuRegs& regs)
+		uint32 Xbox_XAudioGetSpeakerConfig(Pointer<uint32> configPtr)
 		{
-			auto memPtr = Pointer<uint32>(regs.R3);
-			//memPtr.Set(1);
-			*memPtr = 0x00010001;
-			RETURN_ARG(0);
+			*configPtr = 0x00010001;
+			return 0;
+		}
+
+		uint32 Xbox_XAudioGetVoiceCategoryVolume(Pointer<float> volumePtr)
+		{
+			*volumePtr = 1.0f;
+			return 0;
 		}
 
 		uint64 __fastcall Xbox_XAudioGetVoiceCategoryVolume(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto memPtr = Pointer<float>(regs.R4);
-			*memPtr = 1.0f;
-			RETURN_ARG(0);
+			auto memPtrAddress = (uint32)regs.R4;
+			cpu::mem::storeAddr<float>(memPtrAddress, 1.0f);
+			regs.R3 = 0;
+			return regs.LR;
 		}
 
 		//---------------------------------------------------------------------------
 
 		void RegisterXboxAudio(runtime::Symbols& symbols)
 		{
-			REGISTER_RAW(XAudioSubmitRenderDriverFrame);
-			REGISTER_RAW(XAudioUnregisterRenderDriverClient);
-			REGISTER_RAW(XAudioRegisterRenderDriverClient);
-			REGISTER_RAW(XAudioGetVoiceCategoryVolume);
-			REGISTER_RAW(XAudioGetSpeakerConfig);
+			REGISTER(XAudioSubmitRenderDriverFrame);
+			REGISTER(XAudioUnregisterRenderDriverClient);
+			REGISTER(XAudioRegisterRenderDriverClient);
+			REGISTER(XAudioGetVoiceCategoryVolume);
+			REGISTER(XAudioGetSpeakerConfig);
 		}
 
 		//---------------------------------------------------------------------------

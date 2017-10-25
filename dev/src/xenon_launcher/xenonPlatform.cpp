@@ -36,6 +36,7 @@ namespace xenon
 		extern void RegisterXboxAudio(runtime::Symbols& symbols);
 		extern void RegisterXboxNetworking(runtime::Symbols& symbols);
 		extern void RegisterXboxConfig(runtime::Symbols& symbols);
+		extern void RegisterXboxErrors(runtime::Symbols& symbols);
 
 	} // lib
 
@@ -199,6 +200,7 @@ namespace xenon
 		lib::RegisterXboxAudio(symbols);
 		lib::RegisterXboxNetworking(symbols);
 		lib::RegisterXboxConfig(symbols);
+		lib::RegisterXboxErrors(symbols);
 
 		// register the process native data
 
