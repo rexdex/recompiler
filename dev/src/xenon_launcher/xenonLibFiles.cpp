@@ -20,14 +20,14 @@ namespace xenon
 		static const uint32_t FILE_NON_DIRECTORY_FILE = 0x00000040;
 		static const uint32_t FILE_RANDOM_ACCESS = 0x00000800;
 
-		static uint32 CreateFileImpl(Pointer<uint32> handle_ptr, uint32 desired_access, Pointer<X_OBJECT_ATTRIBUTES> object_attributes_ptr, Pointer<X_FILE_IO_STATUS> io_status_block_ptr, Pointer<uint32> allocation_size_ptr, uint32 file_attributes, uint32 share_access, uint32 creation_disposition, uint32 creation_options)
+		static X_STATUS CreateFileImpl(Pointer<uint32> outHandlePtr, uint32 acesssFlags, Pointer<X_OBJECT_ATTRIBUTES> attributesPtr, Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, Pointer<uint32> sizePtr, uint32 fileAttributes, uint32 shaderAccessFlags, uint32 creationMode, uint32 creationOptions)
 		{
-			const auto& attrs = *object_attributes_ptr.GetNativePointer();
+			const auto& attrs = *attributesPtr.GetNativePointer();
 			auto object_name = attrs.ObjectName.AsData().Get().GetNativePointer()->Duplicate();
 
 			uint64 allocation_size = 0;
-			if (allocation_size_ptr.IsValid())
-				allocation_size = *allocation_size_ptr;
+			if (sizePtr.IsValid())
+				allocation_size = *sizePtr;
 
 			xenon::FileSystemEntry* entry = NULL;
 			xenon::FileSystemEntry* rootFile = NULL;
@@ -48,7 +48,7 @@ namespace xenon
 			}
 
 			// determine file mode
-			const auto mode = (desired_access & GENERIC_WRITE) ? xenon::FileMode_ReadWrite : xenon::FileMode_ReadOnly;
+			const auto mode = (acesssFlags & GENERIC_WRITE) ? xenon::FileMode_ReadWrite : xenon::FileMode_ReadOnly;
 			X_STATUS result = X_STATUS_NO_SUCH_FILE;
 			uint32 info = X_FILE_DOES_NOT_EXIST;
 
@@ -59,8 +59,8 @@ namespace xenon
 				result = X_STATUS_SUCCESS;
 				info = X_FILE_OPENED;
 
-				if (handle_ptr.IsValid())
-					*handle_ptr = file->GetHandle();
+				if (outHandlePtr.IsValid())
+					*outHandlePtr = file->GetHandle();
 			}
 			else
 			{
@@ -68,418 +68,298 @@ namespace xenon
 				result = X_STATUS_NO_SUCH_FILE;
 				info = X_FILE_DOES_NOT_EXIST;
 
-				if (handle_ptr.IsValid())
-					*handle_ptr = 0;
+				if (outHandlePtr.IsValid())
+					*outHandlePtr = 0;
 			}
 
 			// io data
-			if (io_status_block_ptr.IsValid())
+			if (outStatusBlockPtr.IsValid())
 			{
-				io_status_block_ptr->Result = result;
-				io_status_block_ptr->Info = info;
+				outStatusBlockPtr->Result = result;
+				outStatusBlockPtr->Info = info;
 			}
 
-			// cleanup
 			return result;
 		}
 
-		uint64 __fastcall Xbox_NtCreateFile(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NtCreateFile(Pointer<uint32> outHandlePtr, uint32 desiredAccess,
+			Pointer<X_OBJECT_ATTRIBUTES> objectAttributesPtr, Pointer<X_FILE_IO_STATUS> outStatusBlockPtr,
+			Pointer<uint32> sizePtr, uint32 fileAttributes, uint32 shaderAccessFlags, uint32 creationMode)
 		{
-			MemoryAddress handle_ptr = (const uint32)regs.R3;
-			uint32 desired_access = (const uint32)regs.R4;
-			MemoryAddress object_attributes_ptr = (const uint32)regs.R5;
-			MemoryAddress io_status_block_ptr = (const uint32)regs.R6;
-			MemoryAddress allocation_size_ptr = (const uint32)regs.R7;
-			uint32 file_attributes = (const uint32)regs.R8;
-			uint32 share_access = (const uint32)regs.R9;
-			uint32 creation_disposition = (const uint32)regs.R10;
-			uint32 creation_options = 0;
-
-			const auto result = CreateFileImpl(handle_ptr, desired_access, object_attributes_ptr, io_status_block_ptr, allocation_size_ptr, file_attributes, share_access, creation_disposition, creation_options);
-			RETURN_ARG(result);
+			return CreateFileImpl(outHandlePtr, desiredAccess, objectAttributesPtr, outStatusBlockPtr, sizePtr, fileAttributes, shaderAccessFlags, creationMode, 0);
 		}
 
-		uint64 __fastcall Xbox_NtOpenFile(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NtOpenFile(Pointer<uint32> outHandlePtr, uint32 desiredAccess,
+			Pointer<X_OBJECT_ATTRIBUTES> objectAttributesPtr, Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, uint32_t creationOptions)
 		{
-			MemoryAddress handle_ptr = (const uint32)regs.R3;
-			uint32 desired_access = (const uint32)regs.R4;
-			MemoryAddress object_attributes_ptr = (const uint32)regs.R5;
-			MemoryAddress io_status_block_ptr = (const uint32)regs.R6;
-			uint32 options = (const uint32)regs.R7;
-
-			MemoryAddress allocation_size_ptr = nullptr;
-			uint32 file_attributes = 0;
-			uint32 share_access = 0;
-			uint32 creation_disposition = (uint32)XFileMode::Open;
-			uint32 creation_options = options;
-
-			const auto result = CreateFileImpl(handle_ptr, desired_access, object_attributes_ptr, io_status_block_ptr, allocation_size_ptr, file_attributes, share_access, creation_disposition, creation_options);
-			RETURN_ARG(result);
+			return CreateFileImpl(outHandlePtr, desiredAccess, objectAttributesPtr, outStatusBlockPtr, nullptr, 0, 0, 0, creationOptions);
 		}
 
-		uint64 __fastcall Xbox_NtQueryInformationFile(uint64 ip, cpu::CpuRegs& regs)
+		static X_STATUS ReturnFromIOFunction(Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, const uint32_t info, const X_STATUS result)
 		{
-			const auto file_handle = (const uint32)regs.R3;
-			auto io_status_block_ptr = Pointer<X_FILE_IO_STATUS>(regs.R4);
-			const auto file_info_address = (const uint32)(regs.R5);
-			const auto length = (const uint32)regs.R6;
-			const auto fileInfoType = (const uint32)regs.R7;
-
-			uint32 info = 0;
-			uint32 result = X_STATUS_UNSUCCESSFUL;
-
-			if (file_handle != 0)
+			if (outStatusBlockPtr.IsValid())
 			{
-				auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(file_handle, xenon::KernelObjectType::FileHandle));
-				if (file)
+				outStatusBlockPtr->Info = info;
+				outStatusBlockPtr->Result = result;
+			}
+			return result;
+		}
+
+		X_STATUS Xbox_NtQueryInformationFile(uint32_t fileHandlePtr, Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, MemoryAddress fileInfoPtr, uint32 fileInfoSize, uint32 fileInfoType)
+		{
+			if (!fileHandlePtr)
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
+
+			// resolve file object
+			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(fileHandlePtr, xenon::KernelObjectType::FileHandle));
+			if (!file)
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
+
+			// get info
+			if (fileInfoType == XFileInternalInformation)
+			{
+				DEBUG_CHECK(fileInfoSize == 8);
+
+				if (fileInfoPtr.IsValid())
+					*Pointer<uint64>(fileInfoPtr) = 0;
+
+				return ReturnFromIOFunction(outStatusBlockPtr, fileInfoSize, X_STATUS_SUCCESS);
+			} 
+			else if (fileInfoType == XFilePositionInformation)
+			{
+				DEBUG_CHECK(fileInfoSize == 8);
+
+				uint64 fileOffset = 0;
+				if (!file->GetOffset(fileOffset))
+					return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
+
+				if (fileInfoPtr.IsValid())
+					*Pointer<uint64>(fileInfoPtr) = fileOffset;
+
+				return ReturnFromIOFunction(outStatusBlockPtr, fileInfoSize, X_STATUS_SUCCESS);
+			}
+			else if (fileInfoType == XFileNetworkOpenInformation)
+			{
+				DEBUG_CHECK(fileInfoSize == 56);
+
+				X_FILE_INFO fileInfo;
+				memset(&fileInfo, 0, sizeof(fileInfo));
+				if (!file->GetInfo(fileInfo))
+					return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
+
+				if (fileInfoPtr.IsValid())
+					*Pointer<X_FILE_INFO>(fileInfoPtr) = fileInfo;
+
+				return ReturnFromIOFunction(outStatusBlockPtr, fileInfoSize, X_STATUS_SUCCESS);
+			}
+			else if (fileInfoType == XFileXctdCompressionInformation)
+			{
+				DEBUG_CHECK(fileInfoSize == 4);
+
+				uint32 magic = 0;
+				uint32 read = 0;
+				file->Read(&magic, sizeof(magic), 0, read);
+				if (read == sizeof(magic))
 				{
-					if (fileInfoType == XFileInternalInformation)
-					{
-						DEBUG_CHECK(length == 8);
-						info = 8;
+					const bool isCompressed = (magic == _byteswap_ulong(0x0FF512ED));
 
-						if (file_info_address)
-							*Pointer<uint64>(file_info_address) = 0;
+					if (fileInfoPtr.IsValid())
+						*Pointer<uint32_t>(fileInfoPtr) = isCompressed ? 1 : 0;
 
-						result = X_STATUS_SUCCESS;
-					}
-					else if (fileInfoType == XFilePositionInformation)
-					{
-						DEBUG_CHECK(length == 8);
-						info = 8;
-
-						uint64 fileOffset = 0;
-						if (file->GetOffset(fileOffset))
-						{
-							if (file_info_address)
-								*Pointer<uint64>(file_info_address) = fileOffset;
-
-							result = X_STATUS_SUCCESS;
-						}
-					}
-					else if (fileInfoType == XFileNetworkOpenInformation)
-					{
-						DEBUG_CHECK(length == 56);
-
-						X_FILE_INFO fileInfo;
-						memset(&fileInfo, 0, sizeof(fileInfo));
-						if (file->GetInfo(fileInfo))
-						{
-							if (file_info_address)
-								*Pointer<X_FILE_INFO>(file_info_address) = fileInfo;
-
-							info = 56;
-							result = X_STATUS_SUCCESS;
-						}
-					}
-					else if (fileInfoType == XFileXctdCompressionInformation)
-					{
-						if (length == 4)
-						{
-							uint32 magic;
-							uint32 read;
-							file->Read(&magic, sizeof(magic), 0, read);
-
-							if (read == sizeof(magic))
-							{
-								info = 4;
-
-								const bool isCompressed = magic == _byteswap_ulong(0x0FF512ED);
-
-								if (file_info_address)
-									*Pointer<uint32>(file_info_address) = isCompressed ? 1 : 0;
-
-								result = X_STATUS_SUCCESS;
-							}
-						}
-					}
-					else
-					{
-						GLog.Err("Unknown file type information %d", fileInfoType);
-						result = X_STATUS_INFO_LENGTH_MISMATCH;
-					}
+					return ReturnFromIOFunction(outStatusBlockPtr, fileInfoSize, X_STATUS_SUCCESS);
 				}
 			}
 
-			if (io_status_block_ptr.IsValid())
-			{
-				io_status_block_ptr->Result = result;
-				io_status_block_ptr->Info = info;
-			}
-
-			RETURN_ARG(result);
+			// unknown info
+			GLog.Err("Unknown file type information %d", fileInfoType);
+			return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
 		}
 
-		uint64 __fastcall Xbox_NtWriteFile(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NtWriteFile(uint32 fileHandle, uint32 eventHandle, MemoryAddress apcRoutineAddress, uint32 apcContext, 
+			Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, MemoryAddress bufferAddress, uint32 bufferLength, Pointer<uint64> byteOffsetPtr)
 		{
-			const uint32 file_handle = (const uint32)regs.R3;
-			const uint32 event_handle = (const uint32)regs.R4;
-			const uint32 apc_routine_ptr = (const uint32)regs.R5;
-			const uint32 apc_context = (const uint32)regs.R6;
-			const uint32 io_status_block_ptr = (const uint32)regs.R7;
-			const uint32 buffer = (const uint32)regs.R8;
-			const uint32 buffer_length = (const uint32)regs.R9;
-			const uint32 byte_offset_ptr = (const uint32)regs.R10;
+			// TODO: async IO
+			DEBUG_CHECK(!apcRoutineAddress.IsValid());
 
-			uint64 byte_offset = byte_offset_ptr ? cpu::mem::loadAddr<uint64>(byte_offset_ptr) : 0;
-			GLog.Log("NtWriteFile(%08X, %08X, %08X, %08X, %08X, %08X, %d, %08X(%d))",
-				file_handle, event_handle, apc_routine_ptr, apc_context,
-				io_status_block_ptr, buffer, buffer_length, byte_offset_ptr,
-				byte_offset);
-
-			// Async not supported yet.
-			DEBUG_CHECK(apc_routine_ptr == 0);
-
-			X_STATUS result = X_STATUS_UNSUCCESSFUL;
-			uint32 info = 0;
-
-			// Grab event to signal.
+			// IO may require event to signal
 			xenon::KernelEvent* eventObject = NULL;
-			bool signal_event = false;
-			if (event_handle)
+			if (eventHandle != 0)
 			{
-				eventObject = static_cast<xenon::KernelEvent*>(GPlatform.GetKernel().ResolveHandle(event_handle, xenon::KernelObjectType::Event));
-				signal_event = (eventObject != nullptr);
-				DEBUG_CHECK(eventObject != nullptr);
+				eventObject = static_cast<xenon::KernelEvent*>(GPlatform.GetKernel().ResolveHandle(eventHandle, xenon::KernelObjectType::Event));
+				if (!eventObject)
+					ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_INVALID_HANDLE);
 			}
 
-			// Grab file
-			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(file_handle, xenon::KernelObjectType::FileHandle));
-			if (file)
+			// Resolve file handle to file object
+			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(fileHandle, xenon::KernelObjectType::FileHandle));
+			if (!file)
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_INVALID_HANDLE);
+
+			// Reset event before we begin.
+			if (eventObject)
+				eventObject->Reset();
+
+			// Load data
+			// TODO: async IO
+			X_STATUS result = 0;
+			const bool isSync = true;
+			if (isSync)
 			{
-				// Reset event before we begin.
-				if (eventObject)
+				uint64 writeOffset = -1;
+				if (byteOffsetPtr.IsValid())
 				{
-					eventObject->Reset();
+					const auto byteOffset = (uint64)*byteOffsetPtr;
+					if (byteOffset != 0xFFFFFFFFfffffffeULL)
+						writeOffset = byteOffset;
 				}
 
-				const bool isSync = true;
-				if (isSync)
+				// write data to file at given offset
+				uint32 numBytesWritten = 0;
+				if (!file->Write(bufferAddress.GetNativePointer(), bufferLength, writeOffset, numBytesWritten))
 				{
-					// Synchronous request.
-					if (!byte_offset_ptr || byte_offset == 0xFFFFFFFFfffffffe)
-					{
-						// FILE_USE_FILE_POINTER_POSITION
-						byte_offset = -1;
-					}
-
-					// Read data
-					uint32 bytes_written = 0;
-					if (file->Write((void*)buffer, buffer_length, byte_offset, bytes_written))
-					{
-						info = (uint32)bytes_written;
-						result = X_STATUS_SUCCESS;
-						signal_event = true;
-					}
+					result = ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
 				}
 				else
 				{
-					result = X_STATUS_PENDING;
-					info = 0;
+					result = ReturnFromIOFunction(outStatusBlockPtr, numBytesWritten, X_STATUS_SUCCESS);
 				}
 			}
-
-			// io data
-			if (io_status_block_ptr)
+			else
 			{
-				cpu::mem::storeAddr<uint32>(io_status_block_ptr + 0, result);
-				cpu::mem::storeAddr<uint32>(io_status_block_ptr + 4, info);
-				xenon::TagMemoryWrite(io_status_block_ptr, 8, "NtWriteFile");
+				result = ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_PENDING);
 			}
 
 			// signal event
 			if (eventObject)
-			{
-				if (signal_event)
-					eventObject->Set(0, false);
+				eventObject->Set(0, false);
 
-				//eventObject->Release();
-			}
-
-			RETURN_ARG(result);
+			// propagate result
+			return result;
 		}
 
-		uint64 __fastcall Xbox_NtReadFile(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NtReadFile(uint32_t fileHandle, uint32_t eventHandle, MemoryAddress apcRoutineAddress, uint32 apcContext,
+			Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, MemoryAddress bufferAddress, uint32 bufferLength, Pointer<uint64> byteOffsetPtr)
 		{
-			const auto file_handle = (const uint32)regs.R3;
-			const auto event_handle = (const uint32)regs.R4;
-			const auto apc_routine_ptr = (const uint32)regs.R5;
-			const auto apc_context = (const uint32)regs.R6;
-			auto io_status_block_ptr = Pointer<X_FILE_IO_STATUS>(regs.R7);
-			const uint32 buffer = (const uint32)regs.R8;
-			const uint32 buffer_length = (const uint32)regs.R9;
-			auto byte_offset_ptr = Pointer<uint32>(regs.R10);
+			// TODO: async IO
+			DEBUG_CHECK(!apcRoutineAddress.IsValid());
 
-			uint64 byte_offset = byte_offset_ptr.IsValid() ? (uint32)*byte_offset_ptr : 0;
-
-			DEBUG_CHECK(apc_routine_ptr == 0);
-
-			X_STATUS result = X_STATUS_UNSUCCESSFUL;
-			uint32 info = 0;
-
-			// Grab event to signal.
+			// IO may require event to signal
 			xenon::KernelEvent* eventObject = NULL;
-			bool signal_event = false;
-			if (event_handle)
+			if (eventHandle != 0)
 			{
-				eventObject = static_cast<xenon::KernelEvent*>(GPlatform.GetKernel().ResolveHandle(event_handle, xenon::KernelObjectType::Event));
-				signal_event = (eventObject != nullptr);
-				DEBUG_CHECK(eventObject != nullptr);
+				eventObject = static_cast<xenon::KernelEvent*>(GPlatform.GetKernel().ResolveHandle(eventHandle, xenon::KernelObjectType::Event));
+				if (!eventObject)
+					ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_INVALID_HANDLE);
 			}
 
-			// Grab file
-			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(file_handle, xenon::KernelObjectType::FileHandle));
-			if (file)
+			// Resolve file handle to file object
+			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(fileHandle, xenon::KernelObjectType::FileHandle));
+			if (!file)
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_INVALID_HANDLE);
+
+			// Reset event before we begin.
+			if (eventObject)
+				eventObject->Reset();
+
+			// Load data
+			// TODO: async IO
+			X_STATUS result = 0;
+			const bool isSync = true;
+			if (isSync)
 			{
-				// Reset event before we begin.
-				if (eventObject)
+				uint64 readOffset = -1;
+				if (byteOffsetPtr.IsValid())
 				{
-					eventObject->Reset();
+					const auto byteOffset = (uint64)*byteOffsetPtr;
+					if (byteOffset != 0xFFFFFFFFfffffffeULL)
+						readOffset = byteOffset;
 				}
 
-				const bool isSync = true;
-				if (isSync)
+				// read data to file from given offset
+				uint32 numBytesWritten = 0;
+				if (!file->Read(bufferAddress.GetNativePointer(), bufferLength, readOffset, numBytesWritten))
 				{
-					// Synchronous request.
-					if (!byte_offset_ptr.IsValid() || byte_offset == 0xFFFFFFFFfffffffe)
-					{
-						// FILE_USE_FILE_POINTER_POSITION
-						byte_offset = -1;
-					}
-
-					// Read data
-					uint32 bytes_read = 0;
-					if (file->Read((void*)buffer, buffer_length, byte_offset, bytes_read))
-					{
-						xenon::TagMemoryWrite(buffer, buffer_length, "NtReadFile('%s' at offset %u)", file->GetEntry()->GetVirtualPath(), byte_offset);
-						info = (uint32)bytes_read;
-						result = X_STATUS_SUCCESS;
-						signal_event = true;
-					}
+					xenon::TagMemoryWrite(bufferAddress.GetNativePointer(), bufferLength, "NtReadFile('%s' at offset %u)", file->GetEntry()->GetVirtualPath(), readOffset);
+					result = ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
 				}
 				else
 				{
-					result = X_STATUS_PENDING;
-					info = 0;
+					result = ReturnFromIOFunction(outStatusBlockPtr, numBytesWritten, X_STATUS_SUCCESS);
 				}
 			}
-
-			// io data
-			if (io_status_block_ptr.IsValid())
+			else
 			{
-				io_status_block_ptr->Result = result;
-				io_status_block_ptr->Info = info;
+				result = ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_PENDING);
 			}
 
 			// signal event
 			if (eventObject)
-			{
-				if (signal_event)
-					eventObject->Set(0, false);
+				eventObject->Set(0, false);
 
-				//eventObject->Release();
-			}
-
-			RETURN_ARG(result);
+			// propagate result
+			return result;
 		}
 
-		uint64 __fastcall Xbox_NtQueryFullAttributesFile(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_NtQueryFullAttributesFile(Pointer<X_OBJECT_ATTRIBUTES> attributesPtr, Pointer<X_FILE_INFO> fileInfoPtr)
 		{
-			auto object_attributes_ptr = Pointer<X_OBJECT_ATTRIBUTES>(regs.R3);
-			auto file_info_ptr = Pointer<X_FILE_INFO>(regs.R4);
-
-			const auto& attrs = *object_attributes_ptr.GetNativePointer();
-			const auto object_name = attrs.ObjectName.AsData().Get().GetNativePointer()->Duplicate();
+			// get name of the file/directory
+			const auto fileName = attributesPtr->ObjectName.AsData().Get().GetNativePointer()->Duplicate();
 
 			// get root entry
 			xenon::FileSystemEntry* entry = NULL;
 			xenon::FileSystemEntry* rootFile = NULL;
-			if (attrs.RootDirectory != 0xFFFFFFFD)
+			if (attributesPtr->RootDirectory != 0xFFFFFFFD)
 			{
-				rootFile = static_cast<xenon::FileSystemEntry*>(GPlatform.GetKernel().ResolveHandle(attrs.RootDirectory, xenon::KernelObjectType::FileSysEntry));
+				// find directory entry
+				rootFile = static_cast<xenon::FileSystemEntry*>(GPlatform.GetKernel().ResolveHandle(attributesPtr->RootDirectory, xenon::KernelObjectType::FileSysEntry));
 				DEBUG_CHECK(rootFile != nullptr);
 
 				// resolve in context of parent entry
 				std::string targetPath = rootFile->GetVirtualPath();
-				targetPath += object_name;
+				targetPath += fileName;
 				entry = GPlatform.GetFileSystem().Resolve(targetPath.c_str());
 			}
 			else
 			{
 				// Resolve the file using the virtual file system.
-				entry = GPlatform.GetFileSystem().Resolve(object_name.c_str());
+				entry = GPlatform.GetFileSystem().Resolve(fileName.c_str());
 			}
 
-			// resolved ?
-			XResult result = X_ERROR_NOT_FOUND;
-			if (entry)
+			// entry not found
+			if (!entry)
+				return X_STATUS_NO_SUCH_FILE;
+
+			// get file informations
+			if (!entry->GetInfo(*fileInfoPtr.GetNativePointer()))
+				return X_STATUS_NO_SUCH_FILE;
+
+			// info retrieved
+			return X_STATUS_SUCCESS;
+		}
+
+		X_STATUS Xbox_NtSetInformationFile(const uint32 fileHandle, Pointer<X_FILE_IO_STATUS> outStatusBlockPtr, MemoryAddress fileInfoAddress, uint32 fileInfoSize, uint32 fileInfoType)
+		{
+			// resolve file handle
+			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(fileHandle, xenon::KernelObjectType::FileHandle));
+			if (!file)
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_UNSUCCESSFUL);
+
+			// extract info
+			if (fileInfoType == XFilePositionInformation)
 			{
-				if (entry->GetInfo(*file_info_ptr.GetNativePointer()))
-					result = X_ERROR_SUCCESS;
+				DEBUG_CHECK(fileInfoSize == 8);
+
+				const uint64 offset = *Pointer<uint64>(fileInfoAddress);
+				if (!file->SetOffset(offset))
+					return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_INFO_LENGTH_MISMATCH);
 			}
-
-			RETURN_ARG(result);
-		}
-
-		uint64 __fastcall Xbox_NtSetInformationFile(uint64 ip, cpu::CpuRegs& regs)
-		{
-			const auto file_handle = (const uint32)regs.R3;
-			auto io_status_block_ptr = Pointer<X_FILE_IO_STATUS>(regs.R4);
-			auto file_info_address = (const uint32)regs.R5;
-			const auto length = (const uint32)regs.R6;
-			const auto fileInfoType = (const uint32)regs.R7;
-
-			X_STATUS result = X_STATUS_UNSUCCESSFUL;
-			uint32 info = 0;
-
-			auto* file = static_cast<xenon::IFile*>(GPlatform.GetKernel().ResolveHandle(file_handle, xenon::KernelObjectType::FileHandle));
-			if (file)
+			else
 			{
-				if (fileInfoType == XFilePositionInformation)
-				{
-					DEBUG_CHECK(length == 8);
-					info = 8;
-
-					const uint64 offset = *Pointer<uint64>(file_info_address);
-					if (file->SetOffset(offset))
-					{
-						result = X_STATUS_SUCCESS;
-					}
-				}
-				else
-				{
-					GLog.Err("Unknown file type information %d", fileInfoType);
-					result = X_STATUS_INFO_LENGTH_MISMATCH;
-				}
+				GLog.Err("Unknown file type information %d", fileInfoType);
+				return ReturnFromIOFunction(outStatusBlockPtr, 0, X_STATUS_NOT_IMPLEMENTED);
 			}
 
-			if (io_status_block_ptr.IsValid())
-			{
-				io_status_block_ptr->Result = result;
-				io_status_block_ptr->Info = info;
-			}
-
-			RETURN_ARG(result);
-		}
-
-		uint64 __fastcall Xbox_NtQueryVolumeInformationFile(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_DEFAULT();
-		}
-
-		uint64 __fastcall Xbox_NtQueryDirectoryFile(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_DEFAULT();
-		}
-
-		uint64 __fastcall Xbox_NtReadFileScatter(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_DEFAULT();
-		}
-
-		uint64 __fastcall Xbox_NtFlushBuffersFile(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_DEFAULT();
+			return X_STATUS_SUCCESS;
 		}
 
 		//---------------------------------------------------------------------------
@@ -492,11 +372,12 @@ namespace xenon
 			REGISTER(NtWriteFile);
 			REGISTER(NtSetInformationFile);
 			REGISTER(NtQueryInformationFile);
-			REGISTER(NtQueryVolumeInformationFile);
-			REGISTER(NtQueryDirectoryFile);
-			REGISTER(NtReadFileScatter);
 			REGISTER(NtQueryFullAttributesFile);
-			REGISTER(NtFlushBuffersFile);
+
+			NOT_IMPLEMENTED(NtReadFileScatter);
+			NOT_IMPLEMENTED(NtFlushBuffersFile)
+			NOT_IMPLEMENTED(NtQueryVolumeInformationFile);
+			NOT_IMPLEMENTED(NtQueryDirectoryFile);
 		}
 
 	} // lib
