@@ -79,7 +79,7 @@ namespace xenon
 			auto allocType = regs.R5;
 			auto protect = regs.R6;
 
-			const auto size = *sizePtr;
+			const auto size = (uint32_t)*sizePtr;
 
 			// invalid type
 			if (allocType & XMEM_RESERVE && (base != NULL))
@@ -149,7 +149,7 @@ namespace xenon
 			auto base = (void*)(uint32)*basePtr;
 
 			auto sizePtr = Pointer<uint32>(regs.R4);
-			auto size = sizePtr.IsValid() ? *sizePtr : 0;
+			auto size = sizePtr.IsValid() ? (uint32_t)*sizePtr : 0;
 
 			const auto freeType = regs.R5;
 			const auto protect = regs.R6;
