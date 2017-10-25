@@ -40,18 +40,6 @@ namespace xenon
 			RETURN_ARG(0x010000);
 		}
 
-		uint64 __fastcall Xbox_XamLoaderTerminateTitle(uint64 ip, cpu::CpuRegs& regs)
-		{
-			GLog.Log("XamLoaderTerminateTitle: called");
-			throw runtime::TerminateProcessException(ip, 0);
-			RETURN();
-		}
-
-		uint64 __fastcall Xbox_XamShowMessageBoxUIEx(uint64 ip, cpu::CpuRegs& regs)
-		{
-			RETURN_DEFAULT();
-		}
-
 		// BOOL XexCheckExecutablePrivilege(DWORD priviledge);
 		uint64 __fastcall Xbox_XexCheckExecutablePrivilege(uint64 ip, cpu::CpuRegs& regs)
 		{
@@ -449,9 +437,6 @@ namespace xenon
 			REGISTER(NtQueryVirtualMemory);
 
 			REGISTER(KeQueryPerformanceFrequency);
-
-			REGISTER(XamLoaderTerminateTitle);
-			REGISTER(XamShowMessageBoxUIEx);
 
 			REGISTER(NtDuplicateObject);
 			REGISTER(ObDereferenceObject);

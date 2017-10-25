@@ -13,34 +13,32 @@ namespace xenon
 
 		//---------------------------------------------------------------------------
 
-		uint64 __fastcall Xbox_XamEnumerate(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamEnumerate()
 		{
-			RETURN_ARG(X_STATUS_UNSUCCESSFUL);
-			//	RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamContentCreateEx(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamContentCreateEx()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamContentSetThumbnail(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamContentSetThumbnail()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamContentClose(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamContentClose()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamContentCreateEnumerator(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamContentCreateEnumerator()
 		{
-			RETURN_ARG(X_STATUS_UNSUCCESSFUL);
-			//	RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamShowSigninUI(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamShowSigninUI()
 		{
 			// HACK: when requested to do that it means that we want to sign in some users, for now, sign-in the default one
 			if (nullptr == GPlatform.GetUserProfileManager().GetUser(0))
@@ -53,72 +51,84 @@ namespace xenon
 			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
 
 			// no errors here
-			RETURN_ARG(0);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamShowKeyboardUI(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamShowKeyboardUI()
 		{
-			RETURN_DEFAULT();
+			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamShowDeviceSelectorUI(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamShowDeviceSelectorUI()
 		{
-			RETURN_DEFAULT();
+			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamShowMessageBoxUI(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamShowMessageBoxUI()
 		{
-			RETURN_DEFAULT();
+			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamLoaderLaunchTitle(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamLoaderTerminateTitle()
 		{
-			RETURN_DEFAULT();
+			GLog.Log("XamLoaderTerminateTitle: called");
+			throw runtime::TerminateProcessException(0, 0);
 		}
 
-		uint64 __fastcall Xbox_XamTaskShouldExit(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamShowMessageBoxUIEx()
 		{
-			RETURN_DEFAULT();
+			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamTaskCloseHandle(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamLoaderLaunchTitle()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamTaskSchedule(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamTaskShouldExit()
 		{
-			RETURN_DEFAULT();
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
-		uint64 __fastcall Xbox_XamNotifyCreateListener(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamTaskCloseHandle()
+		{
+			return X_STATUS_UNSUCCESSFUL;
+		}
+
+		X_STATUS Xbox_XamTaskSchedule()
+		{
+			return X_STATUS_UNSUCCESSFUL;
+		}
+
+		uint32 Xbox_XamNotifyCreateListener()
 		{
 			auto listener = GPlatform.GetKernel().CreateEventNotifier();
-			const auto handle = listener->GetHandle();
-			RETURN_ARG(handle);
+			return listener->GetHandle();
 		}
 
-		uint64 __fastcall Xbox_XamUserGetXUID(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamUserGetXUID(uint32 index, Pointer<uint64> outIDPtr)
 		{
-			const auto index = (uint32)(regs.R3);
-			auto ptr = Pointer<uint64>(regs.R5);
-
 			if (index >= xenon::UserProfileManager::MAX_USERS)
-				RETURN_ARG(X_ERROR_NO_SUCH_USER);
+				return X_ERROR_NO_SUCH_USER;
+
+			if (!outIDPtr.IsValid())
+				return X_ERROR_BAD_ARGUMENTS;
 
 			auto* user = GPlatform.GetUserProfileManager().GetUser(index);
 			if (user != nullptr)
-				*ptr = user->GetID();
+				*outIDPtr = user->GetID();
 
-			RETURN_ARG(0);
+			return X_STATUS_SUCCESS;
 		}
 
-		uint64 __fastcall Xbox_XamUserGetSigninState(uint64 ip, cpu::CpuRegs& regs)
+		X_STATUS Xbox_XamUserGetSigninState(uint32 index)
 		{
-			const auto index = (uint32)(regs.R3);
-
 			if (index >= xenon::UserProfileManager::MAX_USERS)
-				RETURN_ARG(X_ERROR_NO_SUCH_USER);
+				return X_ERROR_NO_SUCH_USER;
 
 			// XUserSigninState_NotSignedIn User is not signed in. 
 			// XUserSigninState_SignedInLocally User is signed in on the local Xbox 360 console, but not signed in to Xbox LIVE.
@@ -126,24 +136,17 @@ namespace xenon
 
 			auto* user = GPlatform.GetUserProfileManager().GetUser(index);
 			if (user == nullptr)
-				RETURN_ARG(0);
+				return 0;
 
-			RETURN_ARG(1); // signed locally
+			return 1; // signed locally
 		}
 
-		uint64 __fastcall Xbox_XNotifyGetNext(uint64 ip, cpu::CpuRegs& regs)
+		uint32 Xbox_XNotifyGetNext(uint32 handle, uint32 id, Pointer<uint32> outEventId, Pointer<uint32> outEventData)
 		{
-			const auto handle = (const uint32)regs.R3;
-			const auto id = (const uint32)regs.R4;
-			auto outEventId = Pointer<uint32>(regs.R5);
-			auto outEventData = Pointer<uint32>(regs.R6);
-
 			// resolve handle to object
 			const auto eventListener = static_cast<xenon::KernelEventNotifier*>(GPlatform.GetKernel().ResolveHandle(handle, xenon::KernelObjectType::EventNotifier));
 			if (!eventListener)
-			{
-				RETURN_ARG(0);
-			}
+				return 0;
 
 			// asked for specific notification ?
 			if (id != 0)
@@ -153,7 +156,7 @@ namespace xenon
 				{
 					*outEventId = id;
 					*outEventData = data;
-					RETURN_ARG(1);
+					return 1;
 				}
 			}
 			else
@@ -164,11 +167,11 @@ namespace xenon
 				{
 					*outEventId = id;
 					*outEventData = data;
-					RETURN_ARG(1);
+					return 1;
 				}
 			}
 
-			RETURN_ARG(0);
+			return 0;
 		}
 
 		//---------------------------------------------------------------------------
@@ -192,6 +195,8 @@ namespace xenon
 			REGISTER(XamUserGetSigninState);
 			REGISTER(XamUserGetXUID);
 			REGISTER(XNotifyGetNext);
+			REGISTER(XamLoaderTerminateTitle);
+			REGISTER(XamShowMessageBoxUIEx);
 		}
 
 	} // lib
