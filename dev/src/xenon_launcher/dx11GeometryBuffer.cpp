@@ -8,10 +8,10 @@
 CDX11GeometryBuffer::CDX11GeometryBuffer( ID3D11Device* dev, ID3D11DeviceContext* context )
 	: m_device( dev )
 	, m_mainContext( context )
-	, m_geometryDataHelper( nullptr )
 	, m_geometryDataGeneration( 1 )
 	, m_geometryDataTransferSize( 256 * 1024 )
-	, m_geometryDataAllocator( 1024 * 1024 * 128 )
+	, m_geometryDataAllocator( 1024 * 1024 * 32 )
+	, m_geomeryDataSwapped(false)
 	, m_geometryData( nullptr )
 {
 	// create the vertex buffer cache
@@ -19,10 +19,10 @@ CDX11GeometryBuffer::CDX11GeometryBuffer( ID3D11Device* dev, ID3D11DeviceContext
 		D3D11_BUFFER_DESC bufferDesc;
 		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		bufferDesc.ByteWidth = m_geometryDataAllocator.GetSize();
-		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.StructureByteStride = 0;
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		HRESULT hRet = dev->CreateBuffer( &bufferDesc, NULL, &m_geometryData );
 		DEBUG_CHECK( SUCCEEDED(hRet) );
 	}
@@ -32,35 +32,22 @@ CDX11GeometryBuffer::CDX11GeometryBuffer( ID3D11Device* dev, ID3D11DeviceContext
 		D3D11_BUFFER_DESC bufferDesc;
 		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		bufferDesc.ByteWidth = m_geometryDataAllocator.GetSize();
-		bufferDesc.CPUAccessFlags = 0;
-		bufferDesc.MiscFlags = 0;
-		bufferDesc.StructureByteStride = 0;
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		HRESULT hRet = dev->CreateBuffer( &bufferDesc, NULL, &m_geometryDataSecondary );
-		DEBUG_CHECK( SUCCEEDED(hRet) );
-	}
-
-	// create the staging buffer for copying the data
-	{
-		D3D11_BUFFER_DESC bufferDesc;
-		bufferDesc.BindFlags = 0;
-		bufferDesc.ByteWidth = m_geometryDataTransferSize;
 		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.StructureByteStride = 0;
-		bufferDesc.Usage = D3D11_USAGE_STAGING;
-		HRESULT hRet = dev->CreateBuffer( &bufferDesc, NULL, &m_geometryDataHelper );
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		HRESULT hRet = dev->CreateBuffer( &bufferDesc, NULL, &m_geometryDataSecondary );
 		DEBUG_CHECK( SUCCEEDED(hRet) );
-	}
+	}	
 }
 
 CDX11GeometryBuffer::~CDX11GeometryBuffer()
 {
 	// release the helper buffer
-	if ( m_geometryDataHelper )
+	if ( m_geometryDataSecondary )
 	{
-		m_geometryDataHelper->Release();
-		m_geometryDataHelper = nullptr;
+		m_geometryDataSecondary->Release();
+		m_geometryDataSecondary = nullptr;
 	}
 
 	// release the vertex buffer cache
@@ -69,19 +56,16 @@ CDX11GeometryBuffer::~CDX11GeometryBuffer()
 		m_geometryData->Release();
 		m_geometryData = nullptr;
 	}
-
-	// release secondary data buffer
-	if ( m_geometryDataSecondary )
-	{
-		m_geometryDataSecondary->Release();
-		m_geometryDataSecondary = nullptr;
-	}
 }
 
 void CDX11GeometryBuffer::Swap()
 {
-	std::swap( m_geometryDataSecondary, m_geometryData );
-	m_geometryDataAllocator.Reset();
+	if (!m_geomeryDataSwapped)
+	{
+		std::swap(m_geometryDataSecondary, m_geometryData);
+		m_geomeryDataSwapped = true;
+		m_geometryDataAllocator.Reset();
+	}
 
 }
 const bool CDX11GeometryBuffer::IsBufferUsable( BufferHandle handle ) const
@@ -131,35 +115,7 @@ uint32 CDX11GeometryBuffer::LinearAllocator::Alloc( const uint32 size, bool& wra
 
 bool CDX11GeometryBuffer::AllocStagingBuffer( const uint32 sourceMemorySize, void*& outPtr, uint32& outOffset )
 {
-	DEBUG_CHECK( (sourceMemorySize & 3) == 0 );
-
-	// resize the transfer buffer if needed
-	if ( sourceMemorySize > m_geometryDataTransferSize )
-	{
-		// release the current transfer buffer
-		if ( m_geometryDataHelper )
-		{
-			m_geometryDataHelper->Release();
-			m_geometryDataHelper = nullptr;
-		}
-
-		// enlarge the transfer buffers
-		while ( sourceMemorySize > m_geometryDataTransferSize )
-			m_geometryDataTransferSize *= 2;
-
-		// create the staging buffer for copying the data
-		{
-			D3D11_BUFFER_DESC bufferDesc;
-			bufferDesc.BindFlags = 0;
-			bufferDesc.ByteWidth = m_geometryDataTransferSize;
-			bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-			bufferDesc.MiscFlags = 0;
-			bufferDesc.StructureByteStride = 0;
-			bufferDesc.Usage = D3D11_USAGE_STAGING;
-			HRESULT hRet = m_device->CreateBuffer( &bufferDesc, NULL, &m_geometryDataHelper );
-			DEBUG_CHECK( SUCCEEDED(hRet) );
-		}
-	}
+	DEBUG_CHECK( (sourceMemorySize & 3) == 0 );	
 
 	// allocate space in the vertex cache
 	bool vertexDataWrapped = false;
@@ -170,13 +126,17 @@ bool CDX11GeometryBuffer::AllocStagingBuffer( const uint32 sourceMemorySize, voi
 	if ( vertexDataWrapped )
 		m_geometryDataGeneration += 1;
 
-	// map helper buffer
+	// map helper buffer, discard on first map each frame
 	D3D11_MAPPED_SUBRESOURCE subRes;
-	HRESULT hRet = m_mainContext->Map( m_geometryDataHelper, 0, D3D11_MAP_WRITE, 0, &subRes );
-	DEBUG_CHECK( SUCCEEDED(hRet) && subRes.pData );
+	const auto mapMode = D3D11_MAP_WRITE_NO_OVERWRITE;// m_geomeryDataSwapped ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE;
+	HRESULT hRet = m_mainContext->Map(m_geometryData, 0, mapMode, 0, &subRes);
+	DEBUG_CHECK(SUCCEEDED(hRet) && subRes.pData);
+
+	// reset flag
+	m_geomeryDataSwapped = false;
 
 	// done
-	outPtr = subRes.pData;
+	outPtr = (char*)subRes.pData + vertexDataOffset;
 	outOffset = vertexDataOffset;
 	return true;
 }
@@ -184,17 +144,7 @@ bool CDX11GeometryBuffer::AllocStagingBuffer( const uint32 sourceMemorySize, voi
 CDX11GeometryBuffer::BufferHandle CDX11GeometryBuffer::UploadStagingData( const uint32 sourceMemorySize, const uint32 dataOffset, const uint32 type )
 {
 	// umap
-	m_mainContext->Unmap( m_geometryDataHelper, 0 );
-
-	// copy helper data into the final buffer
-	D3D11_BOX sourceRegion;
-	sourceRegion.left = 0;
-	sourceRegion.right = sourceMemorySize;
-	sourceRegion.top = 0;
-	sourceRegion.bottom = 1;
-	sourceRegion.front = 0;
-	sourceRegion.back = 1;
-	m_mainContext->CopySubresourceRegion( m_geometryData, 0, dataOffset, 0, 0, m_geometryDataHelper, 0, &sourceRegion );
+	m_mainContext->Unmap( m_geometryData, 0 );
 
 	// return allocated region
 	BufferHandle ret;

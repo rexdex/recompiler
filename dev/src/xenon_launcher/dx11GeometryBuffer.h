@@ -82,10 +82,11 @@ private:
 	// General buffer memory
 	ID3D11Buffer*				m_geometryData;				// geometry data buffer (big shit, 100 MB or so)
 	ID3D11Buffer*				m_geometryDataSecondary;	// secondary geometry data buffer (big shit, 100 MB or so)
-	ID3D11Buffer*				m_geometryDataHelper;		// transfer buffer (staging)
 	uint32						m_geometryDataGeneration;	// internal generation counter
 	uint32						m_geometryDataTransferSize;	// transfer buffer helper
 	LinearAllocator				m_geometryDataAllocator;	// data allocator
+	bool						m_geomeryDataSwapped;		// data was just swapped
+	
 
 	// ensure there's enough room in the staging buffer and lock it
 	bool AllocStagingBuffer( const uint32 sourceMemorySize, void*& outPtr, uint32& outOffset ); 

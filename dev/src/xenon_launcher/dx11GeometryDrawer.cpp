@@ -852,12 +852,6 @@ bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXen
 	std::vector< CDX11MicrocodeShader::TextureInfo > textures;
 	ps->GetMicrocode()->GetUsedTextures( textures );
 
-	// crap
-	if (ds.m_primitiveType == XenonPrimitiveType::PrimitiveRectangleList && !textures.empty())
-	{
-		GLog.Log("Copy!");
-	}
-
 	// bind pixel shader textures
 	{
 		// get texture to bind
