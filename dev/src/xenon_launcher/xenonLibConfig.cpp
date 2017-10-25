@@ -121,7 +121,7 @@ namespace xenon
 
 		void RegisterXboxConfig(runtime::Symbols& symbols)
 		{
-			REGISTER(ExGetXConfigSetting);
+			REGISTER_RAW(ExGetXConfigSetting);
 		}
 
 	} // lib

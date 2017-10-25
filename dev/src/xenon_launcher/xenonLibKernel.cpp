@@ -437,47 +437,47 @@ namespace xenon
 
 		void RegisterXboxKernel(runtime::Symbols& symbols)
 		{
-			REGISTER(XGetLanguage);
-			REGISTER(XGetAVPack);
+			REGISTER_RAW(XGetLanguage);
+			REGISTER_RAW(XGetAVPack);
 
-			REGISTER(KeBugCheckEx);
-			REGISTER(KeBugCheck);
+			REGISTER_RAW(KeBugCheckEx);
+			REGISTER_RAW(KeBugCheck);
 
-			REGISTER(NtAllocateVirtualMemory);
-			REGISTER(NtFreeVirtualMemory);
-			REGISTER(NtQueryVirtualMemory);
+			REGISTER_RAW(NtAllocateVirtualMemory);
+			REGISTER_RAW(NtFreeVirtualMemory);
+			REGISTER_RAW(NtQueryVirtualMemory);
 
-			REGISTER(KeQueryPerformanceFrequency);
+			REGISTER_RAW(KeQueryPerformanceFrequency);
 
-			REGISTER(XamLoaderTerminateTitle);
-			REGISTER(XamShowMessageBoxUIEx);
+			REGISTER_RAW(XamLoaderTerminateTitle);
+			REGISTER_RAW(XamShowMessageBoxUIEx);
 
-			REGISTER(NtDuplicateObject);
-			REGISTER(ObDereferenceObject);
-			REGISTER(ObReferenceObjectByHandle);
-			REGISTER(ObDeleteSymbolicLink);
-			REGISTER(ObCreateSymbolicLink);
+			REGISTER_RAW(NtDuplicateObject);
+			REGISTER_RAW(ObDereferenceObject);
+			REGISTER_RAW(ObReferenceObjectByHandle);
+			REGISTER_RAW(ObDeleteSymbolicLink);
+			REGISTER_RAW(ObCreateSymbolicLink);
 
-			REGISTER(XexCheckExecutablePrivilege);
-			REGISTER(__C_specific_handler);
-			REGISTER(HalReturnToFirmware);
-			REGISTER(KeGetCurrentProcessType);
-			REGISTER(ExRegisterTitleTerminateNotification);
-			REGISTER(KeEnableFpuExceptions);
+			REGISTER_RAW(XexCheckExecutablePrivilege);
+			REGISTER_RAW(__C_specific_handler);
+			REGISTER_RAW(HalReturnToFirmware);
+			REGISTER_RAW(KeGetCurrentProcessType);
+			REGISTER_RAW(ExRegisterTitleTerminateNotification);
+			REGISTER_RAW(KeEnableFpuExceptions);
 
-			REGISTER(KeInitializeDpc);
-			REGISTER(KeInsertQueueDpc);
-			REGISTER(KeRemoveQueueDpc);
-			REGISTER(InterlockedPopEntrySList);
+			REGISTER_RAW(KeInitializeDpc);
+			REGISTER_RAW(KeInsertQueueDpc);
+			REGISTER_RAW(KeRemoveQueueDpc);
+			REGISTER_RAW(InterlockedPopEntrySList);
 
-			REGISTER(KeLockL2);
-			REGISTER(KeUnlockL2);
+			REGISTER_RAW(KeLockL2);
+			REGISTER_RAW(KeUnlockL2);
 
-			REGISTER(KeSetCurrentProcessType);
+			REGISTER_RAW(KeSetCurrentProcessType);
 
-			REGISTER(MmQueryAddressProtect);
-			REGISTER(MmSetAddressProtect);
-			REGISTER(MmQueryAllocationSize);
+			REGISTER_RAW(MmQueryAddressProtect);
+			REGISTER_RAW(MmSetAddressProtect);
+			REGISTER_RAW(MmQueryAllocationSize);
 
 			symbols.RegisterInterrupt(20, (runtime::TInterruptFunc) &Xbox_Interrupt20);
 			symbols.RegisterInterrupt(22, (runtime::TInterruptFunc) &Xbox_Interrupt22);

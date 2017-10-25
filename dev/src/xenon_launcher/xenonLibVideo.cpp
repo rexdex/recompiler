@@ -363,32 +363,32 @@ namespace xenon
 
 		void RegisterXboxVideo(runtime::Symbols& symbols)
 		{
-			REGISTER(XGetVideoMode);
+			REGISTER_RAW(XGetVideoMode);
 
-			REGISTER(MmAllocatePhysicalMemoryEx);
-			REGISTER(MmGetPhysicalAddress);
-			REGISTER(MmFreePhysicalMemory);
+			REGISTER_RAW(MmAllocatePhysicalMemoryEx);
+			REGISTER_RAW(MmGetPhysicalAddress);
+			REGISTER_RAW(MmFreePhysicalMemory);
 
-			REGISTER(VdGetCurrentDisplayGamma);
-			REGISTER(VdGetCurrentDisplayInformation);
-			REGISTER(VdQueryVideoFlags);
-			REGISTER(VdQueryVideoMode);
-			REGISTER(VdInitializeEngines);
-			REGISTER(VdShutdownEngines);
-			REGISTER(VdSetGraphicsInterruptCallback);
-			REGISTER(VdInitializeRingBuffer);
-			REGISTER(VdEnableRingBufferRPtrWriteBack);
-			REGISTER(VdGetSystemCommandBuffer);
-			REGISTER(VdIsHSIOTrainingSucceeded);
-			REGISTER(VdPersistDisplay);
-			REGISTER(VdRetrainEDRAMWorker);
-			REGISTER(VdRetrainEDRAM);
-			REGISTER(VdCallGraphicsNotificationRoutines);
-			REGISTER(VdSwap);
-			REGISTER(VdSetDisplayMode);
-			REGISTER(VdEnableDisableClockGating);
-			REGISTER(VdSetSystemCommandBufferGpuIdentifierAddress);
-			REGISTER(VdInitializeScalerCommandBuffer);
+			REGISTER_RAW(VdGetCurrentDisplayGamma);
+			REGISTER_RAW(VdGetCurrentDisplayInformation);
+			REGISTER_RAW(VdQueryVideoFlags);
+			REGISTER_RAW(VdQueryVideoMode);
+			REGISTER_RAW(VdInitializeEngines);
+			REGISTER_RAW(VdShutdownEngines);
+			REGISTER_RAW(VdSetGraphicsInterruptCallback);
+			REGISTER_RAW(VdInitializeRingBuffer);
+			REGISTER_RAW(VdEnableRingBufferRPtrWriteBack);
+			REGISTER_RAW(VdGetSystemCommandBuffer);
+			REGISTER_RAW(VdIsHSIOTrainingSucceeded);
+			REGISTER_RAW(VdPersistDisplay);
+			REGISTER_RAW(VdRetrainEDRAMWorker);
+			REGISTER_RAW(VdRetrainEDRAM);
+			REGISTER_RAW(VdCallGraphicsNotificationRoutines);
+			REGISTER_RAW(VdSwap);
+			REGISTER_RAW(VdSetDisplayMode);
+			REGISTER_RAW(VdEnableDisableClockGating);
+			REGISTER_RAW(VdSetSystemCommandBufferGpuIdentifierAddress);
+			REGISTER_RAW(VdInitializeScalerCommandBuffer);
 		}
 
 	} // lib

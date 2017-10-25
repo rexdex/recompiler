@@ -50,13 +50,13 @@ namespace xenon
 
 		void RegisterXboxDebug(runtime::Symbols& symbols)
 		{
-			REGISTER(DbgBreakPoint);
-			REGISTER(RtlUnwind);
-			REGISTER(RtlUnwind2);
-			REGISTER(DmAbortProfiling);
-			REGISTER(DmAddUser);
-			REGISTER(DmAllocatePool);
-			REGISTER(DmAllocatePoolWithTag);
+			REGISTER_RAW(DbgBreakPoint);
+			REGISTER_RAW(RtlUnwind);
+			REGISTER_RAW(RtlUnwind2);
+			REGISTER_RAW(DmAbortProfiling);
+			REGISTER_RAW(DmAddUser);
+			REGISTER_RAW(DmAllocatePool);
+			REGISTER_RAW(DmAllocatePoolWithTag);
 	}
 
 		//---------------------------------------------------------------------------

@@ -31,7 +31,7 @@ CXenonGPURegisters::CXenonGPURegisters()
 
 const CXenonGPURegisters::Info& CXenonGPURegisters::GetInfo( const uint32 index )
 {
-	static Info RegInfo[ NUM_REGISTERS ];
+	static Info RegInfo[ NUM_REGISTER_RAWS ];
 	static bool RegInfoInitialized = false;
 
 	static Info InvalidReg = { "INVALID", eType_Unknown };
@@ -39,9 +39,9 @@ const CXenonGPURegisters::Info& CXenonGPURegisters::GetInfo( const uint32 index 
 	// initialize REG INFO table
 	if ( !RegInfoInitialized )
 	{
-#define DECLARE_XENON_GPU_REGISTER(index, type, name) RegInfo[index].m_type = type; RegInfo[index].m_name = #name;
+#define DECLARE_XENON_GPU_REGISTER_RAW(index, type, name) RegInfo[index].m_type = type; RegInfo[index].m_name = #name;
 #include "xenonGPURegisterMap.h"
-#undef DECLARE_XENON_GPU_REGISTER
+#undef DECLARE_XENON_GPU_REGISTER_RAW
 
 		RegInfoInitialized = true;
 	}
@@ -68,7 +68,7 @@ const CXenonGPURegisters::Info& CXenonGPURegisters::GetInfo( const uint32 index 
 	fclose(crap);*/
 
 	// index out of bounds
-	if ( index >= NUM_REGISTERS )
+	if ( index >= NUM_REGISTER_RAWS )
 		return InvalidReg;
 
 	// register invalid

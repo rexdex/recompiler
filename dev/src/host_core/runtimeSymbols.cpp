@@ -37,7 +37,7 @@ namespace runtime
 		m_symbols[name] = info;
 	}
 
-	void Symbols::RegisterFunction(const char* name, TBlockFunc functionPtr)
+	void Symbols::RegisterFunction(const char* name, const TSystemFunction& function)
 	{
 		auto it = m_functions.find(name);
 		if (it != m_functions.end())
@@ -48,7 +48,7 @@ namespace runtime
 
 		// define function
 		FunctionInfo info;
-		info.m_functionCode = functionPtr ? functionPtr : &Symbols::MissingImportFunction;
+		info.m_functionCode = function;
 		info.m_name = name;
 		m_functions[name] = info;
 	}
@@ -109,15 +109,15 @@ namespace runtime
 		return 0;
 	}
 
-	runtime::TBlockFunc Symbols::FindFunctionCode(const char* name) const
+	const TSystemFunction* Symbols::FindFunction(const char* name) const
 	{
 		// function symbol
 		auto jt = m_functions.find(name);
 		if (jt != m_functions.end())
-			return (*jt).second.m_functionCode;
+			return &(*jt).second.m_functionCode;
 
 		// not found
-		return 0;
+		return nullptr;
 	}
 
 	TInterruptFunc Symbols::FindInterruptCallback(const uint32 intterruptIndex) const

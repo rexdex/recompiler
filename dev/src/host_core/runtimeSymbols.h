@@ -59,6 +59,9 @@ namespace runtime
 		uint32 m_numEntries;
 	};
 
+	/// native system function
+	typedef std::function<uint64(const uint64_t ip, RegisterBank& regs) > TSystemFunction;
+
 	/// Symbol/Interrup/Port mapping
 	class LAUNCHER_API Symbols
 	{
@@ -69,7 +72,7 @@ namespace runtime
 		void RegisterSymbol(const char* name, const void* address);
 
 		// register function, calling address will be auto assigned
-		void RegisterFunction(const char* name, TBlockFunc function);
+		void RegisterFunction(const char* name, const TSystemFunction& function);
 
 		// register interrupts callback
 		void RegisterInterrupt(const uint32 intterruptIndex, TInterruptFunc functionPtr);
@@ -90,7 +93,7 @@ namespace runtime
 		const uint64 FindSymbolAddress(const char* name) const;
 
 		// lookup function address, returns nullptr if not found
-		TBlockFunc FindFunctionCode(const char* name) const;
+		const TSystemFunction* FindFunction(const char* name) const;
 
 		// lookup interrupt callback, returns nullptr if interrupt was not registered
 		TInterruptFunc FindInterruptCallback(const uint32 intterruptIndex) const;
@@ -126,7 +129,7 @@ namespace runtime
 		struct FunctionInfo
 		{
 			const char* m_name;
-			TBlockFunc m_functionCode;		// implementation handler
+			TSystemFunction m_functionCode;
 
 			inline FunctionInfo()
 				: m_name("")

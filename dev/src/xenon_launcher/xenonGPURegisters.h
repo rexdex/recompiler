@@ -6,9 +6,9 @@
 /// Known registers
 enum class XenonGPURegister : uint32
 {
-#define DECLARE_XENON_GPU_REGISTER(index, type, name) REG_##name = index,
+#define DECLARE_XENON_GPU_REGISTER_RAW(index, type, name) REG_##name = index,
 #include "xenonGPURegisterMap.h"
-#undef DECLARE_XENON_GPU_REGISTER	
+#undef DECLARE_XENON_GPU_REGISTER_RAW	
 };
 
 /// GPU Register map
@@ -37,7 +37,7 @@ public:
 	};
 
 	// number of registers in the GPU
-	static const uint32 NUM_REGISTERS = 0x5003;
+	static const uint32 NUM_REGISTER_RAWS = 0x5003;
 
 	// get info about GPU register
 	static const Info& GetInfo( const uint32 index );
@@ -55,7 +55,7 @@ public:
 	inline const T& GetStructAt( const XenonGPURegister index ) const { return *( const T*) &m_values[(uint32)index]; }
 
 private:
-	Value	m_values[ NUM_REGISTERS ];
+	Value	m_values[ NUM_REGISTER_RAWS ];
 };
 
 /// Helper to track dirty registers
@@ -95,11 +95,11 @@ public:
 	}
 
 private:
-	static const uint32 NUM_REGISTERS = CXenonGPURegisters::NUM_REGISTERS;
+	static const uint32 NUM_REGISTER_RAWS = CXenonGPURegisters::NUM_REGISTER_RAWS;
 	static const uint32 BIT_COUNT = 64;
 	static const uint32 BIT_MASK = BIT_COUNT-1;
 
-	uint64		m_mask[ (NUM_REGISTERS+(BIT_COUNT-1)) / BIT_COUNT ];
+	uint64		m_mask[ (NUM_REGISTER_RAWS+(BIT_COUNT-1)) / BIT_COUNT ];
 };
 
 union XenonGPUVertexFetchData

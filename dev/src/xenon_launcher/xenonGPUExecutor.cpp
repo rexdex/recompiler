@@ -620,7 +620,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_WAIT_REG_MEM(CXenonGPUCommandBufferRe
 		else
 		{
 			// Register.
-			DEBUG_CHECK(pollRegAddr < m_registers.NUM_REGISTERS);
+			DEBUG_CHECK(pollRegAddr < m_registers.NUM_REGISTER_RAWS);
 			value = m_registers[pollRegAddr].m_dword;
 
 			// Sync
@@ -795,7 +795,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_COND_WRITE(CXenonGPUCommandBufferRead
 	}
 	else
 	{
-		DEBUG_CHECK(pollRegAddr < m_registers.NUM_REGISTERS);
+		DEBUG_CHECK(pollRegAddr < m_registers.NUM_REGISTER_RAWS);
 		value = m_registers[pollRegAddr].m_dword;
 
 		// log the read
@@ -1132,7 +1132,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_SET_CONSTANT(CXenonGPUCommandBufferRe
 			baseIndex += 0x4908;
 			break;
 
-		case 4:  // REGISTERS
+		case 4:  // REGISTER_RAWS
 			baseIndex += 0x2000;
 			break;
 
@@ -1192,7 +1192,7 @@ bool CXenonGPUExecutor::ExecutePacketType3_LOAD_ALU_CONSTANT(CXenonGPUCommandBuf
 		case 3:  // LOOP
 			index += 0x4908;
 			break;
-		case 4:  // REGISTERS
+		case 4:  // REGISTER_RAWS
 			index += 0x2000;
 			break;
 		default:
@@ -1324,7 +1324,7 @@ void CXenonGPUExecutor::WriteRegister(const XenonGPURegister registerIndex, cons
 
 void CXenonGPUExecutor::WriteRegister(const uint32 registerIndex, const uint32 registerData)
 {
-	if (registerIndex >= m_registers.NUM_REGISTERS)
+	if (registerIndex >= m_registers.NUM_REGISTER_RAWS)
 	{
 		GLog.Err("GPU: Trying to write to non existing register 0x%08X", registerIndex);
 		return;

@@ -174,23 +174,23 @@ namespace xenon
 
 		void RegisterXboxXAM(runtime::Symbols& symbols)
 		{
-			REGISTER(XamEnumerate);
-			REGISTER(XamContentCreateEx);
-			REGISTER(XamContentClose);
-			REGISTER(XamContentSetThumbnail);
-			REGISTER(XamContentCreateEnumerator);
-			REGISTER(XamShowSigninUI);
-			REGISTER(XamShowKeyboardUI);
-			REGISTER(XamShowDeviceSelectorUI);
-			REGISTER(XamShowMessageBoxUI);
-			REGISTER(XamLoaderLaunchTitle);
-			REGISTER(XamTaskShouldExit);
-			REGISTER(XamTaskCloseHandle);
-			REGISTER(XamTaskSchedule);
-			REGISTER(XamNotifyCreateListener);
-			REGISTER(XamUserGetSigninState);
-			REGISTER(XamUserGetXUID);
-			REGISTER(XNotifyGetNext);
+			REGISTER_RAW(XamEnumerate);
+			REGISTER_RAW(XamContentCreateEx);
+			REGISTER_RAW(XamContentClose);
+			REGISTER_RAW(XamContentSetThumbnail);
+			REGISTER_RAW(XamContentCreateEnumerator);
+			REGISTER_RAW(XamShowSigninUI);
+			REGISTER_RAW(XamShowKeyboardUI);
+			REGISTER_RAW(XamShowDeviceSelectorUI);
+			REGISTER_RAW(XamShowMessageBoxUI);
+			REGISTER_RAW(XamLoaderLaunchTitle);
+			REGISTER_RAW(XamTaskShouldExit);
+			REGISTER_RAW(XamTaskCloseHandle);
+			REGISTER_RAW(XamTaskSchedule);
+			REGISTER_RAW(XamNotifyCreateListener);
+			REGISTER_RAW(XamUserGetSigninState);
+			REGISTER_RAW(XamUserGetXUID);
+			REGISTER_RAW(XNotifyGetNext);
 		}
 
 	} // lib

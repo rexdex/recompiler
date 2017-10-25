@@ -1390,20 +1390,20 @@ namespace xenon
 
 		void RegisterXboxCRT(runtime::Symbols& symbols)
 		{
-			REGISTER(_vsnprintf)
-			REGISTER(sprintf)
-			REGISTER(DbgPrint);
-			REGISTER(RtlUnicodeToMultiByteN);
-			REGISTER(RtlMultiByteToUnicodeN);
-			REGISTER(RtlInitUnicodeString);
-			REGISTER(RtlInitAnsiString);
-			REGISTER(RtlFreeAnsiString);
-			REGISTER(RtlUnicodeStringToAnsiString);
-			REGISTER(RtlFillMemoryUlong);
-			REGISTER(RtlImageXexHeaderField);
-			REGISTER(RtlCompareMemoryUlong);
-			REGISTER(RtlRaiseException);
-			REGISTER(RtlNtStatusToDosError);
+			REGISTER_RAW(_vsnprintf)
+			REGISTER_RAW(sprintf)
+			REGISTER_RAW(DbgPrint);
+			REGISTER_RAW(RtlUnicodeToMultiByteN);
+			REGISTER_RAW(RtlMultiByteToUnicodeN);
+			REGISTER_RAW(RtlInitUnicodeString);
+			REGISTER_RAW(RtlInitAnsiString);
+			REGISTER_RAW(RtlFreeAnsiString);
+			REGISTER_RAW(RtlUnicodeStringToAnsiString);
+			REGISTER_RAW(RtlFillMemoryUlong);
+			REGISTER_RAW(RtlImageXexHeaderField);
+			REGISTER_RAW(RtlCompareMemoryUlong);
+			REGISTER_RAW(RtlRaiseException);
+			REGISTER_RAW(RtlNtStatusToDosError);
 		}
 
 		//---------------------------------------------------------------------------

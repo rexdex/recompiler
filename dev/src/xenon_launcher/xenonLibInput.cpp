@@ -161,15 +161,15 @@ namespace xenon
 
 		void RegisterXboxInput(runtime::Symbols& symbols)
 		{
-			REGISTER(XamUserGetDeviceContext);
-			REGISTER(XamInputGetState);
-			REGISTER(XamInputSetState);
-			REGISTER(XamInputGetCapabilities);
-			REGISTER(XamInputGetCapabilitiesEx);
-			REGISTER(XamResetInactivity);
-			REGISTER(XamEnableInactivityProcessing);
-			REGISTER(XamInputGetKeystroke);
-			REGISTER(XamInputGetKeystrokeEx);
+			REGISTER_RAW(XamUserGetDeviceContext);
+			REGISTER_RAW(XamInputGetState);
+			REGISTER_RAW(XamInputSetState);
+			REGISTER_RAW(XamInputGetCapabilities);
+			REGISTER_RAW(XamInputGetCapabilitiesEx);
+			REGISTER_RAW(XamResetInactivity);
+			REGISTER_RAW(XamEnableInactivityProcessing);
+			REGISTER_RAW(XamInputGetKeystroke);
+			REGISTER_RAW(XamInputGetKeystrokeEx);
 		}
 
 	} // lib

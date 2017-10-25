@@ -485,17 +485,17 @@ namespace xenon
 
 		void RegisterXboxFiles(runtime::Symbols& symbols)
 		{
-			REGISTER(NtCreateFile);
-			REGISTER(NtOpenFile);
-			REGISTER(NtReadFile);
-			REGISTER(NtWriteFile);
-			REGISTER(NtSetInformationFile);
-			REGISTER(NtQueryInformationFile);
-			REGISTER(NtQueryVolumeInformationFile);
-			REGISTER(NtQueryDirectoryFile);
-			REGISTER(NtReadFileScatter);
-			REGISTER(NtQueryFullAttributesFile);
-			REGISTER(NtFlushBuffersFile);
+			REGISTER_RAW(NtCreateFile);
+			REGISTER_RAW(NtOpenFile);
+			REGISTER_RAW(NtReadFile);
+			REGISTER_RAW(NtWriteFile);
+			REGISTER_RAW(NtSetInformationFile);
+			REGISTER_RAW(NtQueryInformationFile);
+			REGISTER_RAW(NtQueryVolumeInformationFile);
+			REGISTER_RAW(NtQueryDirectoryFile);
+			REGISTER_RAW(NtReadFileScatter);
+			REGISTER_RAW(NtQueryFullAttributesFile);
+			REGISTER_RAW(NtFlushBuffersFile);
 		}
 
 	} // lib

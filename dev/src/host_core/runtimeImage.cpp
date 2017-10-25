@@ -145,6 +145,12 @@ namespace runtime
 		return true;
 	}
 
+	uint64 __fastcall ImageImportExecutor(uint64 ip, RegisterBank& regs)
+	{
+		const auto* functionPointer = *(const TSystemFunction**)(ip);
+		return (*functionPointer)(ip, regs);
+	}
+
 	bool Image::Bind(const Symbols& symbols)
 	{
 		bool status = true;
@@ -163,7 +169,7 @@ namespace runtime
 			if (importInfo.m_type == 1)
 			{
 				// find function code prototype
-				runtime::TBlockFunc importCode = symbols.FindFunctionCode(importInfo.m_name);
+				const auto* importCode = symbols.FindFunction(importInfo.m_name);
 				if (!importCode)
 				{
 					numUnknownFunctions += 1;
@@ -174,8 +180,12 @@ namespace runtime
 					continue;
 				}
 
+				// write the pointer to the import function implementation right into the image data
+				// this is usually occupied by a "jmp", since we are handling the execution ouselves we can store whatever we want there
+				*((const TSystemFunction**)(uint64_t)importInfo.m_address) = importCode;
+
 				// bind to code table
-				if (m_codeTable->MountBlock(importInfo.m_address, 4, importCode, true))
+				if (m_codeTable->MountBlock(importInfo.m_address, 4, &ImageImportExecutor, true))
 				{
 					numImportedFunctions += 1;
 				}

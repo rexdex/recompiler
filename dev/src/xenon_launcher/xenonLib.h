@@ -461,6 +461,11 @@ namespace xenon
 		const uint64 m_ip;
 	};
 
+	// function reflection binding
+	namespace binding
+	{
+	}
+
 } // xenon
 
-#define REGISTER(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &Xbox_##x);
+#define REGISTER_RAW(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &Xbox_##x);

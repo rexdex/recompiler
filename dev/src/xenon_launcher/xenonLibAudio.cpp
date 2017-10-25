@@ -52,11 +52,11 @@ namespace xenon
 
 		void RegisterXboxAudio(runtime::Symbols& symbols)
 		{
-			REGISTER(XAudioSubmitRenderDriverFrame);
-			REGISTER(XAudioUnregisterRenderDriverClient);
-			REGISTER(XAudioRegisterRenderDriverClient);
-			REGISTER(XAudioGetVoiceCategoryVolume);
-			REGISTER(XAudioGetSpeakerConfig);
+			REGISTER_RAW(XAudioSubmitRenderDriverFrame);
+			REGISTER_RAW(XAudioUnregisterRenderDriverClient);
+			REGISTER_RAW(XAudioRegisterRenderDriverClient);
+			REGISTER_RAW(XAudioGetVoiceCategoryVolume);
+			REGISTER_RAW(XAudioGetSpeakerConfig);
 		}
 
 		//---------------------------------------------------------------------------
