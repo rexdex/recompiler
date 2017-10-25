@@ -8,6 +8,7 @@
 #include "xenonMemory.h"
 #include "xenonUserManager.h"
 #include "xenonAudio.h"
+#include "xenonBindings.h"
 
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
@@ -22,6 +23,8 @@ xenon::Platform GPlatform;
 
 namespace xenon
 {
+
+	///----
 
 	namespace lib
 	{
@@ -309,6 +312,24 @@ namespace xenon
 				else
 				{
 					m_platformLogFileEnabled = true;
+				}
+			}
+		}
+
+		// create system function tracer
+		{
+			if (commandline.HasOption("callLog"))
+			{
+				const auto callLogFileName = commandline.GetOptionValueW("callLog");
+				if (callLogFileName.empty())
+				{
+					GLog.Log("Runtime: Call log enabled");
+					lib::binding::FunctionInterface::BindFunctionLogger(new lib::binding::StdOutFunctionCallLog());
+				}
+				else
+				{
+					GLog.Log("Runtime: Call log enabled to file '%ls'", callLogFileName.c_str());
+					lib::binding::FunctionInterface::BindFunctionLogger(new lib::binding::FileFunctionCallLog(callLogFileName));
 				}
 			}
 		}

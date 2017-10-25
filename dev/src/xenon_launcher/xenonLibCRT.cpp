@@ -159,7 +159,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox__vsnprintf(uint64 ip, cpu::CpuRegs& regs)
 		{
-			binding::FunctionInterface cc(ip, regs);
+			binding::FunctionInterface cc(ip, regs, "_vsnprintf");
 
 			const auto targetBuf = cc.GetArgument<Pointer<char>>();
 			const auto targetBufSize = cc.GetArgument<uint32>();
@@ -172,7 +172,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox__snprintf(uint64 ip, cpu::CpuRegs& regs)
 		{
-			binding::FunctionInterface cc(ip, regs);
+			binding::FunctionInterface cc(ip, regs, "_snprintf");
 
 			const auto targetBuf = cc.GetArgument<Pointer<char>>();
 			const auto targetBufSize = cc.GetArgument<uint32>();
@@ -185,7 +185,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox_sprintf(uint64 ip, cpu::CpuRegs& regs)
 		{
-			binding::FunctionInterface cc(ip, regs);
+			binding::FunctionInterface cc(ip, regs, "_sprintf");
 
 			const auto targetBuf = cc.GetArgument<Pointer<char>>();
 			const auto formatStr = cc.GetArgument<Pointer<char>>();
@@ -197,7 +197,7 @@ namespace xenon
 		
 		uint64 __fastcall Xbox_DbgPrint(uint64 ip, cpu::CpuRegs& regs)
 		{
-			binding::FunctionInterface cc(ip, regs);
+			binding::FunctionInterface cc(ip, regs, "DbgPrint");
 
 			const auto formatStr = cc.GetArgument<Pointer<char>>();
 
