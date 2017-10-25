@@ -113,8 +113,20 @@ namespace tools
 				a.Link("RecentProject:%ls", path.wc_str());
 				a.Text("%ls", path.wc_str());
 			}
+
+			{
+				HTMLLink a(b);
+				a.Link("ClearProjectList");
+				{
+					HTMLScope txt(a, "font");
+					txt->Attr("size", "8px");
+					txt->Attr("color", "#456043");
+					txt->Print("(clear project list)");
+				}
+			}
 		}
 
+		m_html->SetPage("");
 		m_html->SetPage(b.Extract());
 	}
 
@@ -132,6 +144,11 @@ namespace tools
 		{
 			const auto path = link.Mid(strlen("RecentProject:"));
 			OnOpenRecentProject(path);
+		}
+		else if (link == "ClearProjectList")
+		{
+			m_app->GetRecentProjectPaths().ClearList();
+			RefreshContent();
 		}
 	}
 
@@ -249,7 +266,8 @@ namespace tools
 		{
 			if (wxYES == wxMessageBox("Failed to load selected project. Remove from the list of recent projects?", "Open project", wxICON_ERROR | wxYES_NO, this))
 			{
-
+				if (m_app->GetRecentProjectPaths().RemoveProject(path))
+					RefreshContent();
 			}
 			return;
 		}
