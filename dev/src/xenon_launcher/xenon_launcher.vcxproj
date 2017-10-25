@@ -130,13 +130,15 @@
     </ClCompile>
     <ClCompile Include="xenonInput.cpp" />
     <ClCompile Include="xenonLibAudio.cpp" />
+    <ClCompile Include="xenonLibConfig.cpp" />
+    <ClCompile Include="xenonLibCRT.cpp" />
     <ClCompile Include="xenonLibDebug.cpp" />
     <ClCompile Include="xenonLibFiles.cpp" />
     <ClCompile Include="xenonLibInput.cpp" />
     <ClCompile Include="xenonLibNatives.cpp" />
     <ClCompile Include="xenonLibNet.cpp" />
     <ClCompile Include="xenonLibThreads.cpp" />
-    <ClCompile Include="xenonLibUtils.cpp" />
+    <ClCompile Include="xenonLib.cpp" />
     <ClCompile Include="xenonLibVideo.cpp" />
     <ClCompile Include="xenonLibKernel.cpp" />
     <ClCompile Include="xenonKernel.cpp" />
@@ -202,7 +204,7 @@
     <ClInclude Include="xenonGraphics.h" />
     <ClInclude Include="xenonInput.h" />
     <ClInclude Include="xenonLibNatives.h" />
-    <ClInclude Include="xenonLibUtils.h" />
+    <ClInclude Include="xenonLib.h" />
     <ClInclude Include="xenonKernel.h" />
     <ClInclude Include="xenonMemory.h" />
     <ClInclude Include="xenonPlatform.h" />

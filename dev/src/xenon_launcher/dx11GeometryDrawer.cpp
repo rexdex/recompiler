@@ -795,11 +795,6 @@ bool CDX11GeometryDrawer::TranslatePrimitiveType( const XenonPrimitiveType primi
 	return false;
 }
 
-bool CDX11GeometryDrawer::DrawClearQuad(const float minX, const float minY, const float maxX, const float maxY, const float depth, const float r, const float g, const float b, const float a)
-{
-
-}
-
 bool CDX11GeometryDrawer::Draw( const class CXenonGPURegisters& regs, class IXenonGPUDumpWriter* traceDump, const struct CXenonGPUState::DrawIndexState& ds )
 {
 	if ( !RealizeShaders() )

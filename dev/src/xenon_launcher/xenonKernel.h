@@ -437,7 +437,7 @@ namespace xenon
 		IKernelObject* ResolveHandle(const uint32 handle, KernelObjectType requestedType);
 
 		// resolve kernel object from dispatch object
-		IKernelObject* ResolveObject(void* nativePtr, NativeKernelObjectType requestedType, const bool allowCreate = true);
+		IKernelObject* ResolveObject(const uint32 nativeAddres, NativeKernelObjectType requestedType, const bool allowCreate = true);
 
 		// set master code table
 		void SetCode(const runtime::CodeTable* code);

@@ -616,10 +616,10 @@ namespace xenon
 		}
 		else if (handle == 0xFFFFFFFE)
 		{
-			if (requestedType != KernelObjectType::Thread)
-				return nullptr;
+			if (requestedType == KernelObjectType::Thread || requestedType == KernelObjectType::Unknown)
+				return KernelThread::GetCurrentThread();
 
-			return KernelThread::GetCurrentThread();
+			return nullptr;
 		}
 
 		// generic case - get the id
@@ -653,7 +653,7 @@ namespace xenon
 		return object;
 	}
 
-	IKernelObject* Kernel::ResolveObject(void* nativePtr, NativeKernelObjectType requestedType, const bool allowCreate)
+	IKernelObject* Kernel::ResolveObject(const uint32 nativeAddres, NativeKernelObjectType requestedType, const bool allowCreate)
 	{
 		// Unfortunately the XDK seems to inline some KeInitialize calls, meaning
 		// we never see it and just randomly start getting passed events/timers/etc.
@@ -663,7 +663,7 @@ namespace xenon
 		// each time.
 		// We identify this by checking the low bit of wait_list_blink - if it's 1,
 		// we have already put our pointer in there.
-		xnative::XDISPATCH_HEADER* headerBE = (xnative::XDISPATCH_HEADER*) nativePtr;
+		auto* headerBE = (xnative::XDISPATCH_HEADER*) nativeAddres;
 
 		// get true header
 		xnative::XDISPATCH_HEADER header;
@@ -682,7 +682,7 @@ namespace xenon
 			const auto actualType = (NativeKernelObjectType)(header.TypeFlags & 0xFF);
 			if (actualType != requestedType)
 			{
-				GLog.Err("Kernel: object type mismatch, ptr=%08X, actual type=%d, requested type=%d", (uint32)nativePtr, actualType, requestedType);
+				GLog.Err("Kernel: object type mismatch, ptr=%08X, actual type=%d, requested type=%d", nativeAddres, actualType, requestedType);
 				return nullptr;
 			}
 		}

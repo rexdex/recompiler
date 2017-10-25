@@ -1,59 +1,65 @@
 #include "build.h"
 #include "xenonLibNatives.h" 
-#include "xenonLibUtils.h" 
+#include "xenonLib.h"  
 #include "xenonPlatform.h"
 #include "xenonKernel.h"
 #include "xenonMemory.h"
 
-uint64 __fastcall Xbox_XAudioSubmitRenderDriverFrame(uint64 ip, cpu::CpuRegs& regs)
+namespace xenon
 {
-	RETURN_DEFAULT();
-}
+	namespace lib
+	{
 
-uint64 __fastcall Xbox_XAudioUnregisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
-{
-	auto callbackPtr = utils::MemPtr32<uint32>(regs.R3);
-	auto outputPtr = utils::MemPtr32<uint32>(regs.R4);
+		uint64 __fastcall Xbox_XAudioSubmitRenderDriverFrame(uint64 ip, cpu::CpuRegs& regs)
+		{
+			RETURN_DEFAULT();
+		}
 
-	static uint32_t index = 0;
-	++index;
+		uint64 __fastcall Xbox_XAudioUnregisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
+		{
+			auto callbackPtr = Pointer<uint32>(regs.R3);
+			auto outputPtr = Pointer<uint32>(regs.R4);
 
-	const uint32_t flags = 0x41550000;
-	outputPtr.Set(flags | index);
-	RETURN_ARG(0);
-}
+			static uint32_t index = 0;
+			++index;
 
-uint64 __fastcall Xbox_XAudioRegisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
-{
-	RETURN_DEFAULT();
-}
+			const uint32_t flags = 0x41550000;
+			*outputPtr = flags | index;
+			RETURN_ARG(0);
+		}
 
-uint64 __fastcall Xbox_XAudioGetSpeakerConfig(uint64 ip, cpu::CpuRegs& regs)
-{
-	auto memPtr = utils::MemPtr32<uint32>(regs.R3);
-	//memPtr.Set(1);
-	memPtr.Set(0x00010001);
-	RETURN_ARG(0);
-}
+		uint64 __fastcall Xbox_XAudioRegisterRenderDriverClient(uint64 ip, cpu::CpuRegs& regs)
+		{
+			RETURN_DEFAULT();
+		}
 
-uint64 __fastcall Xbox_XAudioGetVoiceCategoryVolume(uint64 ip, cpu::CpuRegs& regs)
-{
-	auto memPtr = utils::MemPtr32<float>(regs.R4);
-	memPtr.Set(1.0f); // full volume
-	RETURN_ARG(0);
-}
+		uint64 __fastcall Xbox_XAudioGetSpeakerConfig(uint64 ip, cpu::CpuRegs& regs)
+		{
+			auto memPtr = Pointer<uint32>(regs.R3);
+			//memPtr.Set(1);
+			*memPtr = 0x00010001;
+			RETURN_ARG(0);
+		}
 
-//---------------------------------------------------------------------------
+		uint64 __fastcall Xbox_XAudioGetVoiceCategoryVolume(uint64 ip, cpu::CpuRegs& regs)
+		{
+			auto memPtr = Pointer<float>(regs.R4);
+			*memPtr = 1.0f;
+			RETURN_ARG(0);
+		}
 
-void RegisterXboxAudio(runtime::Symbols& symbols)
-{
-#define REGISTER(x) symbols.RegisterFunction(#x, (runtime::TBlockFunc) &Xbox_##x);
-    REGISTER(XAudioSubmitRenderDriverFrame);
-    REGISTER(XAudioUnregisterRenderDriverClient);
-	REGISTER(XAudioRegisterRenderDriverClient);
-	REGISTER(XAudioGetVoiceCategoryVolume);
-	REGISTER(XAudioGetSpeakerConfig);
-#undef REGISTER
-}
+		//---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
+		void RegisterXboxAudio(runtime::Symbols& symbols)
+		{
+			REGISTER(XAudioSubmitRenderDriverFrame);
+			REGISTER(XAudioUnregisterRenderDriverClient);
+			REGISTER(XAudioRegisterRenderDriverClient);
+			REGISTER(XAudioGetVoiceCategoryVolume);
+			REGISTER(XAudioGetSpeakerConfig);
+		}
+
+		//---------------------------------------------------------------------------
+
+	} // lib
+} // xenon

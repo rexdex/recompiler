@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="xenonLibUtils.cpp">
-      <Filter>libs</Filter>
-    </ClCompile>
     <ClCompile Include="xenonLibNatives.cpp">
       <Filter>libs</Filter>
     </ClCompile>
@@ -176,12 +173,18 @@
     <ClCompile Include="xenonAudio.cpp">
       <Filter>devices\audio</Filter>
     </ClCompile>
-    <ClCompile Include="xenonLibNet.cpp" />
+    <ClCompile Include="xenonLibCRT.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibNet.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLibConfig.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonLib.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="xenonLibUtils.h">
-      <Filter>libs</Filter>
-    </ClInclude>
     <ClInclude Include="xenonLibNatives.h">
       <Filter>libs</Filter>
     </ClInclude>
@@ -359,6 +362,7 @@
     <ClInclude Include="xenonAudio.h">
       <Filter>devices\audio</Filter>
     </ClInclude>
+    <ClInclude Include="xenonLib.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">

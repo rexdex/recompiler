@@ -23,6 +23,22 @@ xenon::Platform GPlatform;
 namespace xenon
 {
 
+	namespace lib
+	{
+		extern void RegisterXboxCRT(runtime::Symbols& symbols);
+		extern void RegisterXboxKernel(runtime::Symbols& symbols);
+		extern void RegisterXboxVideo(runtime::Symbols& symbols);
+		extern void RegisterXboxThreads(runtime::Symbols& symbols);
+		extern void RegisterXboxFiles(runtime::Symbols& symbols);
+		extern void RegisterXboxDebug(runtime::Symbols& symbols);
+		extern void RegisterXboxInput(runtime::Symbols& symbols);
+		extern void RegisterXboxXAM(runtime::Symbols& symbols);
+		extern void RegisterXboxAudio(runtime::Symbols& symbols);
+		extern void RegisterXboxNetworking(runtime::Symbols& symbols);
+		extern void RegisterXboxConfig(runtime::Symbols& symbols);
+
+	} // lib
+
 	Platform::Platform()
 		: m_kernel(nullptr)
 		, m_fileSys(nullptr)
@@ -170,31 +186,19 @@ namespace xenon
 		GLog.Log("Runtime: Initializing Xenon audio system");
 		m_audio = new Audio(symbols, commandline);
 
-		// initialize config data
-		extern void InitializeXboxConfig();
-		InitializeXboxConfig();
 
 		// create symbols
-		extern void RegisterXboxKernel(runtime::Symbols& symbols);
-		RegisterXboxKernel(symbols);
-		extern void RegisterXboxUtils(runtime::Symbols& symbols);
-		RegisterXboxUtils(symbols);
-		extern void RegisterXboxVideo(runtime::Symbols& symbols);
-		RegisterXboxVideo(symbols);
-		extern void RegisterXboxThreads(runtime::Symbols& symbols);
-		RegisterXboxThreads(symbols);
-		extern void RegisterXboxFiles(runtime::Symbols& symbols);
-		RegisterXboxFiles(symbols);
-		extern void RegisterXboxDebug(runtime::Symbols& symbols);
-		RegisterXboxDebug(symbols);
-		extern void RegisterXboxInput(runtime::Symbols& symbols);
-		RegisterXboxInput(symbols);
-		extern void RegisterXboxXAM(runtime::Symbols& symbols);
-		RegisterXboxXAM(symbols);
-		extern void RegisterXboxAudio(runtime::Symbols& symbols);
-		RegisterXboxAudio(symbols);
-        extern void RegisterXboxNetworking(runtime::Symbols& symbols);
-        RegisterXboxNetworking(symbols);
+		lib::RegisterXboxCRT(symbols);
+		lib::RegisterXboxKernel(symbols);
+		lib::RegisterXboxVideo(symbols);
+		lib::RegisterXboxThreads(symbols);
+		lib::RegisterXboxFiles(symbols);
+		lib::RegisterXboxDebug(symbols);
+		lib::RegisterXboxInput(symbols);
+		lib::RegisterXboxXAM(symbols);
+		lib::RegisterXboxAudio(symbols);
+		lib::RegisterXboxNetworking(symbols);
+		lib::RegisterXboxConfig(symbols);
 
 		// register the process native data
 
