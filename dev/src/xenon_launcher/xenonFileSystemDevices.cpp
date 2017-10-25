@@ -33,7 +33,7 @@ namespace xenon
 		return true;
 	}
 
-	bool FileSystemDevice_PathRedirection::GetFileInfo(const class FileSystemEntry* entry, xnative::X_FILE_INFO& outInfo) const
+	bool FileSystemDevice_PathRedirection::GetFileInfo(const class FileSystemEntry* entry, lib::X_FILE_INFO& outInfo) const
 	{
 		native::FileInfo info;
 		if (!m_nativeFileSystem->GetFileInfo(entry->GetPhysicalPath(), info))

@@ -20,42 +20,42 @@ namespace xenon
 		void RemoveSetting(const uint32_t id);
 
 		/// add setting to config
-		void AddSetting(const uint32_t id, const xnative::X_USER_DATA_TYPE type, const void* src, const uint32_t size, const bool swapOnLoad);
+		void AddSetting(const uint32_t id, const lib::X_USER_DATA_TYPE type, const void* src, const uint32_t size, const bool swapOnLoad);
 
 		inline void AddSetting(const uint32_t id, const int32_t value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT32, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT32, &value, sizeof(value), false);
 		}
 
 		inline void AddSetting(const uint32_t id, const int64_t value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT64, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT64, &value, sizeof(value), false);
 		}
 
 		inline void AddSetting(const uint32_t id, const float value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_FLOAT, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_FLOAT, &value, sizeof(value), false);
 		}
 
 		inline void AddSetting(const uint32_t id, const double value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DOUBLE, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DOUBLE, &value, sizeof(value), false);
 		}
 
 		inline void AddSetting(const uint32_t id, const wchar_t* value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_UNICODE, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_UNICODE, &value, sizeof(value), false);
 		}
 
 		inline void AddSetting(const uint32_t id, const uint64_t value)
 		{
-			AddSetting(id, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DATETIME, &value, sizeof(value), false);
+			AddSetting(id, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DATETIME, &value, sizeof(value), false);
 		}
 
 		//---
 
 		/// get value from config
-		const bool GetSetting(const uint32_t id, const xnative::X_USER_DATA_TYPE type, void* outDest, const uint32_t size, const bool swapOnStore);
+		const bool GetSetting(const uint32_t id, const lib::X_USER_DATA_TYPE type, void* outDest, const uint32_t size, const bool swapOnStore);
 
 		//---
 
@@ -68,7 +68,7 @@ namespace xenon
 		struct Entry
 		{
 			uint32 m_id;
-			xnative::X_USER_DATA_TYPE m_type;
+			lib::X_USER_DATA_TYPE m_type;
 
 			struct
 			{

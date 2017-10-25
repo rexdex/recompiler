@@ -82,7 +82,7 @@ namespace xenon
 			const auto size = *sizePtr;
 
 			// invalid type
-			if (allocType & xnative::XMEM_RESERVE && (base != NULL))
+			if (allocType & XMEM_RESERVE && (base != NULL))
 			{
 				GLog.Err("VMEM: Trying to reserve predefined memory region. Not supported.");
 				regs.R3 = ((DWORD)0xC0000005L);
@@ -92,8 +92,8 @@ namespace xenon
 
 			// determine aligned size
 			uint32 pageAlignment = 4096;
-			if (allocType & xnative::XMEM_LARGE_PAGES) pageAlignment = 64 << 10;
-			else if (allocType & xnative::XMEM_16MB_PAGES) pageAlignment = 16 << 20;
+			if (allocType & XMEM_LARGE_PAGES) pageAlignment = 64 << 10;
+			else if (allocType & XMEM_16MB_PAGES) pageAlignment = 16 << 20;
 
 			// align size
 			uint32 alignedSize = (size + (pageAlignment - 1)) & ~(pageAlignment - 1);
@@ -128,7 +128,7 @@ namespace xenon
 			RETURN();
 		}
 
-		uint32 GCurrentProcessType = xnative::X_PROCTYPE_USER;
+		uint32 GCurrentProcessType = X_PROCTYPE_USER;
 
 		uint64 __fastcall Xbox_KeGetCurrentProcessType(uint64 ip, cpu::CpuRegs& regs)
 		{
@@ -155,11 +155,11 @@ namespace xenon
 			const auto protect = regs.R6;
 
 			if (!base)
-				return xnative::X_STATUS_MEMORY_NOT_ALLOCATED;
+				return X_STATUS_MEMORY_NOT_ALLOCATED;
 
 			uint32 freedSize = 0;
 			if (!GPlatform.GetMemory().VirtualFree(base, size, freeType, freedSize))
-				return xnative::X_STATUS_UNSUCCESSFUL;
+				return X_STATUS_UNSUCCESSFUL;
 
 			if (sizePtr.IsValid())
 				*sizePtr = freedSize;
@@ -226,7 +226,7 @@ namespace xenon
 			if (!object)
 			{
 				GLog.Warn("Unresolved object handle: %08Xh", handle);
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 			}
 
 			// object is not refcounted

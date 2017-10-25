@@ -156,12 +156,12 @@ namespace xenon
 	void* Memory::VirtualAlloc(void* base, const uint32 size, const uint64 allocFlags, const uint64 protectFlags)
 	{
 		// allocation
-		if ((allocFlags & xnative::XMEM_RESERVE) || (base == nullptr))
+		if ((allocFlags & lib::XMEM_RESERVE) || (base == nullptr))
 		{
 			DEBUG_CHECK(base == nullptr);
 			DEBUG_CHECK(protectFlags <= 0xFFFF);
 
-			const bool topDown = (allocFlags & xnative::XMEM_TOP_DOWN) != 0;
+			const bool topDown = (allocFlags & lib::XMEM_TOP_DOWN) != 0;
 			base = m_virtual.Allocate(size, topDown, (uint16)protectFlags);
 		}
 
@@ -171,7 +171,7 @@ namespace xenon
 
 	const bool Memory::VirtualFree(void* base, const uint32 initSize, const uint64 allocFlags, uint32& outFreedSize)
 	{
-		if (allocFlags & xnative::XMEM_RELEASE)
+		if (allocFlags & lib::XMEM_RELEASE)
 		{
 			uint32 numAllocatedPages = 0;
 
@@ -209,13 +209,13 @@ namespace xenon
 	{
 		// i'm burning in hell for this
 		// TODO: proper allocator for small blocks (HeapAlloc)
-		return VirtualAlloc(0, size, xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
+		return VirtualAlloc(0, size, lib::XMEM_RESERVE | lib::XMEM_COMMIT, lib::XPAGE_READWRITE);
 	}
 
 	void Memory::FreeSmallBlock(void* memory)
 	{
 		uint32 freedSize = 0;
-		VirtualFree(memory, 0, xnative::XMEM_FREE | xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE, freedSize);
+		VirtualFree(memory, 0, lib::XMEM_FREE | lib::XMEM_DECOMMIT | lib::XMEM_RELEASE, freedSize);
 	}
 
 	//---

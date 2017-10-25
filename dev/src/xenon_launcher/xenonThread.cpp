@@ -128,7 +128,7 @@ namespace xenon
 		return prevAffinity;
 	}
 
-	xnative::XStatus KernelThread::Delay(const uint32 processor_mode, const uint32 alertable, const uint64 interval)
+	lib::XStatus KernelThread::Delay(const uint32 processor_mode, const uint32 alertable, const uint64 interval)
 	{
 		int64 timeout_ticks = interval;
 		uint32 timeout_ms = 0;
@@ -139,35 +139,35 @@ namespace xenon
 		const auto result = m_nativeThread->Sleep(timeout_ms, alertable != 0);
 
 		if (result == native::WaitResult::Success)
-			return xnative::X_STATUS_SUCCESS;
+			return lib::X_STATUS_SUCCESS;
 		else if (result == native::WaitResult::IOCompletion)
-			return xnative::X_STATUS_USER_APC;
+			return lib::X_STATUS_USER_APC;
 		else
-			return xnative::X_STATUS_ALERTED;
+			return lib::X_STATUS_ALERTED;
 	}
 
-	xnative::XStatus KernelThread::EnterCriticalRegion()
+	lib::XStatus KernelThread::EnterCriticalRegion()
 	{
 		if (m_criticalRegion)
 		{
 			GLog.Err("Kernel: Entering already set critical region on Thread '%s' (TID=%d)", GetName(), GetIndex());
-			return xnative::X_STATUS_UNSUCCESSFUL;
+			return lib::X_STATUS_UNSUCCESSFUL;
 		}
 
 		m_criticalRegion = true;
-		return xnative::X_STATUS_SUCCESS;
+		return lib::X_STATUS_SUCCESS;
 	}
 
-	xnative::XStatus KernelThread::LeaveCriticalRegion()
+	lib::XStatus KernelThread::LeaveCriticalRegion()
 	{
 		if (!m_criticalRegion)
 		{
 			GLog.Err("Kernel: Leaving non existing critical region on Thread '%s' (TID=%d)", GetName(), GetIndex());
-			return xnative::X_STATUS_UNSUCCESSFUL;
+			return lib::X_STATUS_UNSUCCESSFUL;
 		}
 
 		m_criticalRegion = false;
-		return xnative::X_STATUS_SUCCESS;
+		return lib::X_STATUS_SUCCESS;
 	}
 
 	int KernelThread::Run(native::IThread& thread)

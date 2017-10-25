@@ -18,14 +18,14 @@ namespace xenon
 			DebugBreak();			
 		}
 		
-		xnative::X_STATUS Xbox_DmAbortProfiling()
+		X_STATUS Xbox_DmAbortProfiling()
 		{
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
-		xnative::X_STATUS Xbox_DmAddUser(Pointer<char> userName, uint32_t accessLevel)
+		X_STATUS Xbox_DmAddUser(Pointer<char> userName, uint32_t accessLevel)
 		{
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
 		MemoryAddress Xbox_DmAllocatePool(uint32_t numBytes)
@@ -38,9 +38,9 @@ namespace xenon
 			return GPlatform.GetMemory().AllocateSmallBlock(numBytes);
 		}
 
-		xnative::X_STATUS Xbox_DmCaptureStackBackTrace(uint32_t numFrames, Pointer<uint32_t> callStack)
+		X_STATUS Xbox_DmCaptureStackBackTrace(uint32_t numFrames, Pointer<uint32_t> callStack)
 		{
-			return xnative::X_STATUS_UNSUCCESSFUL;
+			return X_STATUS_UNSUCCESSFUL;
 		}
 
 		void RegisterXboxDebug(runtime::Symbols& symbols)

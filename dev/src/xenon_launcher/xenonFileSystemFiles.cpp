@@ -42,7 +42,7 @@ namespace xenon
 		return m_nativeFile->Write(buffer, size, offset, outSize);
 	}
 
-	bool FileNative::GetInfo(xnative::X_FILE_INFO& outInfo) const
+	bool FileNative::GetInfo(lib::X_FILE_INFO& outInfo) const
 	{
 		native::FileInfo info;
 		if (!m_nativeFile->GetInfo(info))

@@ -51,10 +51,10 @@ namespace xenon
 		{
 			auto user = (uint32)(regs.R3);
 			auto flags = (uint32)(regs.R4);
-			auto statePtr = Pointer<xnative::X_INPUT_STATE>(regs.R5);
+			auto statePtr = Pointer<X_INPUT_STATE>(regs.R5);
 
 			if ((flags & 0xFF) && (flags & XINPUT_FLAG_GAMEPAD) == 0)
-				RETURN_ARG(xnative::X_ERROR_DEVICE_NOT_CONNECTED);
+				RETURN_ARG(X_ERROR_DEVICE_NOT_CONNECTED);
 
 			if ((user & 0xFF) == 0xFF || (flags & XINPUT_FLAG_ANY_USER))
 				user = 0;
@@ -67,13 +67,13 @@ namespace xenon
 		{
 			auto user = (uint32)regs.R3;
 			auto flags = (uint32)regs.R4;
-			auto capsPtr = Pointer<xnative::X_INPUT_CAPABILITIES>(regs.R5);
+			auto capsPtr = Pointer<X_INPUT_CAPABILITIES>(regs.R5);
 
 			if (!capsPtr.IsValid())
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			if ((flags & 0xFF) && (flags & XINPUT_FLAG_GAMEPAD) == 0)
-				RETURN_ARG(xnative::X_ERROR_DEVICE_NOT_CONNECTED);
+				RETURN_ARG(X_ERROR_DEVICE_NOT_CONNECTED);
 
 			if ((user & 0xFF) == 0xFF || (flags & XINPUT_FLAG_ANY_USER))
 				user = 0;
@@ -87,13 +87,13 @@ namespace xenon
 			auto tmp = (uint32)regs.R3;
 			auto user = (uint32)regs.R4;
 			auto flags = (uint32)regs.R5;
-			auto capsPtr = Pointer<xnative::X_INPUT_CAPABILITIES>(regs.R6);
+			auto capsPtr = Pointer<X_INPUT_CAPABILITIES>(regs.R6);
 
 			if (!capsPtr.IsValid())
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			if ((flags & 0xFF) && (flags & XINPUT_FLAG_GAMEPAD) == 0)
-				RETURN_ARG(xnative::X_ERROR_DEVICE_NOT_CONNECTED);
+				RETURN_ARG(X_ERROR_DEVICE_NOT_CONNECTED);
 
 			if ((user & 0xFF) == 0xFF || (flags & XINPUT_FLAG_ANY_USER))
 				user = 0;
@@ -106,10 +106,10 @@ namespace xenon
 		{
 			auto user = (uint32)regs.R3;
 			auto unk = (uint32)regs.R4;
-			auto ptr = Pointer<xnative::X_INPUT_VIBRATION>(regs.R5);
+			auto ptr = Pointer<X_INPUT_VIBRATION>(regs.R5);
 
 			if (!ptr.IsValid())
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			if ((user & 0xFF) == 0xFF)
 				user = 0;
@@ -123,13 +123,13 @@ namespace xenon
 		{
 			auto user = (uint32)regs.R3;
 			auto flags = (uint32)regs.R4;
-			auto ptr = Pointer<xnative::X_INPUT_KEYSTROKE>(regs.R5);
+			auto ptr = Pointer<X_INPUT_KEYSTROKE>(regs.R5);
 
 			if (!ptr.IsValid())
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			if ((flags & 0xFF) && (flags & XINPUT_FLAG_GAMEPAD) == 0)
-				RETURN_ARG(xnative::X_ERROR_DEVICE_NOT_CONNECTED);
+				RETURN_ARG(X_ERROR_DEVICE_NOT_CONNECTED);
 
 			if ((user & 0xFF) == 0xFF || (flags & XINPUT_FLAG_ANY_USER))
 				user = 0;
@@ -143,13 +143,13 @@ namespace xenon
 		{
 			auto user = cpu::mem::loadAddr<uint32>((uint32)regs.R3);
 			auto flags = (uint32)regs.R4;
-			auto ptr = Pointer<xnative::X_INPUT_KEYSTROKE>(regs.R5);
+			auto ptr = Pointer<X_INPUT_KEYSTROKE>(regs.R5);
 
 			if (!ptr.IsValid())
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			if ((flags & 0xFF) && (flags & XINPUT_FLAG_GAMEPAD) == 0)
-				RETURN_ARG(xnative::X_ERROR_DEVICE_NOT_CONNECTED);
+				RETURN_ARG(X_ERROR_DEVICE_NOT_CONNECTED);
 
 			if ((user & 0xFF) == 0xFF || (flags & XINPUT_FLAG_ANY_USER))
 				user = 0;

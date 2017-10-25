@@ -27,7 +27,7 @@ namespace xenon
 		return m_device->Open(this, flags);
 	}
 
-	bool FileSystemEntry::GetInfo(xnative::X_FILE_INFO& outInfo) const
+	bool FileSystemEntry::GetInfo(lib::X_FILE_INFO& outInfo) const
 	{
 		return m_device->GetFileInfo(this, outInfo);
 	}

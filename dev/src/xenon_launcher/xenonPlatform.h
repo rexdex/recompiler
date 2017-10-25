@@ -75,15 +75,15 @@ namespace xenon
 		Audio*					m_audio;		// audio system
 
 		// some runtime data
-		xnative::XenonNativeData	m_nativeXexExecutableModuleHandle;
-		xnative::XenonNativeData	m_nativeKeDebugMonitorData;
-		xnative::XenonNativeData	m_nativeKeCertMonitorData;
-		xnative::XenonNativeData	m_nativeXboxHardwareInfo;
-		xnative::XenonNativeData	m_nativeXexExecutableModuleHandlePtr;
-		xnative::XenonNativeData	m_nativeExLoadedCommandLine;
-		xnative::XenonNativeData	m_nativeXboxKrnlVersion;
-		xnative::XenonNativeData	m_nativeKeTimeStampBundle;
-		xnative::XenonNativeData	m_nativeExThreadObjectType;
+		lib::XenonNativeData	m_nativeXexExecutableModuleHandle;
+		lib::XenonNativeData	m_nativeKeDebugMonitorData;
+		lib::XenonNativeData	m_nativeKeCertMonitorData;
+		lib::XenonNativeData	m_nativeXboxHardwareInfo;
+		lib::XenonNativeData	m_nativeXexExecutableModuleHandlePtr;
+		lib::XenonNativeData	m_nativeExLoadedCommandLine;
+		lib::XenonNativeData	m_nativeXboxKrnlVersion;
+		lib::XenonNativeData	m_nativeKeTimeStampBundle;
+		lib::XenonNativeData	m_nativeExThreadObjectType;
 
 		// interrupt table
 		cpu::Interrupts*	m_interruptTable;

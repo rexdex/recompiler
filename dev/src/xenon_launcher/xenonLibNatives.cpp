@@ -9,7 +9,7 @@
 
 namespace xenon
 {
-	namespace xnative
+	namespace lib
 	{
 
 		XenonNativeData::XenonNativeData()
@@ -23,7 +23,7 @@ namespace xenon
 
 		void XenonNativeData::Alloc(const uint32 size)
 		{
-			m_data = (uint8*)GPlatform.GetMemory().VirtualAlloc(nullptr, size, xnative::XMEM_COMMIT | xnative::XMEM_RESERVE, xnative::XPAGE_READWRITE);
+			m_data = (uint8*)GPlatform.GetMemory().VirtualAlloc(nullptr, size, XMEM_COMMIT | XMEM_RESERVE, XPAGE_READWRITE);
 			memset(m_data, 0, size);
 		}
 
@@ -125,5 +125,6 @@ namespace xenon
 		}
 
 		*/
-	} // xnative
+
+	} // lib
 } // xenon

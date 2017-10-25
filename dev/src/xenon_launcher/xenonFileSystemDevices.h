@@ -24,7 +24,7 @@ namespace xenon
 
 		virtual bool Resolve(const char* path, std::wstring& outPath) override;
 		virtual IFile* Open(const class FileSystemEntry* enty, const uint32 fileMode) override;
-		virtual bool GetFileInfo(const class FileSystemEntry* enty, xnative::X_FILE_INFO& outInfo) const override;
+		virtual bool GetFileInfo(const class FileSystemEntry* enty, lib::X_FILE_INFO& outInfo) const override;
 
 	private:
 		Kernel*				m_kernel;

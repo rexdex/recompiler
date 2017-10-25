@@ -25,7 +25,7 @@ namespace xenon
 		}
 	}
 
-	void UserProfile::AddSetting(const uint32_t id, const xnative::X_USER_DATA_TYPE type, const void* src, const uint32_t size, const bool swapOnLoad)
+	void UserProfile::AddSetting(const uint32_t id, const lib::X_USER_DATA_TYPE type, const void* src, const uint32_t size, const bool swapOnLoad)
 	{
 		// TODO: optimize 
 		RemoveSetting(id);
@@ -38,8 +38,8 @@ namespace xenon
 		// set value
 		switch (type)
 		{
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_FLOAT:
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT32:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_FLOAT:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT32:
 			{
 				DEBUG_CHECK(size == 4);
 				if (swapOnLoad)
@@ -49,9 +49,9 @@ namespace xenon
 				break;
 			}
 
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DOUBLE:
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DATETIME:
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT64:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DOUBLE:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_DATETIME:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_INT64:
 			{
 				DEBUG_CHECK(size == 8);
 				if (swapOnLoad)
@@ -61,7 +61,7 @@ namespace xenon
 				break;
 			}
 
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_UNICODE:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_UNICODE:
 			{
 				uint32_t len = 0;
 				for (;;)
@@ -94,7 +94,7 @@ namespace xenon
 				break;
 			}
 
-			case xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY:
+			case lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY:
 			{
 				entry.data.blob.resize(size);
 				memcpy(entry.data.blob.data(), src, size);
@@ -166,12 +166,12 @@ namespace xenon
 		AddSetting(0x4064000F, L"gamercard_picture_key");
 
 		// XPROFILE_TITLE_SPECIFIC1
-		AddSetting(0x63E83FFF, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
-		AddSetting(0x63E83FFE, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
-		AddSetting(0x63E83FFD, xnative::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
+		AddSetting(0x63E83FFF, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
+		AddSetting(0x63E83FFE, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
+		AddSetting(0x63E83FFD, lib::X_USER_DATA_TYPE::XUSER_DATA_TYPE_BINARY, nullptr, 0, true);
 	}
 
-	const bool UserProfile::GetSetting(const uint32_t id, const xnative::X_USER_DATA_TYPE type, void* outDest, const uint32_t size, const bool swapOnStore)
+	const bool UserProfile::GetSetting(const uint32_t id, const lib::X_USER_DATA_TYPE type, void* outDest, const uint32_t size, const bool swapOnStore)
 	{
 		return false;
 	}
@@ -234,7 +234,7 @@ namespace xenon
 
 		// send system-wide notification
 		const auto validUserMask = GetValidUserMask();
-		GPlatform.GetKernel().PostEventNotification(xnative::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
+		GPlatform.GetKernel().PostEventNotification(lib::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
 
 		return true;
 	}
@@ -266,7 +266,7 @@ namespace xenon
 
 			// send system-wide notification
 			const auto validUserMask = GetValidUserMask();
-			GPlatform.GetKernel().PostEventNotification(xnative::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
+			GPlatform.GetKernel().PostEventNotification(lib::XN_SYS_SIGNINCHANGED.GetCode(), validUserMask);
 
 			return true;
 		}

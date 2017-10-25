@@ -22,12 +22,12 @@ namespace xenon
 	{
 		switch (result)
 		{
-			case native::WaitResult::Success: return xnative::X_STATUS_SUCCESS;
-			case native::WaitResult::IOCompletion:return xnative::X_STATUS_USER_APC;
-			case native::WaitResult::Timeout: return xnative::X_STATUS_TIMEOUT;
+			case native::WaitResult::Success: return lib::X_STATUS_SUCCESS;
+			case native::WaitResult::IOCompletion:return lib::X_STATUS_USER_APC;
+			case native::WaitResult::Timeout: return lib::X_STATUS_TIMEOUT;
 		}
 
-		return xnative::X_STATUS_ABANDONED_WAIT_0;
+		return lib::X_STATUS_ABANDONED_WAIT_0;
 	}
 
 	static uint32 TimeoutTicksToMs(int64 timeout_ticks)
@@ -79,9 +79,9 @@ namespace xenon
 
 	void IKernelObject::SetNativePointer(void* nativePtr)
 	{
-		xnative::XDISPATCH_HEADER* headerBE = (xnative::XDISPATCH_HEADER*) nativePtr;
+		lib::XDISPATCH_HEADER* headerBE = (lib::XDISPATCH_HEADER*) nativePtr;
 
-		xnative::XDISPATCH_HEADER header;
+		lib::XDISPATCH_HEADER header;
 		header.TypeFlags = cpu::mem::load<uint32>(&headerBE->TypeFlags);
 		header.SignalState = cpu::mem::load<uint32>(&headerBE->SignalState);
 		header.WaitListFLink = cpu::mem::load<uint32>(&headerBE->WaitListFLink);
@@ -241,7 +241,7 @@ namespace xenon
 		, m_size(size)
 	{
 		// alloc stack
-		m_base = GPlatform.GetMemory().VirtualAlloc(NULL, m_size, /*xnative::XMEM_TOP_DOWN | */xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
+		m_base = GPlatform.GetMemory().VirtualAlloc(NULL, m_size, /*lib::XMEM_TOP_DOWN | */lib::XMEM_RESERVE | lib::XMEM_COMMIT, lib::XPAGE_READWRITE);
 		DEBUG_CHECK(m_base != nullptr);
 
 		// setup
@@ -255,7 +255,7 @@ namespace xenon
 	KernelStackMemory::~KernelStackMemory()
 	{
 		uint32 freedSize = 0;
-		GPlatform.GetMemory().VirtualFree(m_base, m_size, xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE, freedSize);
+		GPlatform.GetMemory().VirtualFree(m_base, m_size, lib::XMEM_DECOMMIT | lib::XMEM_RELEASE, freedSize);
 
 		m_base = nullptr;
 		m_top = nullptr;
@@ -272,7 +272,7 @@ namespace xenon
 		const uint32 totalThreaDataSize = (THREAD_DATA_SIZE + PRC_DATA_SIZE + TLS_COUNT + SCRATCH_SIZE) * sizeof(uint32);
 
 		// alloc stack
-		m_block = GPlatform.GetMemory().VirtualAlloc(NULL, totalThreaDataSize, xnative::XMEM_TOP_DOWN | xnative::XMEM_RESERVE | xnative::XMEM_COMMIT, xnative::XPAGE_READWRITE);
+		m_block = GPlatform.GetMemory().VirtualAlloc(NULL, totalThreaDataSize, lib::XMEM_TOP_DOWN | lib::XMEM_RESERVE | lib::XMEM_COMMIT, lib::XPAGE_READWRITE);
 		memset(m_block, 0, totalThreaDataSize);
 		DEBUG_CHECK(m_block != nullptr);
 
@@ -294,7 +294,7 @@ namespace xenon
 		cpu::mem::storeAddr<uint32>(m_prcAddr + 0x150, 1); // dpc flag (guess)
 
 													  // setup internal descriptor layout
-													  // xnative::XDISPATCH_HEADER
+													  // lib::XDISPATCH_HEADER
 		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x000, 6); // ThreadObject
 		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x008, m_threadDataAddr + 0x008); // list pointer
 		cpu::mem::storeAddr<uint32>(m_threadDataAddr + 0x00C, m_threadDataAddr + 0x008);
@@ -336,7 +336,7 @@ namespace xenon
 	KernelThreadMemory::~KernelThreadMemory()
 	{
 		uint32 freedSize = 0;
-		GPlatform.GetMemory().VirtualFree(m_block, 0, xnative::XMEM_DECOMMIT | xnative::XMEM_RELEASE, freedSize);
+		GPlatform.GetMemory().VirtualFree(m_block, 0, lib::XMEM_DECOMMIT | lib::XMEM_RELEASE, freedSize);
 
 		m_block = nullptr;
 		m_prcAddr = 0;
@@ -663,10 +663,10 @@ namespace xenon
 		// each time.
 		// We identify this by checking the low bit of wait_list_blink - if it's 1,
 		// we have already put our pointer in there.
-		auto* headerBE = (xnative::XDISPATCH_HEADER*) nativeAddres;
+		auto* headerBE = (lib::XDISPATCH_HEADER*) nativeAddres;
 
 		// get true header
-		xnative::XDISPATCH_HEADER header;
+		lib::XDISPATCH_HEADER header;
 		header.TypeFlags = cpu::mem::load<uint32>(&headerBE->TypeFlags);
 		header.SignalState = cpu::mem::load<uint32>(&headerBE->SignalState);
 		header.WaitListFLink = cpu::mem::load<uint32>(&headerBE->WaitListFLink);

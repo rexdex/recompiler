@@ -27,10 +27,10 @@ namespace xenon
 
 	private:
 		// mapped global stuff
-		xnative::XenonNativeData	m_nativeVdGlobalDevice;
-		xnative::XenonNativeData	m_nativeVdGlobalXamDevice;
-		xnative::XenonNativeData	m_nativeVdGpuClockInMHz;
-		xnative::XenonNativeData	m_nativeVdHSIOCalibrationLock;
+		lib::XenonNativeData	m_nativeVdGlobalDevice;
+		lib::XenonNativeData	m_nativeVdGlobalXamDevice;
+		lib::XenonNativeData	m_nativeVdGpuClockInMHz;
+		lib::XenonNativeData	m_nativeVdHSIOCalibrationLock;
 
 		// GPU "chip" implementation
 		CXenonGPU*	m_gpu;

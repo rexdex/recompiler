@@ -19,8 +19,8 @@ namespace xenon
 			uint32 DVDRegion;// key 0x4 4 bytes - 0x00000001 can/usa
 			uint32 ResetKey;// key 0x5 4 bytes
 			uint32 SystemFlags;// ??key 0x6 4 bytes?? key 0x8 4 bytes?? NOT SURE WHICH, 0x8 or 0x6
-			xnative::XCONFIG_POWER_MODE PowerMode;// key 0x07 2 bytes
-			xnative::XCONFIG_POWER_VCS_CONTROL PowerVcsControl;// key 0x9 2 bytes
+			XCONFIG_POWER_MODE PowerMode;// key 0x07 2 bytes
+			XCONFIG_POWER_VCS_CONTROL PowerVcsControl;// key 0x9 2 bytes
 			uint32 VideoMode;
 		};
 
@@ -77,7 +77,7 @@ namespace xenon
 		HRESULT Xbox_ExGetXConfigSetting(uint16_t categoryNum, uint16_t settingNum, MemoryAddress outputBufPtr, uint32_t outputBuffSize, Pointer<uint16> settingSizePtr)
 		{
 			// invalid category num
-			if (categoryNum >= xnative::XCONFIG_CATEGORY_MAX)
+			if (categoryNum >= XCONFIG_CATEGORY_MAX)
 			{
 				GLog.Warn("XConfig: invalid category id(%d)");
 				return -1;
@@ -86,46 +86,46 @@ namespace xenon
 			// extract the setting
 			switch (categoryNum)
 			{
-				case xnative::XCONFIG_SECURED_CATEGORY:
+				case XCONFIG_SECURED_CATEGORY:
 				{
 					switch (settingNum)
 					{
-						case xnative::XCONFIG_SECURED_MAC_ADDRESS: 
+						case XCONFIG_SECURED_MAC_ADDRESS: 
 							return ExtractSetting(GConfig.MACAddress, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_AV_REGION: 
+						case XCONFIG_SECURED_AV_REGION: 
 							return ExtractSetting(GConfig.AVRegion, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_GAME_REGION: 
+						case XCONFIG_SECURED_GAME_REGION: 
 							return ExtractSetting(GConfig.GameRegion, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_DVD_REGION: 
+						case XCONFIG_SECURED_DVD_REGION: 
 							return ExtractSetting(GConfig.DVDRegion, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_RESET_KEY: 
+						case XCONFIG_SECURED_RESET_KEY: 
 							return ExtractSetting(GConfig.ResetKey, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_SYSTEM_FLAGS: 
+						case XCONFIG_SECURED_SYSTEM_FLAGS: 
 							return ExtractSetting(GConfig.SystemFlags, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_POWER_MODE: 
+						case XCONFIG_SECURED_POWER_MODE: 
 							return ExtractSetting(GConfig.PowerMode, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_ONLINE_NETWORK_ID: 
+						case XCONFIG_SECURED_ONLINE_NETWORK_ID: 
 							return ExtractSetting(GConfig.OnlineNetworkID, outputBufPtr, outputBuffSize, settingSizePtr);
 
-						case xnative::XCONFIG_SECURED_POWER_VCS_CONTROL: 
+						case XCONFIG_SECURED_POWER_VCS_CONTROL: 
 							return ExtractSetting(GConfig.PowerVcsControl, outputBufPtr, outputBuffSize, settingSizePtr);
 					}
 
 					break;
 				}
 
-				case xnative::XCONFIG_USER_CATEGORY:
+				case XCONFIG_USER_CATEGORY:
 				{
 					switch (settingNum)
 					{
-						case xnative::XCONFIG_USER_VIDEO_FLAGS: 
+						case XCONFIG_USER_VIDEO_FLAGS: 
 							return ExtractSetting(GConfig.VideoMode, outputBufPtr, outputBuffSize, settingSizePtr);
 					}
 					break;

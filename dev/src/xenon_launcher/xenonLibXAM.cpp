@@ -15,7 +15,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox_XamEnumerate(uint64 ip, cpu::CpuRegs& regs)
 		{
-			RETURN_ARG(xnative::X_STATUS_UNSUCCESSFUL);
+			RETURN_ARG(X_STATUS_UNSUCCESSFUL);
 			//	RETURN_DEFAULT();
 		}
 
@@ -36,7 +36,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox_XamContentCreateEnumerator(uint64 ip, cpu::CpuRegs& regs)
 		{
-			RETURN_ARG(xnative::X_STATUS_UNSUCCESSFUL);
+			RETURN_ARG(X_STATUS_UNSUCCESSFUL);
 			//	RETURN_DEFAULT();
 		}
 
@@ -50,7 +50,7 @@ namespace xenon
 			}
 
 			// notify about the UI hiding
-			GPlatform.GetKernel().PostEventNotification(xnative::XN_SYS_UI.GetCode(), false);
+			GPlatform.GetKernel().PostEventNotification(XN_SYS_UI.GetCode(), false);
 
 			// no errors here
 			RETURN_ARG(0);
@@ -104,7 +104,7 @@ namespace xenon
 			auto ptr = Pointer<uint64>(regs.R5);
 
 			if (index >= xenon::UserProfileManager::MAX_USERS)
-				RETURN_ARG(xnative::X_ERROR_NO_SUCH_USER);
+				RETURN_ARG(X_ERROR_NO_SUCH_USER);
 
 			auto* user = GPlatform.GetUserProfileManager().GetUser(index);
 			if (user != nullptr)
@@ -118,7 +118,7 @@ namespace xenon
 			const auto index = (uint32)(regs.R3);
 
 			if (index >= xenon::UserProfileManager::MAX_USERS)
-				RETURN_ARG(xnative::X_ERROR_NO_SUCH_USER);
+				RETURN_ARG(X_ERROR_NO_SUCH_USER);
 
 			// XUserSigninState_NotSignedIn User is not signed in. 
 			// XUserSigninState_SignedInLocally User is signed in on the local Xbox 360 console, but not signed in to Xbox LIVE.

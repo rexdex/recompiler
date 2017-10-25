@@ -8,7 +8,7 @@ namespace xenon
 
 	namespace lib
 	{
-		extern void RtlInitializeCriticalSection(xnative::XCRITICAL_SECTION* rtlCS);
+		extern void RtlInitializeCriticalSection(lib::XCRITICAL_SECTION* rtlCS);
 	}
 
 	//----
@@ -34,7 +34,7 @@ namespace xenon
 		// bind symbols - VdGlobalXamDevice
 		m_nativeVdHSIOCalibrationLock.Alloc(28);
 		symbols.RegisterSymbol("VdHSIOCalibrationLock", m_nativeVdHSIOCalibrationLock.Data());
-		lib::RtlInitializeCriticalSection((xnative::XCRITICAL_SECTION*) m_nativeVdHSIOCalibrationLock.Data());
+		lib::RtlInitializeCriticalSection((lib::XCRITICAL_SECTION*) m_nativeVdHSIOCalibrationLock.Data());
 
 		// bind the GPU register
 		symbols.RegisterMemoryIO(0x7FC80714, (runtime::TGlobalMemReadFunc) &Graphics::ReadGPUWord, (runtime::TGlobalMemWriteFunc) &Graphics::WriteGPUWord);

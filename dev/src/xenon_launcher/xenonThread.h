@@ -55,9 +55,9 @@ namespace xenon
 		uint32 SetAffinity(const uint32 affinity);
 
 		// kernel interface
-		xnative::XStatus Delay(const uint32 processor_mode, const uint32 alertable, const uint64 interval);
-		xnative::XStatus EnterCriticalRegion();
-		xnative::XStatus LeaveCriticalRegion();
+		lib::XStatus Delay(const uint32 processor_mode, const uint32 alertable, const uint64 interval);
+		lib::XStatus EnterCriticalRegion();
+		lib::XStatus LeaveCriticalRegion();
 
 		// waitable
 		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;

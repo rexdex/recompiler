@@ -24,7 +24,7 @@ namespace xenon
 		virtual bool SetOffset(const uint64 offset) override;
 		virtual bool Read(void* buffer, const uint32 size, const uint64 offset, uint32& outSize)  override;
 		virtual bool Write(void* buffer, const uint32 size, const uint64 offset, uint32& outSize)  override;
-		virtual bool GetInfo(xnative::X_FILE_INFO& outInfo) const override;
+		virtual bool GetInfo(lib::X_FILE_INFO& outInfo) const override;
 
 	private:
 		native::IFile*	m_nativeFile;

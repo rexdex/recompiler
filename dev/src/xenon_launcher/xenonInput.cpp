@@ -23,7 +23,7 @@ namespace xenon
 			return true;
 		}
 
-		virtual xnative::XResult GetCapabilities(const uint32 user, const uint32 flags, xnative::X_INPUT_CAPABILITIES* outCaps) override final
+		virtual lib::XResult GetCapabilities(const uint32 user, const uint32 flags, lib::X_INPUT_CAPABILITIES* outCaps) override final
 		{
 			XINPUT_CAPABILITIES caps;
 			memset(&caps, 0, sizeof(caps));
@@ -40,10 +40,10 @@ namespace xenon
 			outCaps->type = caps.Type;
 			outCaps->vibration.left_motor_speed = caps.Vibration.wLeftMotorSpeed;
 			outCaps->vibration.right_motor_speed = caps.Vibration.wRightMotorSpeed;
-			return (xnative::XResult)ret;
+			return (lib::XResult)ret;
 		}
 
-		virtual xnative::XResult GetState(const uint32 user, xnative::X_INPUT_STATE* outState) override final
+		virtual lib::XResult GetState(const uint32 user, lib::X_INPUT_STATE* outState) override final
 		{
 			XINPUT_STATE state;
 			memset(&state, 0, sizeof(state));
@@ -56,19 +56,19 @@ namespace xenon
 			outState->gamepad.thumb_rx = state.Gamepad.sThumbRX;
 			outState->gamepad.thumb_ry = state.Gamepad.sThumbRY;
 			outState->packet_number = state.dwPacketNumber;
-			return (xnative::XResult)ret;
+			return (lib::XResult)ret;
 		}
 
-		virtual xnative::XResult SetState(const uint32 user, const xnative::X_INPUT_VIBRATION* state) override final
+		virtual lib::XResult SetState(const uint32 user, const lib::X_INPUT_VIBRATION* state) override final
 		{
 			XINPUT_VIBRATION vib;
 			vib.wLeftMotorSpeed = state->left_motor_speed;
 			vib.wRightMotorSpeed = state->right_motor_speed;
 			auto ret = XInputSetState(user, &vib);
-			return (xnative::XResult)ret;
+			return (lib::XResult)ret;
 		}
 
-		virtual xnative::XResult GetKeystroke(const uint32 user, const uint32 flags, xnative::X_INPUT_KEYSTROKE* outKey) override final
+		virtual lib::XResult GetKeystroke(const uint32 user, const uint32 flags, lib::X_INPUT_KEYSTROKE* outKey) override final
 		{
 			XINPUT_KEYSTROKE stroke;
 			auto ret = XInputGetKeystroke(user, flags, &stroke);
@@ -77,7 +77,7 @@ namespace xenon
 			outKey->unicode = stroke.Unicode;
 			outKey->user_index = stroke.UserIndex;
 			outKey->virtual_key = stroke.VirtualKey;
-			return (xnative::XResult)ret;
+			return (lib::XResult)ret;
 		}
 	};
 
@@ -98,52 +98,52 @@ namespace xenon
 			delete dev;
 	}
 
-	const xnative::XResult InputSystem::GetState(const uint32 user, xnative::X_INPUT_STATE* outState)
+	const lib::XResult InputSystem::GetState(const uint32 user, lib::X_INPUT_STATE* outState)
 	{
 		for (auto* drv : m_handlers)
 		{
 			auto ret = drv->GetState(user, outState);
-			if (ret != xnative::X_ERROR_DEVICE_NOT_CONNECTED)
+			if (ret != lib::X_ERROR_DEVICE_NOT_CONNECTED)
 				return ret;
 		}
 
-		return xnative::X_ERROR_DEVICE_NOT_CONNECTED;
+		return lib::X_ERROR_DEVICE_NOT_CONNECTED;
 	}
 
-	const xnative::XResult InputSystem::GetCapabilities(const uint32 user, const uint32 flags, xnative::X_INPUT_CAPABILITIES* outCaps)
+	const lib::XResult InputSystem::GetCapabilities(const uint32 user, const uint32 flags, lib::X_INPUT_CAPABILITIES* outCaps)
 	{
 		for (auto* drv : m_handlers)
 		{
 			auto ret = drv->GetCapabilities(user, flags, outCaps);
-			if (ret != xnative::X_ERROR_DEVICE_NOT_CONNECTED)
+			if (ret != lib::X_ERROR_DEVICE_NOT_CONNECTED)
 				return ret;
 		}
 
-		return xnative::X_ERROR_DEVICE_NOT_CONNECTED;
+		return lib::X_ERROR_DEVICE_NOT_CONNECTED;
 	}
 
-	const xnative::XResult InputSystem::SetState(const uint32 user, const xnative::X_INPUT_VIBRATION* state)
+	const lib::XResult InputSystem::SetState(const uint32 user, const lib::X_INPUT_VIBRATION* state)
 	{
 		for (auto* drv : m_handlers)
 		{
 			auto ret = drv->SetState(user, state);
-			if (ret != xnative::X_ERROR_DEVICE_NOT_CONNECTED)
+			if (ret != lib::X_ERROR_DEVICE_NOT_CONNECTED)
 				return ret;
 		}
 
-		return xnative::X_ERROR_DEVICE_NOT_CONNECTED;
+		return lib::X_ERROR_DEVICE_NOT_CONNECTED;
 	}
 
-	const xnative::XResult InputSystem::GetKeystroke(const uint32 user, const uint32 flags, xnative::X_INPUT_KEYSTROKE* outKey)
+	const lib::XResult InputSystem::GetKeystroke(const uint32 user, const uint32 flags, lib::X_INPUT_KEYSTROKE* outKey)
 	{
 		for (auto* drv : m_handlers)
 		{
 			auto ret = drv->GetKeystroke(user, flags, outKey);
-			if (ret != xnative::X_ERROR_DEVICE_NOT_CONNECTED)
+			if (ret != lib::X_ERROR_DEVICE_NOT_CONNECTED)
 				return ret;
 		}
 
-		return xnative::X_ERROR_DEVICE_NOT_CONNECTED;
+		return lib::X_ERROR_DEVICE_NOT_CONNECTED;
 	}
 
 } // xenon

@@ -212,7 +212,7 @@ namespace xenon
 
 		//-----------------------------------------
 
-		xnative::X_STATUS Xbox_RtlUnicodeToMultiByteN(Pointer<char> targetBuf, uint32 targetLength, Pointer<uint32> writtenPtr, Pointer<wchar_t> sourcePtr, uint32 sourceLengthBytes)
+		X_STATUS Xbox_RtlUnicodeToMultiByteN(Pointer<char> targetBuf, uint32 targetLength, Pointer<uint32> writtenPtr, Pointer<wchar_t> sourcePtr, uint32 sourceLengthBytes)
 		{
 			auto copyLength = sourceLengthBytes >> 1;
 			copyLength = (copyLength < targetLength) ? copyLength : targetLength;
@@ -228,10 +228,10 @@ namespace xenon
 			if (writtenPtr.IsValid())
 				*writtenPtr = copyLength;
 
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
-		xnative::X_STATUS Xbox_RtlMultiByteToUnicodeN(Pointer<wchar_t> targetBuf, uint32 targetLength, Pointer<uint32> writtenPtr, Pointer<char> sourcePtr, uint32 sourceLengthBytes)
+		X_STATUS Xbox_RtlMultiByteToUnicodeN(Pointer<wchar_t> targetBuf, uint32 targetLength, Pointer<uint32> writtenPtr, Pointer<char> sourcePtr, uint32 sourceLengthBytes)
 		{
 			auto copyLength = sourceLengthBytes;
 			copyLength = (copyLength < targetLength) ? copyLength : targetLength;
@@ -243,7 +243,7 @@ namespace xenon
 			if (writtenPtr.IsValid())
 				*writtenPtr = copyLength;
 
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
 		template< typename T >
@@ -258,7 +258,7 @@ namespace xenon
 			return (uint32_t)(str - strStart);
 		}
 
-		void Xbox_RtlInitAnsiString(Pointer<xnative::X_ANSI_STRING> ansiString, Pointer<char> srcString)
+		void Xbox_RtlInitAnsiString(Pointer<X_ANSI_STRING> ansiString, Pointer<char> srcString)
 		{
 			auto len = StrLen(srcString);
 			if (len >= 65534)
@@ -270,7 +270,7 @@ namespace xenon
 		}
 
 
-		void Xbox_RtlInitUnicodeString(Pointer<xnative::X_UNICODE_STRING> ansiString, Pointer<wchar_t> srcString)
+		void Xbox_RtlInitUnicodeString(Pointer<X_UNICODE_STRING> ansiString, Pointer<wchar_t> srcString)
 		{
 			auto len = StrLen(srcString);
 			if (len >= 65534)
@@ -308,7 +308,7 @@ namespace xenon
 			GLog.Warn("RaiseException called!");
 		}
 
-		void Xbox_RtlFreeAnsiString(Pointer<xnative::X_ANSI_STRING> str)
+		void Xbox_RtlFreeAnsiString(Pointer<X_ANSI_STRING> str)
 		{
 			// free memory allocated for string
 			auto memoryAddres = str->BufferPtr.AsData().GetAddress().GetNativePointer();
@@ -320,18 +320,18 @@ namespace xenon
 			str->MaximumLength = 0;
 		}
 
-		xnative::X_STATUS Xbox_RtlUnicodeStringToAnsiString(Pointer<xnative::X_ANSI_STRING> outStr, Pointer<xnative::X_UNICODE_STRING> inStr, uint32_t allocateMemory)
+		X_STATUS Xbox_RtlUnicodeStringToAnsiString(Pointer<X_ANSI_STRING> outStr, Pointer<X_UNICODE_STRING> inStr, uint32_t allocateMemory)
 		{
 			outStr->Length = 0;
 			outStr->MaximumLength = 0;
 
 			const auto length = inStr->Length;
 			if (length == 0)
-				return xnative::X_STATUS_SUCCESS;
+				return X_STATUS_SUCCESS;
 			
 			const auto memoryNeeded = sizeof(char) * outStr->MaximumLength;
 			if (memoryNeeded > 1025 * 1024)
-				return xnative::X_STATUS_MEMORY_NOT_ALLOCATED;
+				return X_STATUS_MEMORY_NOT_ALLOCATED;
 
 			if (allocateMemory)
 				outStr->BufferPtr = MemoryAddress((uint64_t)GPlatform.GetMemory().AllocateSmallBlock((uint32_t)memoryNeeded));
@@ -339,7 +339,7 @@ namespace xenon
 				outStr->BufferPtr = inStr->BufferPtr.AsData().GetAddress();
 
 			if (!outStr->BufferPtr.AsData().Get().IsValid())
-				return xnative::X_STATUS_MEMORY_NOT_ALLOCATED;
+				return X_STATUS_MEMORY_NOT_ALLOCATED;
 
 			for (uint32_t i = 0; i <= length; ++i)
 			{
@@ -347,7 +347,7 @@ namespace xenon
 				outStr->BufferPtr.AsData().Get()[i] = (ch > 127) ? '?' : (char)ch;
 			}
 
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
 		// copied from http://msdn.microsoft.com/en-us/library/ff552263
@@ -369,15 +369,15 @@ namespace xenon
 			RETURN();
 		}
 
-		xnative::X_STATUS Xbox_XexLoadImage(Pointer<char> modulePath, uint32_t flags, uint32_t loadVersion, Pointer<uint32> outHandle)
+		X_STATUS Xbox_XexLoadImage(Pointer<char> modulePath, uint32_t flags, uint32_t loadVersion, Pointer<uint32> outHandle)
 		{
 			GLog.Warn("Runtime: Request to load image '%hs'", modulePath.GetNativePointer());
-			return xnative::X_STATUS_ACCESS_DENIED;
+			return X_STATUS_ACCESS_DENIED;
 		}
 
-		xnative::X_STATUS Xbox_XexUnloadImage(uint32_t moduleHandle)
+		X_STATUS Xbox_XexUnloadImage(uint32_t moduleHandle)
 		{
-			return xnative::X_STATUS_SUCCESS;
+			return X_STATUS_SUCCESS;
 		}
 
 		//---------------------------------------------------------------------------

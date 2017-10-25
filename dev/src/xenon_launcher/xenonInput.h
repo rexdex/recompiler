@@ -15,10 +15,10 @@ namespace xenon
 		virtual ~IInputDeviceHandler() {};
 
 		virtual bool Initialize() = 0;
-		virtual xnative::XResult GetCapabilities(const uint32 user, const uint32 flags, xnative::X_INPUT_CAPABILITIES* outCaps) = 0;
-		virtual xnative::XResult GetState(const uint32 user, xnative::X_INPUT_STATE* outState) = 0;
-		virtual xnative::XResult SetState(const uint32 user, const xnative::X_INPUT_VIBRATION* state) = 0;
-		virtual xnative::XResult GetKeystroke(const uint32 user, const uint32 flags, xnative::X_INPUT_KEYSTROKE* outKey) = 0;
+		virtual lib::XResult GetCapabilities(const uint32 user, const uint32 flags, lib::X_INPUT_CAPABILITIES* outCaps) = 0;
+		virtual lib::XResult GetState(const uint32 user, lib::X_INPUT_STATE* outState) = 0;
+		virtual lib::XResult SetState(const uint32 user, const lib::X_INPUT_VIBRATION* state) = 0;
+		virtual lib::XResult GetKeystroke(const uint32 user, const uint32 flags, lib::X_INPUT_KEYSTROKE* outKey) = 0;
 	};
 
 	/// input system
@@ -29,16 +29,16 @@ namespace xenon
 		virtual ~InputSystem();
 
 		// get captured input state
-		const xnative::XResult GetState(const uint32 user, xnative::X_INPUT_STATE* outState);
+		const lib::XResult GetState(const uint32 user, lib::X_INPUT_STATE* outState);
 
 		// get capabilities
-		const xnative::XResult GetCapabilities(const uint32 user, const uint32 flags, xnative::X_INPUT_CAPABILITIES* outCaps);
+		const lib::XResult GetCapabilities(const uint32 user, const uint32 flags, lib::X_INPUT_CAPABILITIES* outCaps);
 
 		// set device vibration
-		const xnative::XResult SetState(const uint32 user, const xnative::X_INPUT_VIBRATION* state);
+		const lib::XResult SetState(const uint32 user, const lib::X_INPUT_VIBRATION* state);
 
 		// get keystroke event
-		const xnative::XResult GetKeystroke(const uint32 user, const uint32 flags, xnative::X_INPUT_KEYSTROKE* outKey);
+		const lib::XResult GetKeystroke(const uint32 user, const uint32 flags, lib::X_INPUT_KEYSTROKE* outKey);
 
 	private:
 		typedef std::vector<IInputDeviceHandler*> THandlers;

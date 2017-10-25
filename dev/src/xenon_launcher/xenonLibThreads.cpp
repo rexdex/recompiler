@@ -77,7 +77,7 @@ namespace xenon
 			if (!thread)
 			{
 				GLog.Err("ExCreateThread: failed to create thread in process");
-				RETURN_ARG(xnative::X_ERROR_ACCESS_DENIED);
+				RETURN_ARG(X_ERROR_ACCESS_DENIED);
 			}
 
 			// thread created, return thread handle
@@ -114,7 +114,7 @@ namespace xenon
 			// resolve
 			auto* obj = GPlatform.GetKernel().ResolveHandle(handle, xenon::KernelObjectType::Thread);
 			if (!obj)
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			// find thread
 			auto* thread = static_cast<xenon::KernelThread*>(obj);
@@ -145,7 +145,7 @@ namespace xenon
 			// resolve
 			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
 			if (!obj)
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			// find thread
 			auto* thread = static_cast<xenon::KernelThread*>(obj);
@@ -167,7 +167,7 @@ namespace xenon
 			// resolve
 			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
 			if (!obj)
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			// not a thread
 			auto* thread = static_cast<xenon::KernelThread*>(obj);
@@ -259,7 +259,7 @@ namespace xenon
 
 			auto* evt = GPlatform.GetKernel().CreateEvent(initialState, manualReset);
 			if (!evt)
-				RETURN_ARG(xnative::X_ERROR_BAD_ARGUMENTS);
+				RETURN_ARG(X_ERROR_BAD_ARGUMENTS);
 
 			cpu::mem::storeAddr(outPtr, evt->GetHandle());
 			xenon::TagMemoryWrite(outPtr, 4, "NtCreateEvent");
@@ -272,7 +272,7 @@ namespace xenon
 			const uint32 increment = (const uint32)regs.R4;
 			const uint32 wait = (const uint32)regs.R5;
 
-			auto* nativeEvent = (xnative::XEVENT*) eventPtr;
+			auto* nativeEvent = (XEVENT*) eventPtr;
 			cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 1);
 			xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 4, "KeSetEvent");
 
@@ -341,7 +341,7 @@ namespace xenon
 		{
 			const uint32 eventPtr = (const uint32)regs.R3;
 
-			auto* nativeEvent = (xnative::XEVENT*) eventPtr;
+			auto* nativeEvent = (XEVENT*) eventPtr;
 			cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 0);
 			xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 0, "KeResetEvent");
 
@@ -560,19 +560,19 @@ namespace xenon
 			if (!object)
 			{
 				GLog.Err("WaitSingle: object %08Xh does not exist", objectPtr);
-				RETURN_ARG(xnative::X_STATUS_ABANDONED_WAIT_0);
+				RETURN_ARG(X_STATUS_ABANDONED_WAIT_0);
 			}
 
 			// object is not waitable
 			if (!object->CanWait())
 			{
 				GLog.Err("WaitSingle: object %08Xh, '%s' is not waitable", objectPtr, object->GetName());
-				RETURN_ARG(xnative::X_STATUS_ABANDONED_WAIT_0);
+				RETURN_ARG(X_STATUS_ABANDONED_WAIT_0);
 			}
 
 			const int64 timeout = timeoutPtr ? cpu::mem::loadAddr<int64>(timeoutPtr) : 0;
 			auto* waitObject = static_cast<xenon::IKernelWaitObject*>(object);
-			xnative::X_STATUS result = waitObject->Wait(waitReason, processorMode, !!alertable, timeoutPtr ? &timeout : nullptr);
+			X_STATUS result = waitObject->Wait(waitReason, processorMode, !!alertable, timeoutPtr ? &timeout : nullptr);
 			RETURN_ARG(result);
 		}
 
@@ -588,13 +588,13 @@ namespace xenon
 			if (!object)
 			{
 				GLog.Err("WaitSingle: object with handle %08Xh does not exist", object_handle);
-				RETURN_ARG(xnative::X_STATUS_ABANDONED_WAIT_0);
+				RETURN_ARG(X_STATUS_ABANDONED_WAIT_0);
 			}
 
 			if (!object->CanWait())
 			{
 				GLog.Err("WaitSingle: object %08Xh, '%s' is not waitable", object_handle, object->GetName());
-				RETURN_ARG(xnative::X_STATUS_ABANDONED_WAIT_0);
+				RETURN_ARG(X_STATUS_ABANDONED_WAIT_0);
 			}
 
 			auto* waitObject = static_cast<xenon::IKernelWaitObject*>(object);
@@ -627,7 +627,7 @@ namespace xenon
 				{
 					auto objectData = GPlatform.GetKernel().ResolveObject(objectPtr, xenon::NativeKernelObjectType::Unknown, true);
 					if (!objectData || !objectData->CanWait())
-						RETURN_ARG(xnative::X_STATUS_INVALID_PARAMETER);
+						RETURN_ARG(X_STATUS_INVALID_PARAMETER);
 
 					waitObjects.push_back(static_cast<xenon::IKernelWaitObject*>(objectData));
 				}
@@ -646,7 +646,7 @@ namespace xenon
 
 		//---------------------------------------------------------------------------
 
-		void RtlInitializeCriticalSection(xnative::XCRITICAL_SECTION* rtlCS)
+		void RtlInitializeCriticalSection(XCRITICAL_SECTION* rtlCS)
 		{
 			auto* cs = GPlatform.GetKernel().CreateCriticalSection();
 			auto* thread = xenon::KernelThread::GetCurrentThread();
@@ -663,12 +663,12 @@ namespace xenon
 
 		uint64 __fastcall Xbox_RtlInitializeCriticalSection(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto rtlCS = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
+			auto rtlCS = Pointer<XCRITICAL_SECTION>(regs.R3);
 			RtlInitializeCriticalSection(rtlCS.GetNativePointer());
 			RETURN_ARG(0);
 		}
 
-		static void XInitCriticalSection(xnative::XCRITICAL_SECTION* ptr)
+		static void XInitCriticalSection(XCRITICAL_SECTION* ptr)
 		{
 			auto* cs = GPlatform.GetKernel().CreateCriticalSection();
 			auto* thread = xenon::KernelThread::GetCurrentThread();
@@ -685,21 +685,21 @@ namespace xenon
 
 		uint64 __fastcall Xbox_RtlInitializeCriticalSectionAndSpinCount(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto rtlCS = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
+			auto rtlCS = Pointer<XCRITICAL_SECTION>(regs.R3);
 			XInitCriticalSection(rtlCS.GetNativePointer());
 			RETURN_ARG(0);
 		}
 
 		uint64 __fastcall Xbox_RtlDeleteCriticalSection(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto rtlCS = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
+			auto rtlCS = Pointer<XCRITICAL_SECTION>(regs.R3);
 			XInitCriticalSection(rtlCS.GetNativePointer());
 			RETURN_ARG(0);
 		}
 
 		uint64 __fastcall Xbox_RtlLeaveCriticalSection(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto ptr = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
+			auto ptr = Pointer<XCRITICAL_SECTION>(regs.R3);
 			DEBUG_CHECK(ptr.IsValid());
 
 			const uint32 kernelMarker = ptr->Synchronization.RawEvent[0];
@@ -718,7 +718,7 @@ namespace xenon
 
 		uint64 __fastcall Xbox_RtlEnterCriticalSection(uint64 ip, cpu::CpuRegs& regs)
 		{
-			const auto ptr = Pointer<xnative::XCRITICAL_SECTION>(regs.R3);
+			const auto ptr = Pointer<XCRITICAL_SECTION>(regs.R3);
 			DEBUG_CHECK(ptr.IsValid());
 
 			const auto ptrAddr = ptr.GetAddress();

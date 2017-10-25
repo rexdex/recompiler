@@ -9,11 +9,6 @@ namespace xenon
 	namespace lib
 	{
 		typedef uint64 HRESULT;
-	}
-
-	// Native structures and values used on xenon
-	namespace xnative
-	{
 		typedef uint32 X_STATUS;
 		typedef uint32 X_FILE;
 		
@@ -768,6 +763,5 @@ namespace xenon
 		extern const NotificationID XN_XMP_PLAYBACKCONTROLLERCHANGED;
 		extern const NotificationID XN_PARTY_MEMBERS_CHANGED;
 
-	} // xnative
-
+	} // lib
 } // xenon

@@ -15,17 +15,17 @@ namespace xenon
 
 		uint64 __fastcall Xbox_XGetVideoMode(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto modePtr = Pointer<xnative::XVIDEO_MODE>(regs.R3);
+			auto modePtr = Pointer<XVIDEO_MODE>(regs.R3);
 
 			// 720p
-			memset(modePtr.GetNativePointer(), 0, sizeof(xnative::XVIDEO_MODE));
+			memset(modePtr.GetNativePointer(), 0, sizeof(XVIDEO_MODE));
 			modePtr->dwDisplayWidth = 1280;
 			modePtr->dwDisplayHeight = 720;
 			modePtr->fIsInterlaced = FALSE;
 			modePtr->fIsWideScreen = TRUE;
 			modePtr->fIsHiDef = TRUE;
 			modePtr->RefreshRate = 60.0f;
-			modePtr->VideoStandard = xnative::XC_VIDEO_STANDARD_PAL_I;
+			modePtr->VideoStandard = XC_VIDEO_STANDARD_PAL_I;
 			RETURN_ARG(0);
 		}
 
@@ -50,11 +50,11 @@ namespace xenon
 			// X_MEM_LARGE_PAGES  = 64KB
 			// X_MEM_16MB_PAGES   = 16MB
 			uint32 pageSize = 4 * 1024;
-			if (protect & xnative::XMEM_LARGE_PAGES)
+			if (protect & XMEM_LARGE_PAGES)
 			{
 				pageSize = 64 * 1024;
 			}
-			else if (protect & xnative::XMEM_16MB_PAGES)
+			else if (protect & XMEM_16MB_PAGES)
 			{
 				pageSize = 16 * 1024 * 1024;
 			}
@@ -149,10 +149,10 @@ namespace xenon
 
 		uint64 __fastcall Xbox_VdQueryVideoMode(uint64 ip, cpu::CpuRegs& regs)
 		{
-			auto videoMode = Pointer<xnative::XVIDEO_MODE>(regs.R3);
+			auto videoMode = Pointer<XVIDEO_MODE>(regs.R3);
 			if (videoMode.IsValid())
 			{
-				memset(videoMode.GetNativePointer(), 0, sizeof(xnative::XVIDEO_MODE));
+				memset(videoMode.GetNativePointer(), 0, sizeof(XVIDEO_MODE));
 				videoMode->dwDisplayWidth = 1280;
 				videoMode->dwDisplayHeight = 720;
 				videoMode->fIsInterlaced = 0;

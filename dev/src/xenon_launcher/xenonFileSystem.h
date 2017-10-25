@@ -38,7 +38,7 @@ namespace xenon
 		virtual bool SetOffset(const uint64 offset) = 0;
 		virtual bool Read(void* buffer, const uint32 size, const uint64 offset, uint32& outSize) = 0;
 		virtual bool Write(void* buffer, const uint32 size, const uint64 offset, uint32& outSize) = 0;
-		virtual bool GetInfo(xnative::X_FILE_INFO& outInfo) const = 0;
+		virtual bool GetInfo(lib::X_FILE_INFO& outInfo) const = 0;
 
 	private:
 		const FileSystemEntry*	m_entry;
@@ -60,7 +60,7 @@ namespace xenon
 
 		// open access
 		IFile* Open(const uint32 flags);
-		bool GetInfo(xnative::X_FILE_INFO& outInfo) const;
+		bool GetInfo(lib::X_FILE_INFO& outInfo) const;
 
 	private:
 		std::wstring				m_physicalPath;
@@ -82,7 +82,7 @@ namespace xenon
 
 		virtual bool Resolve(const char* path, std::wstring& outPath) = 0;
 		virtual IFile* Open(const class FileSystemEntry* enty, const uint32 fileMode) = 0;
-		virtual bool GetFileInfo(const class FileSystemEntry* enty, xnative::X_FILE_INFO& outInfo) const = 0;
+		virtual bool GetFileInfo(const class FileSystemEntry* enty, lib::X_FILE_INFO& outInfo) const = 0;
 	};
 
 	///----
