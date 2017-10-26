@@ -11,7 +11,7 @@ namespace xenon
 	//----
 
 	FileSystemEntry::FileSystemEntry(Kernel* kernel, const char* virtualPath, const wchar_t* physicalPath, class IFileSystemDevice* device)
-		: IKernelObjectRefCounted(kernel, KernelObjectType::FileSysEntry, "FileSysEntry")
+		: IKernelObjectRefCounted(kernel, KernelObjectType::FileSysEntry, nullptr)
 		, m_physicalPath(physicalPath)
 		, m_virtualPath(virtualPath)
 		, m_device(device)
@@ -35,7 +35,7 @@ namespace xenon
 	//----
 
 	IFile::IFile(Kernel* kernel, const class FileSystemEntry* entry, class IFileSystemDevice* device)
-		: IKernelObjectRefCounted(kernel, KernelObjectType::FileHandle, "FileHandle")
+		: IKernelObjectRefCounted(kernel, KernelObjectType::FileHandle, nullptr)
 		, m_entry(entry)
 		, m_device(device)
 	{

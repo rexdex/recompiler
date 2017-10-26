@@ -100,24 +100,24 @@ namespace xenon
 			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_KeResumeThread()
+		uint32_t Xbox_KeResumeThread()
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			//DebugBreak();
+			return X_STATUS_SUCCESS;
 		}
 
 		X_STATUS Xbox_NtSuspendThread()
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			//DebugBreak();
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_KeSetAffinityThread(uint32 threadPtr, uint32 affinity)
+		uint32_t Xbox_KeSetAffinityThread(Pointer<KernelDispatchHeader> threadPtr, uint32 affinity)
 		{
 			// resolve
 			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
 			if (!obj)
-				return X_ERROR_BAD_ARGUMENTS;
+				return 0;
 
 			// find thread
 			auto* thread = static_cast<xenon::KernelThread*>(obj);
@@ -125,24 +125,28 @@ namespace xenon
 			return oldAffinity;
 		}
 
-		X_STATUS Xbox_KeQueryBasePriorityThread()
-		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
-		}
-
-		X_STATUS Xbox_KeSetBasePriorityThread(uint32 threadPtr, uint32 increment)
+		uint32_t Xbox_KeQueryBasePriorityThread(Pointer<KernelDispatchHeader> threadPtr)
 		{
 			// resolve
 			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
 			if (!obj)
-				return X_ERROR_BAD_ARGUMENTS;
+				return 0;
+
+			// return queue priority for the thread
+			auto* thread = static_cast<xenon::KernelThread*>(obj);
+			return thread->GetQueuePriority();
+		}
+
+		uint32_t Xbox_KeSetBasePriorityThread(Pointer<KernelDispatchHeader> threadPtr, uint32 increment)
+		{
+			// resolve using the dispatch pointer
+			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
+			if (!obj)
+				return 0;
 
 			// not a thread
 			auto* thread = static_cast<xenon::KernelThread*>(obj);
-			int prevPriority = thread->GetPriority();
-			thread->SetPriority(increment);
-			return prevPriority;
+			return thread->SetQueuePriority(increment);
 		}
 
 		X_STATUS Xbox_KeDelayExecutionThread(uint32 processorMode, uint32 alertable, Pointer<uint64> internalPtr)
@@ -162,6 +166,20 @@ namespace xenon
 		{
 			*dataPtr = 0;
 		}
+
+		uint32_t Xbox_KeSetDisableBoostThread(Pointer<KernelDispatchHeader> threadPtr, uint32 disabled)
+		{
+			// resolve using the dispatch pointer
+			auto* obj = GPlatform.GetKernel().ResolveObject(threadPtr, xenon::NativeKernelObjectType::ThreadObject);
+			if (!obj)
+				return 0;
+
+			// not a thread
+			auto* thread = static_cast<xenon::KernelThread*>(obj);
+			return 0;
+		}
+
+		//---------------
 
 		uint32 Xbox_KeTlsAlloc()
 		{
@@ -203,14 +221,14 @@ namespace xenon
 			return X_STATUS_SUCCESS;
 		}
 
-		uint32 Xbox_KeSetEvent(Pointer<XEVENT> eventPtr, uint32 increment, uint32 wait)
+		uint32 Xbox_KeSetEvent(Pointer<KernelDispatchHeader> eventPtr, uint32 increment, uint32 wait)
 		{
 			auto* nativeEvent = eventPtr.GetNativePointer();
 
-			cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 1);
-			xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 4, "KeSetEvent");
+			cpu::mem::storeAtomic<uint32>(&nativeEvent->m_signalState, 1);
+			xenon::TagMemoryWrite(&nativeEvent->m_signalState, 4, "KeSetEvent");
 
-			auto* obj = GPlatform.GetKernel().ResolveObject(eventPtr.GetAddress().GetAddressValue(), xenon::NativeKernelObjectType::EventNotificationObject);
+			auto* obj = GPlatform.GetKernel().ResolveObject(eventPtr, xenon::NativeKernelObjectType::EventNotificationObject);
 			if (!obj)
 			{
 				DebugBreak();
@@ -257,13 +275,12 @@ namespace xenon
 			return X_STATUS_SUCCESS;
 		}
 
-		uint32 Xbox_KeResetEvent(Pointer<XEVENT> eventPtr)
+		uint32 Xbox_KeResetEvent(Pointer<KernelDispatchHeader> eventPtr)
 		{
-			auto* nativeEvent = eventPtr.GetNativePointer();
-			cpu::mem::storeAtomic<uint32>(&nativeEvent->Dispatch.SignalState, 0);
-			xenon::TagMemoryWrite(&nativeEvent->Dispatch.SignalState, 0, "KeResetEvent");
+			cpu::mem::storeAtomic<uint32>(&eventPtr->m_signalState, 0);
+			xenon::TagMemoryWrite(&eventPtr->m_signalState, 0, "KeResetEvent");
 
-			auto* obj = GPlatform.GetKernel().ResolveObject((uint32_t)nativeEvent, xenon::NativeKernelObjectType::EventNotificationObject);
+			auto* obj = GPlatform.GetKernel().ResolveObject(eventPtr, xenon::NativeKernelObjectType::EventNotificationObject);
 			if (!obj)
 			{
 				DebugBreak();
@@ -287,70 +304,257 @@ namespace xenon
 
 		//-----------------
 
-		X_STATUS Xbox_NtCreateSemaphore()
+		struct KernelObjectProperties
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			Field<uint32_t> m_flags;
+			X_ANSI_STRING m_name;
+		};
+
+		X_STATUS Xbox_NtCreateSemaphore(Pointer<uint32_t> handlePtr, Pointer<KernelObjectProperties> propertiesPtr, int32_t count, int32_t maxCount)
+		{
+			// if the object is named make sure we don't create a duplicate
+			const char* objectName = nullptr;
+			if (propertiesPtr->m_name.Length > 0)
+			{
+				// get object name to use
+				objectName = propertiesPtr->m_name.BufferPtr.AsData().Get().GetNativePointer();
+
+				// object may already exist, check it
+				auto existingObject = GPlatform.GetKernel().ResolveNamedObject(objectName, KernelObjectType::Unknown);
+				if (existingObject != nullptr)
+				{
+					// we can reuse the semaphore
+					if (existingObject->GetType() == KernelObjectType::Semaphore)
+					{
+						auto* refCountedObject = (IKernelObjectRefCounted*)existingObject;
+						refCountedObject->AddRef();
+
+						DEBUG_CHECK(handlePtr.IsValid());
+						*handlePtr = refCountedObject->GetHandle();
+						return X_STATUS_SUCCESS;
+					}
+					// we have an object but it's not a semaphore
+					else
+					{
+						GLog.Warn("Kernel: Found named object '%hs' but its not a semaphore", objectName);
+						return X_STATUS_INVALID_HANDLE;
+					}
+				}
+			}
+
+			// create the semaphore semaphore
+			auto* semaphore  = GPlatform.GetKernel().CreateSemaphore(count, maxCount, objectName);
+			if (!semaphore)
+				return X_STATUS_INVALID_PARAMETER;
+
+			// bind handle
+			if (handlePtr.IsValid())
+				*handlePtr = semaphore->GetHandle();
+
+			// semaphore created
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_KeInitializeSemaphore()
+		// https://msdn.microsoft.com/en-us/library/windows/hardware/ff552150(v=vs.85).aspx
+		// https://github.com/benvanik/xenia/blob/0c20f1c0fcac56939a82151f825c854219763eaa/src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc
+		void Xbox_KeInitializeSemaphore(Pointer<KernelSemaphoreHeader> semaphoreHeader, uint32_t count, uint32_t maxCount)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// setup header
+			semaphoreHeader->m_dispatchHeader.m_typeAndFlags = (uint32_t)NativeKernelObjectType::SemaphoreObject;
+			semaphoreHeader->m_dispatchHeader.m_signalState = count;
+			semaphoreHeader->m_maxCount = maxCount;
+
+			// let the object create itself
+			auto object = GPlatform.GetKernel().ResolveObject(&semaphoreHeader->m_dispatchHeader, NativeKernelObjectType::SemaphoreObject, true);
+			DEBUG_CHECK(object);
 		}
 
-		X_STATUS Xbox_KeReleaseSemaphore()
+		uint32_t Xbox_KeReleaseSemaphore(Pointer<KernelDispatchHeader> semaphoreHeader, uint32_t increment, uint32_t adjustment, uint32_t waitFlag)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve semaphore by dispatch structure pointer 
+			auto sem = (KernelSemaphore*)GPlatform.GetKernel().ResolveObject(semaphoreHeader, NativeKernelObjectType::SemaphoreObject, false);
+			DEBUG_CHECK(sem != nullptr);
+
+			// release the semaphore
+			return sem->Release(adjustment);
 		}
 
-		X_STATUS Xbox_NtReleaseSemaphore()
+		X_STATUS Xbox_NtReleaseSemaphore(uint32_t objectHandle, uint32_t count, Pointer<uint32_t> previousCountPtr)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve semaphore by objects' handle
+			auto sem = (KernelSemaphore*)GPlatform.GetKernel().ResolveHandle(objectHandle, KernelObjectType::Semaphore);
+			if (!sem)
+				return X_STATUS_INVALID_HANDLE;
+
+			// release the semaphore
+			auto prevCount = sem->Release(count);
+
+			// save the previous count
+			if (previousCountPtr.IsValid())
+				*previousCountPtr = prevCount;
+
+			// semaphore was released
+			return X_STATUS_SUCCESS;
 		}
 
 		//-----------------
 
-		X_STATUS Xbox_NtCreateMutant()
+		X_STATUS Xbox_NtCreateMutant(Pointer<uint32_t> handlePtr, Pointer<KernelObjectProperties> propertiesPtr, uint32 initiallyOwned)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// if the object is named make sure we don't create a duplicate
+			const char* objectName = nullptr;
+			if (propertiesPtr->m_name.Length > 0)
+			{
+				// get object name to use
+				objectName = propertiesPtr->m_name.BufferPtr.AsData().Get().GetNativePointer();
+
+				// object may already exist, check it
+				auto existingObject = GPlatform.GetKernel().ResolveNamedObject(objectName, KernelObjectType::Unknown);
+				if (existingObject != nullptr)
+				{
+					// we can reuse the semaphore
+					if (existingObject->GetType() == KernelObjectType::Mutant)
+					{
+						auto* refCountedObject = (IKernelObjectRefCounted*)existingObject;
+						refCountedObject->AddRef();
+
+						DEBUG_CHECK(handlePtr.IsValid());
+						*handlePtr = refCountedObject->GetHandle();
+						return X_STATUS_SUCCESS;
+					}
+					// we have an object but it's not a semaphore
+					else
+					{
+						GLog.Warn("Kernel: Found named object '%hs' but its not a mutant", objectName);
+						return X_STATUS_INVALID_HANDLE;
+					}
+				}
+			}
+
+			// create the semaphore semaphore
+			auto* semaphore = GPlatform.GetKernel().CreateMutant(initiallyOwned != 0, objectName);
+			if (!semaphore)
+				return X_STATUS_INVALID_PARAMETER;
+
+			// bind handle
+			if (handlePtr.IsValid())
+				*handlePtr = semaphore->GetHandle();
+
+			// semaphore created
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_NtReleaseMutant()
+		X_STATUS Xbox_NtReleaseMutant(uint32 objectHandle)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve semaphore by objects' handle
+			auto sem = (KernelMutant*)GPlatform.GetKernel().ResolveHandle(objectHandle, KernelObjectType::Mutant);
+			if (!sem)
+				return X_STATUS_INVALID_HANDLE;
+
+			// release the semaphore
+			if (!sem->Release())
+				return X_STATUS_MUTANT_NOT_OWNED;
+
+			// mutant was released
+			return X_STATUS_SUCCESS;
 		}
 
 		//-----------------
 
-		X_STATUS Xbox_NtCreateTimer()
+		X_STATUS Xbox_NtCreateTimer(Pointer<uint32> handlePtr, Pointer<KernelObjectProperties> propertiesPtr, uint32 timerType)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// if the object is named make sure we don't create a duplicate
+			const char* objectName = nullptr;
+			if (propertiesPtr->m_name.Length > 0)
+			{
+				// get object name to use
+				objectName = propertiesPtr->m_name.BufferPtr.AsData().Get().GetNativePointer();
+
+				// object may already exist, check it
+				auto existingObject = GPlatform.GetKernel().ResolveNamedObject(objectName, KernelObjectType::Unknown);
+				if (existingObject != nullptr)
+				{
+					// we can reuse the timer
+					if (existingObject->GetType() == KernelObjectType::Timer)
+					{
+						auto* refCountedObject = (IKernelObjectRefCounted*)existingObject;
+						refCountedObject->AddRef();
+
+						DEBUG_CHECK(handlePtr.IsValid());
+						*handlePtr = refCountedObject->GetHandle();
+						return X_STATUS_SUCCESS;
+					}
+					// we have an object but it's not a semaphore
+					else
+					{
+						GLog.Warn("Kernel: Found named object '%hs' but its not a timer", objectName);
+						return X_STATUS_INVALID_HANDLE;
+					}
+				}
+			}
+
+			// create a timer
+			auto timer = (timerType == 0)
+				? GPlatform.GetKernel().CreateManualResetTimer(objectName)
+				: GPlatform.GetKernel().CreateSynchronizationTimer(objectName);
+
+			// not created?
+			if (!timer)
+				return X_STATUS_INVALID_PARAMETER;
+		
+			// save handle
+			if (handlePtr.IsValid())
+				*handlePtr = timer->GetHandle();
+
+			// done
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_NtSetTimerEx()
+		X_STATUS Xbox_NtSetTimerEx(uint32 timerHandle, Pointer<uint64_t> delayPtr, MemoryAddress functionAddress, uint32_t, uint32_t functionArg, uint32 resume, uint32 periodMs)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			auto timer = (KernelTimer*)GPlatform.GetKernel().ResolveHandle(timerHandle, KernelObjectType::Timer);
+			if (!timer)
+				return X_STATUS_INVALID_HANDLE;
+
+			// set timer
+			auto delay = (uint64_t)*delayPtr;
+			if (!timer->Setup(delay, periodMs, functionAddress, functionArg))
+				return X_STATUS_INVALID_PARAMETER;
+
+			// tiemr set
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_NtCancelTimer()
+		X_STATUS Xbox_NtCancelTimer(uint32 timerHandle, Pointer<uint32> currentStatePtr)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve timer by objects' handle
+			auto sem = (KernelTimer*)GPlatform.GetKernel().ResolveHandle(timerHandle, KernelObjectType::Timer);
+			if (!sem)
+				return X_STATUS_INVALID_HANDLE;
+
+			if (!sem->Cancel())
+				return X_STATUS_INVALID_PARAMETER;
+
+			if (currentStatePtr.IsValid())
+				*currentStatePtr = 0;
+
+			return X_STATUS_SUCCESS;;
 		}
 
 		//-----------------
 
-		X_STATUS Xbox_NtSignalAndWaitForSingleObjectEx()
+		X_STATUS Xbox_NtSignalAndWaitForSingleObjectEx(uint32 signalObjectHandle, uint32 waitObjectHandle, uint32_t alertable, uint32, Pointer<uint64_t> timeoutPtr)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			auto signalObject = GPlatform.GetKernel().ResolveHandle(signalObjectHandle, KernelObjectType::Unknown);
+			if (!signalObject)
+				return X_STATUS_INVALID_HANDLE;
+
+			auto waitObject = GPlatform.GetKernel().ResolveHandle(waitObjectHandle, KernelObjectType::Unknown);
+			if (!waitObject)
+				return X_STATUS_INVALID_HANDLE;
+
+			const auto timeout = timeoutPtr.IsValid() ? (uint64_t)(*timeoutPtr) : 0u;
+			return GPlatform.GetKernel().SignalAndWait((IKernelWaitObject*)signalObject, (IKernelWaitObject*)waitObject, alertable != 0, timeoutPtr.IsValid() ? &timeout : nullptr);
 		}
 
 		uint32 Xbox_KfAcquireSpinLock(MemoryAddress lockAddr)
@@ -393,52 +597,86 @@ namespace xenon
 
 		//-----------------
 
-		X_STATUS Xbox_KeEnterCriticalRegion()
+		uint32_t Xbox_KeEnterCriticalRegion()
 		{
 			auto* currentThread = xenon::KernelThread::GetCurrentThread();
-			return currentThread->EnterCriticalRegion();
+			return currentThread->EnterCriticalRegion() ? 1 : 0;
 		}
 
-		X_STATUS Xbox_KeLeaveCriticalRegion()
+		uint32_t Xbox_KeLeaveCriticalRegion()
 		{
 			auto* currentThread = xenon::KernelThread::GetCurrentThread();
-			return currentThread->LeaveCriticalRegion();
+			return currentThread->LeaveCriticalRegion() ? 1 : 0;
+		}
+
+		uint32_t Xbox_KeRaiseIrqlToDpcLevel()
+		{
+			return GPlatform.GetKernel().RaiseIRQL(IRQL_DPC);
+		}
+
+		uint32_t Xbox_KfLowerIrql(uint32_t oldValue)
+		{
+			return GPlatform.GetKernel().LowerIRQL((KernelIrql)oldValue);
 		}
 
 		//-----------------
 
-		X_STATUS Xbox_NtQueueApcThread()
+		uint32_t Xbox_NtQueueApcThread()
 		{
 			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			return 0;
 		}
 
-		X_STATUS Xbox_KeInitializeApc()
+		uint32_t Xbox_KeInitializeApc(Pointer<KernelAPCData> apcPtr, MemoryAddress threadPtr, MemoryAddress kernelProc, MemoryAddress rundownProc, MemoryAddress normalProc, uint32 processorMode, uint32 normalContext)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			apcPtr->Reset();
+			apcPtr->m_processorMode = processorMode;
+			apcPtr->m_threadPtr = threadPtr;
+			apcPtr->m_kernelRoutine = kernelProc;
+			apcPtr->m_rundownRoutine = rundownProc;
+			apcPtr->m_normalRoutine = normalProc;
+			apcPtr->m_normalContext = normalProc.IsValid() ? normalContext : 0;
+			return 0;
 		}
 
-		X_STATUS Xbox_KeInsertQueueApc()
+		uint32_t Xbox_KeInsertQueueApc(Pointer<KernelAPCData> apcPtr, uint32 arg1, uint32 arg2, uint32 priorityIncrement)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve the thread
+			auto* thread = (KernelThread*)GPlatform.GetKernel().ResolveObject(apcPtr->m_threadPtr, xenon::NativeKernelObjectType::ThreadObject, false);
+			if (!thread)
+				return 0;
+
+			// queue the APC in the thread
+			if (!thread->EnqueueAPC(apcPtr, arg1, arg2))
+				return 0;
+
+			// enqueued
+			return 1;
 		}
 
-		X_STATUS Xbox_KeRemoveQueueApc()
+		uint32_t Xbox_KeRemoveQueueApc(Pointer<KernelAPCData> apcPtr)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			// resolve the thread
+			auto* thread = (KernelThread*)GPlatform.GetKernel().ResolveObject(apcPtr->m_threadPtr, xenon::NativeKernelObjectType::ThreadObject, false);
+			if (!thread)
+				return 0;
+
+			// queue the APC in the thread
+			if (!thread->DequeueAPC(apcPtr))
+				return 0;
+
+			// enqueued
+			return 1;
 		}
 
-		X_STATUS Xbox_KiApcNormalRoutineNop()
+		uint32_t Xbox_KiApcNormalRoutineNop(uint32_t flags)
 		{
-			return X_STATUS_SUCCESS;
+			return 0;
 		}
 
 		//-----------------
 
-		X_STATUS Xbox_KeWaitForSingleObject(uint32 objectPointer, uint32 waitReason, uint32 processorMode, uint32 alertable, Pointer<uint32> timeoutPtr)
+		X_STATUS Xbox_KeWaitForSingleObject(Pointer<KernelDispatchHeader> objectPointer, uint32 waitReason, uint32 processorMode, uint32 alertable, Pointer<uint32> timeoutPtr)
 		{
 			// resolve object
 			auto* object = GPlatform.GetKernel().ResolveObject(objectPointer, xenon::NativeKernelObjectType::Unknown, false);
@@ -460,7 +698,7 @@ namespace xenon
 			return waitObject->Wait(waitReason, processorMode, !!alertable, timeoutPtr.IsValid() ? &timeout : nullptr);
 		}
 
-		X_STATUS Xbox_NtWaitForSingleObjectEx(uint32 objectHandle, uint32 waitMode, uint32 alertable, Pointer<uint32> timeoutPtr)
+		X_STATUS Xbox_NtWaitForSingleObjectEx(uint32_t objectHandle, uint32 waitMode, uint32 alertable, Pointer<uint32> timeoutPtr)
 		{
 			auto* object = GPlatform.GetKernel().ResolveHandle(objectHandle, xenon::KernelObjectType::Unknown);
 			if (!object)
@@ -481,17 +719,17 @@ namespace xenon
 			return waitObject->Wait(3, waitMode, !!alertable, timeoutPtr.IsValid() ? &timeout : nullptr);
 		}
 
-		X_STATUS Xbox_KeWaitForMultipleObjects(uint32 count, Pointer<uint32> objectsPtr, uint32 waitType, uint32 waitReason, uint32 alertable, Pointer<uint32> timeoutPtr, Pointer<uint32> waitBlockPtr)
+		X_STATUS Xbox_KeWaitForMultipleObjects(uint32 count, Pointer<Pointer<KernelDispatchHeader>> objectsPtr, uint32 waitType, uint32 waitReason, uint32 alertable, Pointer<uint64> timeoutPtr, Pointer<uint32> waitBlockPtr)
 		{
 			DEBUG_CHECK(waitType == 0 || waitType == 1);
 
-			const auto timeOut = timeoutPtr.IsValid() ? (uint32_t)*timeoutPtr : 0;
+			const auto timeOut = timeoutPtr.IsValid() ? (uint64_t)*timeoutPtr : 0;
 
 			std::vector<xenon::IKernelWaitObject*> waitObjects;
 			for (uint32_t i = 0; i < count; ++i)
 			{
-				auto objectPtr = objectsPtr[i];
-				if (objectPtr)
+				auto objectPtr = objectsPtr[i].Get();
+				if (objectPtr.IsValid())
 				{
 					auto objectData = GPlatform.GetKernel().ResolveObject(objectPtr, xenon::NativeKernelObjectType::Unknown, true);
 					if (!objectData || !objectData->CanWait())
@@ -502,13 +740,28 @@ namespace xenon
 			}
 
 			const auto waitAll = (waitType == 1);
-			return GPlatform.GetKernel().WaitMultiple(waitObjects, waitAll, timeOut, alertable != 0);
+			return GPlatform.GetKernel().WaitMultiple(waitObjects, waitAll, timeoutPtr.IsValid() ? &timeOut : nullptr, alertable != 0);
 		}
 
-		X_STATUS Xbox_NtWaitForMultipleObjectsEx()
+		X_STATUS Xbox_NtWaitForMultipleObjectsEx(uint32 count, Pointer<uint32> handlesPtr, uint32 waitType, uint32 waitReason, uint32 alertable, Pointer<uint64> timeoutPtr)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			DEBUG_CHECK(waitType == 0 || waitType == 1);
+
+			std::vector<xenon::IKernelWaitObject*> waitObjects;
+			for (uint32_t i = 0; i < count; ++i)
+			{
+				auto objectHandle = handlesPtr[i];
+				auto objectPtr = GPlatform.GetKernel().ResolveHandle(objectHandle, xenon::KernelObjectType::Unknown);
+				if (objectPtr && objectPtr->CanWait())
+				{
+					waitObjects.push_back(static_cast<xenon::IKernelWaitObject*>(objectPtr));
+				}
+			}
+
+			const auto timeOut = timeoutPtr.IsValid() ? (uint64_t)*timeoutPtr : 0;
+
+			const auto waitAll = (waitType == 1);
+			return GPlatform.GetKernel().WaitMultiple(waitObjects, waitAll, timeoutPtr.IsValid() ? &timeOut : nullptr, alertable != 0);
 		}
 
 		//---------------------------------------------------------------------------
@@ -663,15 +916,29 @@ namespace xenon
 			throw new runtime::TerminateProcessException(0, 0);
 		}
 
-		X_STATUS Xbox_NtDuplicateObject()
+		X_STATUS Xbox_NtDuplicateObject(uint32 objectHandle, Pointer<uint32> newObjectHandlePtr, uint32 flags)
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			uint32 newHandle = 0;
+
+			// create a new handle pointing to the same object
+			if (!GPlatform.GetKernel().DuplicateHandle(objectHandle, newHandle))
+				return X_STATUS_INVALID_HANDLE;
+
+			// write the new handle
+			if (newObjectHandlePtr.IsValid())
+				*newObjectHandlePtr = newHandle;
+
+			// close the source handle
+			if (flags & 1)
+				GPlatform.GetKernel().CloseHandle(objectHandle);
+
+			return X_STATUS_SUCCESS;
 		}
 
-		X_STATUS Xbox_ObDereferenceObject(uint32 objectAddress)
+		X_STATUS Xbox_ObDereferenceObject(Pointer<KernelDispatchHeader> objectAddress)
 		{
-			if (!objectAddress)
+			// sometimes an invalid pointer is passed
+			if (!objectAddress.IsValid())
 				return X_ERROR_BAD_ARGUMENTS;
 
 			// resolve object
@@ -749,14 +1016,16 @@ namespace xenon
 
 		X_STATUS Xbox_ObCreateSymbolicLink()
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			return X_STATUS_UNSUCCESSFUL;
+			//DebugBreak();
+			//return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		X_STATUS Xbox_ObDeleteSymbolicLink()
 		{
-			DebugBreak();
-			return X_STATUS_NOT_IMPLEMENTED;
+			return X_STATUS_UNSUCCESSFUL;
+			//DebugBreak();
+			//return X_STATUS_NOT_IMPLEMENTED;
 		}
 
 		X_STATUS Xbox_ExRegisterTitleTerminateNotification()
@@ -939,7 +1208,13 @@ namespace xenon
 			REGISTER(KeRemoveQueueDpc);
 			REGISTER(InterlockedPopEntrySList);
 
+			REGISTER(KeQueryBasePriorityThread);
+			REGISTER(KeSetBasePriorityThread);
+			REGISTER(KeSetDisableBoostThread);
 			REGISTER(KeSetCurrentProcessType);
+
+			REGISTER(KeRaiseIrqlToDpcLevel);
+			REGISTER(KfLowerIrql);
 
 			symbols.RegisterInterrupt(20, (runtime::TInterruptFunc) &Xbox_Interrupt20);
 			symbols.RegisterInterrupt(22, (runtime::TInterruptFunc) &Xbox_Interrupt22);

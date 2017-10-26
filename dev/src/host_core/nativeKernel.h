@@ -67,6 +67,28 @@ namespace native
 		virtual WaitResult Wait(const uint32 timeout, const bool alertable) = 0;
 	};
 
+	/// timer
+	class LAUNCHER_API ITimer : public IKernelObject
+	{
+	public:
+		virtual ~ITimer();
+
+		typedef std::function<void()> TCallbackFunc;
+
+		// set timer to run once
+		// callback function runs in the scope of the thread
+		virtual bool SetOnce(uint64_t nanosecondsToWait, const TCallbackFunc& func) = 0;
+
+		// set timer to run periodically
+		virtual bool SetRepeating(uint64_t nanosecondsToWait, uint64_t milisecondPeriod, const TCallbackFunc& func) = 0;
+
+		// cancel timer
+		virtual bool Cancel() = 0;
+
+		// wait on the timer
+		virtual WaitResult Wait(const uint32 timeout, const bool alertable) = 0;
+	};
+
 	/// semaphore
 	class LAUNCHER_API ISemaphore : public IKernelObject
 	{
@@ -74,6 +96,17 @@ namespace native
 		virtual ~ISemaphore();
 
 		virtual uint32 Release(const uint32 count) = 0;
+		virtual WaitResult Wait(const uint32 timeout, const bool alertable) = 0;
+	};
+
+	/// mutant
+	class LAUNCHER_API IMutant : public IKernelObject
+	{
+	public:
+		virtual ~IMutant();
+
+		virtual bool Release() = 0;
+		virtual void* GetNativeHandle() const = 0;
 		virtual WaitResult Wait(const uint32 timeout, const bool alertable) = 0;
 	};
 
@@ -114,10 +147,22 @@ namespace native
 		/// create a native (host) thread running given code
 		virtual IThread* CreateThread(IRunnable* runnable) = 0;
 
+		/// create manual reset time
+		virtual ITimer* CreateManualResetTimer() = 0;
+
+		/// create synchronization timer
+		virtual ITimer* CreateSynchronizationTimer() = 0;
+
+		/// create a mutant
+		virtual IMutant* CreateMutant(bool initiallyOpened) = 0;
+
 		///---
 
 		/// wait for multiple objects
 		virtual WaitResult WaitMultiple(const std::vector<IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable) = 0;
+
+		/// signal and object and wait
+		virtual WaitResult SignalAndWait(IKernelObject* nativeSignalObject, IKernelObject* nativeWaitObject, const uint32 timeOut, const bool alertable) = 0;
 	};
 
 } // native

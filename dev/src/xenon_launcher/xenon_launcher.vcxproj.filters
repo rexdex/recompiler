@@ -154,7 +154,6 @@
     <ClCompile Include="xenonLibInput.cpp">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="dx11AbstractLayer.cpp" />
     <ClCompile Include="xenonLibXAM.cpp">
       <Filter>libs</Filter>
     </ClCompile>
@@ -186,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="xenonLibMemory.cpp">
       <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="xenonTimeBase.cpp">
+      <Filter>devices\timing</Filter>
+    </ClCompile>
+    <ClCompile Include="dx11AbstractLayer.cpp">
+      <Filter>devices\graphics\gpu\dx11</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -368,6 +373,9 @@
     </ClInclude>
     <ClInclude Include="xenonLib.h" />
     <ClInclude Include="xenonBindings.h" />
+    <ClInclude Include="xenonTimeBase.h">
+      <Filter>devices\timing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="devices">
@@ -435,6 +443,9 @@
     </Filter>
     <Filter Include="devices\audio">
       <UniqueIdentifier>{130a265a-a7d5-49cf-a346-9cc43d7617c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="devices\timing">
+      <UniqueIdentifier>{a6a55c8d-1ec6-4e11-aefb-e0b25da324d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 #include "../host_core/nativeKernel.h"
+#include <mutex>
 
 namespace win
 {
@@ -46,6 +47,41 @@ namespace win
 		HANDLE	m_hSemaphore;
 	};
 
+	class Mutant : public native::IMutant
+	{
+	public:
+		Mutant(bool initialOwner);
+		virtual ~Mutant();
+
+		virtual bool Release() override final;
+		virtual void* GetNativeHandle() const override final;
+		virtual native::WaitResult Wait(const uint32 timeout, const bool alertable) override final;
+
+	private:
+		HANDLE m_hMutant;
+	};
+
+	class Timer : public native::ITimer
+	{
+	public:
+		Timer(bool manualReset);
+		virtual ~Timer();
+
+		virtual bool SetOnce(uint64_t nanosecondsToWait, const TCallbackFunc& func) override final;
+		virtual bool SetRepeating(uint64_t nanosecondsToWait, uint64_t milisecondPeriod, const TCallbackFunc& func) override final;
+		virtual bool Cancel() override final;
+		virtual native::WaitResult Wait(const uint32 timeout, const bool alertable) override final;
+		virtual void* GetNativeHandle() const override final;
+
+	private:
+		std::mutex m_callbackLock;
+		std::function<void()> m_callback;
+
+		static void APIENTRY WaitOrTimerCallback(PVOID param, DWORD dwTimerLowValue, DWORD dwTimerHighValue);
+
+		HANDLE m_hTimer;
+	};
+
 	class Thread : public native::IThread
 	{
 	public:
@@ -85,7 +121,13 @@ namespace win
 		virtual native::IEvent* CreateEvent(const bool manualReset, const bool initialState) override final;
 		virtual native::ISemaphore* CreateSemaphore(const uint32 initialCount, const uint32 maxCount) override final;
 		virtual native::IThread* CreateThread(native::IRunnable* runnable) override final;
+		virtual native::ITimer* CreateManualResetTimer() override final;
+		virtual native::ITimer* CreateSynchronizationTimer() override final;
+		virtual native::IMutant* CreateMutant(bool initiallyOpened) override final;
+
 		virtual native::WaitResult WaitMultiple(const std::vector<native::IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable) override final;
+		virtual native::WaitResult SignalAndWait(native::IKernelObject* nativeSignalObject, native::IKernelObject* nativeWaitObject, const uint32 timeOut, const bool alertable) override final;
+
 	};
 
 } // win

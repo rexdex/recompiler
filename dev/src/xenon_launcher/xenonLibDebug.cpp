@@ -43,6 +43,31 @@ namespace xenon
 			return X_STATUS_UNSUCCESSFUL;
 		}
 
+		struct XM_DM_VERSION_INFO
+		{
+			Field<uint16_t> Major;
+			Field<uint16_t> Minor;
+			Field<uint16_t> Build;
+			Field<uint16_t> QFE;
+		};
+
+		struct XM_DM_SYSTEM_INFO
+		{
+			Field<uint32_t> SizeOfStruct;
+			XM_DM_VERSION_INFO BaseKernelVersion;
+			XM_DM_VERSION_INFO KernelVersion;
+			XM_DM_VERSION_INFO XDKVersion;
+			Field<uint32_t> SystemInfoFlags;
+		};
+
+		X_STATUS Xbox_DmGetSystemInfo(Pointer<XM_DM_SYSTEM_INFO> info)
+		{
+			memset(info.GetNativePointer(), 0, sizeof(XM_DM_SYSTEM_INFO));
+			info->SizeOfStruct = (uint32)sizeof(XM_DM_SYSTEM_INFO);
+			info->SystemInfoFlags = 0x00000020;
+			return X_STATUS_SUCCESS;
+		}
+
 		void RegisterXboxDebug(runtime::Symbols& symbols)
 		{
 			REGISTER(DbgBreakPoint);
@@ -50,6 +75,7 @@ namespace xenon
 			REGISTER(DmAddUser);
 			REGISTER(DmAllocatePool);
 			REGISTER(DmAllocatePoolWithTag);
+			REGISTER(DmGetSystemInfo);
 
 			NOT_IMPLEMENTED(RtlUnwind);
 			NOT_IMPLEMENTED(RtlUnwind2);

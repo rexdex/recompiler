@@ -6,6 +6,7 @@
 #include "../host_core/runtimeCodeExecutor.h"
 #include "../host_core/runtimeTraceWriter.h"
 #include "../host_core/runtimeTraceFile.h"
+#include "xenonMemory.h"
 
 namespace xenon
 {
@@ -31,7 +32,7 @@ namespace xenon
 	__declspec(thread) KernelThread* GCurrentThread = NULL;
 
 	KernelThread::KernelThread(Kernel* kernel, native::IKernel* nativeKernel, const KernelThreadParams& params)
-		: IKernelWaitObject(kernel, KernelObjectType::Thread, "Thread")
+		: IKernelWaitObject(kernel, KernelObjectType::Thread)
 		, m_code(&m_regs, &kernel->GetCode(), params.m_entryPoint)
 		, m_memory( kernel, params.m_stackSize, GetIndex(), params.m_entryPoint, 1 )
 		, m_tls( kernel )
@@ -39,10 +40,11 @@ namespace xenon
 		, m_isCrashed(false) // not crashed yet
 		, m_isWaiting(false) // no waiting state
 		, m_priority(0) // thread priority normal
+		, m_queuePriority(0)
 		, m_criticalRegion(false)
 		, m_requestExit(false)
 		, m_affinity(0xFF)
-		, m_apcList(nullptr)
+		, m_apcList(new KernelList())
 		, m_traceWriter(nullptr)
 		, m_irql(0)
 	{
@@ -53,7 +55,9 @@ namespace xenon
 		}
 
 		// register descriptor in kernel linked lists
-		SetNativePointer((void*)m_memory.GetThreadDataAddr()); // NOTE: we are not binding it to the thread
+		// our dispatch header is placed well within the thread memory block just allocated
+		Pointer<KernelDispatchHeader> dispatchHeader(m_memory.GetThreadDataAddr());
+		kernel->BindDispatchObjectToKernelObject(this, dispatchHeader);
 
 		// setup initial register state
 		m_regs.R1 = (uint64)m_memory.GetStack().GetTop();
@@ -115,6 +119,13 @@ namespace xenon
 		return prevPriority;
 	}
 
+	int32 KernelThread::SetQueuePriority(const int32 priority)
+	{
+		int32 prevPriority = m_queuePriority;
+		m_queuePriority = priority;
+		return prevPriority;
+	}
+
 	uint32 KernelThread::SetAffinity(const uint32 affinity)
 	{
 		uint32 prevAffinity = m_affinity;
@@ -146,28 +157,31 @@ namespace xenon
 			return lib::X_STATUS_ALERTED;
 	}
 
-	lib::XStatus KernelThread::EnterCriticalRegion()
+	bool KernelThread::EnterCriticalRegion()
 	{
 		if (m_criticalRegion)
 		{
 			GLog.Err("Kernel: Entering already set critical region on Thread '%s' (TID=%d)", GetName(), GetIndex());
-			return lib::X_STATUS_UNSUCCESSFUL;
+			return false;
 		}
 
 		m_criticalRegion = true;
-		return lib::X_STATUS_SUCCESS;
+		return true;
 	}
 
-	lib::XStatus KernelThread::LeaveCriticalRegion()
+	bool KernelThread::LeaveCriticalRegion()
 	{
 		if (!m_criticalRegion)
 		{
 			GLog.Err("Kernel: Leaving non existing critical region on Thread '%s' (TID=%d)", GetName(), GetIndex());
-			return lib::X_STATUS_UNSUCCESSFUL;
+			return false;
 		}
-
 		m_criticalRegion = false;
-		return lib::X_STATUS_SUCCESS;
+
+		// run the APC scheduled while we were busy
+		ProcessAPC();
+
+		return true;
 	}
 
 	int KernelThread::Run(native::IThread& thread)
@@ -181,6 +195,9 @@ namespace xenon
 
 		// stuff
 		GLog.Log("Thread: Starting execution at thread %hs, ID=%u", GetName(), GetIndex());
+
+		// process APC that were scheduled befere we even started
+		ProcessAPC();
 
 		// start the execution loop
 		int exitCode = 0;
@@ -229,6 +246,71 @@ namespace xenon
 		m_apcLock.lock();
 	}
 
+	bool KernelThread::EnqueueAPC(MemoryAddress callbackFuncAddress, uint32 callbackContext, const uint32 arg1, const uint32 arg2)
+	{
+		// create the temporary memory structure
+		auto* mem = GPlatform.GetMemory().AllocateSmallBlock(sizeof(MemoryAddress));
+		Pointer<KernelAPCData> apcEntryPtr(new (mem) MemoryAddress());
+
+		// setup 
+		apcEntryPtr->m_normalRoutine = callbackFuncAddress;
+		apcEntryPtr->m_normalContext = callbackContext;
+		apcEntryPtr->m_threadPtr = GetTheadData();
+		
+		// add to list
+		return EnqueueAPC(apcEntryPtr, arg1, arg2);
+	}
+
+	bool KernelThread::EnqueueAPC(Pointer<KernelAPCData> apcEntryPtr, const uint32 arg1, const uint32 arg2)
+	{
+		LockAPC();
+
+		// we can insert only once
+		if (apcEntryPtr->m_inqueue)
+		{
+			UnlockAPC();
+			return false;
+		}
+
+		// set arguments
+		apcEntryPtr->m_arg1 = arg1;
+		apcEntryPtr->m_arg2 = arg2;
+		apcEntryPtr->m_inqueue = 1;
+
+		// push entry to list
+		m_apcList->Insert(&apcEntryPtr->m_listEntry);
+
+		// release APC lock, this may schedule APC for execution
+		UnlockAPC();
+		return true;
+	}
+
+	bool KernelThread::DequeueAPC(Pointer<KernelAPCData> apcEntryPtr)
+	{
+		LockAPC();
+
+		// not in the list :)
+		if (!apcEntryPtr->m_inqueue)
+		{
+			UnlockAPC();
+			return false;
+		}
+
+		// check if in the list
+		if (!m_apcList->IsQueued(&apcEntryPtr->m_listEntry))
+		{
+			UnlockAPC();
+			return false;
+		}
+
+		// remove from the list
+		m_apcList->Remove(&apcEntryPtr->m_listEntry);
+
+		// release APC lock, this may schedule APC for execution
+		UnlockAPC();
+		return true;
+	}
+
 	void KernelThread::UnlockAPC()
 	{
 		const bool needsAPC = m_apcList->HasPending();
@@ -248,6 +330,14 @@ namespace xenon
 		return m_irql.exchange(level);
 	}
 
+	struct KernelThreadScratch
+	{
+		Field<MemoryAddress> m_functionPtr;
+		Field<uint32_t> m_functionContext;
+		Field<uint32_t> m_arg1;
+		Field<uint32_t> m_arg2;
+	};
+
 	// http://www.drdobbs.com/inside-nts-asynchronous-procedure-call/184416590?pgno=1
 	// http://www.drdobbs.com/inside-nts-asynchronous-procedure-call/184416590?pgno=7
 	void KernelThread::ProcessAPC()
@@ -256,67 +346,56 @@ namespace xenon
 
 		while (m_apcList->HasPending())
 		{
-			// Get APC entry (offset for LIST_ENTRY offset) and cache what we need.
-			// Calling the routine may delete the memory/overwrite it.
-			const uint32 apcAddress = (const uint32)m_apcList->Pop().GetAddress().GetAddressValue() - 8;
-			const uint32 kernelRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 16);
-			const uint32 normalRoutine = cpu::mem::loadAddr<uint32>(apcAddress + 24);
-			const uint32 normalContext = cpu::mem::loadAddr<uint32>(apcAddress + 28);
-			const uint32 systemArg1 = cpu::mem::loadAddr<uint32>(apcAddress + 32);
-			const uint32 systemArg2 = cpu::mem::loadAddr<uint32>(apcAddress + 36);
+			// pop first pending APC from the list
+			auto apcAddress = Pointer<KernelAPCData>(m_apcList->Pop().GetAddress().GetAddressValue() - 8);
 
-			// Mark as uninserted so that it can be reinserted again by the routine.
-			const uint32 oldFlags = cpu::mem::loadAddr<uint32>(apcAddress + 40);
-			cpu::mem::storeAddr<uint32>(apcAddress + 40, oldFlags & ~0xFF00);
-			xenon::TagMemoryWrite(apcAddress + 40, 4, "KERNEL_APC_SETUP");
+			// mark it as no longer int the list
+			DEBUG_CHECK(apcAddress->m_inqueue == 1);
+			apcAddress->m_inqueue = 0;
 
-			// Call kernel routine.
-			// The routine can modify all of its arguments before passing it on.
-			// Since we need to give guest accessible pointers over, we copy things
-			// into and out of scratch.
-			const uint32 scratchAddr = m_memory.GetScratchAddr();
-			cpu::mem::storeAddr<uint32>(scratchAddr + 0, normalRoutine);
-			cpu::mem::storeAddr<uint32>(scratchAddr + 4, normalContext);
-			cpu::mem::storeAddr<uint32>(scratchAddr + 8, systemArg1);
-			cpu::mem::storeAddr<uint32>(scratchAddr + 12, systemArg2);
-			xenon::TagMemoryWrite(scratchAddr, 16, "KERNEL_APC_SETUP");
+			// copy data for calling
+			auto scratchData = Pointer<KernelThreadScratch>(m_memory.GetScratchAddr());
+			scratchData->m_functionPtr = apcAddress->m_normalRoutine;
+			scratchData->m_functionContext = apcAddress->m_normalContext;
+			scratchData->m_arg1 = apcAddress->m_arg1;
+			scratchData->m_arg2 = apcAddress->m_arg2;
 
 			// setup execution params
 			// kernel_routine(apc_address, &normalRoutine, &normalContext, &systemArg1, &systemArg2)
 			InplaceExecutionParams executionParams;
-			executionParams.m_entryPoint = kernelRoutine;
+			executionParams.m_entryPoint = apcAddress->m_kernelRoutine.GetAddress();
 			executionParams.m_stackSize = 16 * 1024;
 			executionParams.m_threadId = GetIndex();
-			executionParams.m_args[0] = apcAddress;
-			executionParams.m_args[1] = scratchAddr + 0;
-			executionParams.m_args[2] = scratchAddr + 4;
-			executionParams.m_args[3] = scratchAddr + 8;
-			executionParams.m_args[4] = scratchAddr + 12;
+			executionParams.m_args[0] = apcAddress.GetAddress().GetAddressValue();
+			executionParams.m_args[1] = scratchData.GetAddress().GetAddressValue() + 0;
+			executionParams.m_args[2] = scratchData.GetAddress().GetAddressValue() + 4;
+			executionParams.m_args[3] = scratchData.GetAddress().GetAddressValue() + 8;
+			executionParams.m_args[4] = scratchData.GetAddress().GetAddressValue() + 12;
 
 			// execute code
-			InplaceExecution executor(GetOwner(), executionParams, "APC");
+			InplaceExecution executor(GetOwner(), executionParams, "APC_KERNEL");
 			if (executor.Execute())
 			{
-				const uint32 userNormalRoutine = cpu::mem::loadAddr<uint32>(scratchAddr + 0);
-				const uint32 userNormalContext = cpu::mem::loadAddr<uint32>(scratchAddr + 4);
-				const uint32 userSystemArg1 = cpu::mem::loadAddr<uint32>(scratchAddr + 8);
-				const uint32 userSystemArg2 = cpu::mem::loadAddr<uint32>(scratchAddr + 12);
+				const auto userNormalRoutine = scratchData->m_functionPtr;
+				const auto userNormalContext = scratchData->m_functionContext;
+				const auto userSystemArg1 = scratchData->m_arg1;
+				const auto userSystemArg2 = scratchData->m_arg2;
 
 				// Call the normal routine. Note that it may have been killed by the kernel routine.
-				if (userNormalRoutine)
+				if (userNormalRoutine.GetAddress())
 				{
 					UnlockAPC();
 
 					// normal_routine(normal_context, system_arg1, system_arg2)
 					InplaceExecutionParams userExecutionParams;
-					userExecutionParams.m_entryPoint = userNormalRoutine;
+					userExecutionParams.m_entryPoint = userNormalRoutine.GetAddress();
 					userExecutionParams.m_stackSize = 16 * 1024;
 					userExecutionParams.m_threadId = GetIndex();
 					userExecutionParams.m_args[0] = userNormalContext;
 					userExecutionParams.m_args[1] = userSystemArg1;
 					userExecutionParams.m_args[2] = userSystemArg2;
 
-					InplaceExecution userExecutor(GetOwner(), userExecutionParams, "APC");
+					InplaceExecution userExecutor(GetOwner(), userExecutionParams, "APC_NORMAL");
 					userExecutor.Execute();
 
 					LockAPC();

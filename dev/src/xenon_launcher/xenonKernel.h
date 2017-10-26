@@ -36,10 +36,20 @@ namespace xenon
 
 	//---------------------------------------------------------------------------
 
-	enum class KernelObjectType : uint32
+	/// IRQ level 
+	enum KernelIrql : uint32_t
+	{
+		IRQL_Normal = 0,
+		IRQL_APC = 1,
+		IRQL_Dispatch = 2,
+		IRQL_DPC = 3,
+	};
+
+	enum class KernelObjectType : uint8
 	{
 		Unknown = 0,
 		Process = 10,
+		APC = 18,
 		Thread = 20,
 		CriticalSection = 30,
 		Semaphore = 40,
@@ -53,6 +63,8 @@ namespace xenon
 		FileSysEntry = 120,
 		ThreadBlock = 130,
 		EventNotifier = 140,
+		Timer = 150,
+		Mutant = 160,
 		Waitable = 255,
 	};
 
@@ -86,79 +98,6 @@ namespace xenon
 		APC = 1,
 		DISPATCH = 2,
 		DPC = 3,
-	};
-
-	//---------------------------------------------------------------------------
-
-	/// Base kernel object
-	class IKernelObject
-	{
-	public:
-		IKernelObject(Kernel* kernel, const KernelObjectType type, const char* name);
-		virtual ~IKernelObject();
-
-		// get owning kernel object
-		inline Kernel* GetOwner() const { return m_kernel; }
-
-		// get type of kernel object
-		inline const KernelObjectType GetType() const { return m_type; }
-
-		// get name of kernel object (may be empty)
-		inline const char* GetName() const { return m_name.c_str(); }
-
-		// get index of the object (NOT ID)
-		inline const uint32 GetIndex() const { return m_index; }
-
-		// change the kernel object name
-		void SetObjectName(const char* name);
-
-		// get object id (handle), combines index and type
-		const uint32 GetHandle() const;
-
-		// does this object support refcounting ?
-		// object get's deleted when the refcount goes to zero
-		virtual bool IsRefCounted() const { return false; }
-
-		// does this object support waiting ?
-		// the Wait method is still up to the object
-		virtual bool CanWait() const { return false; }
-
-	protected:
-		// bind the kernel object with internal xenon dispatch list
-		void SetNativePointer(void* nativePtr);
-
-	private:
-		// object type & name
-		KernelObjectType	m_type;
-		std::string			m_name;
-
-		// internal index in the object map (not an ID yet)
-		uint32				m_index;
-
-		// owner
-		Kernel*				m_kernel;
-	};
-
-	//---------------------------------------------------------------------------
-
-	/// Reference counted handles
-	class IKernelObjectRefCounted : public IKernelObject
-	{
-	public:
-		IKernelObjectRefCounted(Kernel* kernel, const KernelObjectType type, const char* name);
-		virtual ~IKernelObjectRefCounted();
-
-		// close (for CloseHandle)
-		virtual bool IsRefCounted() const { return true; }
-
-		// add a reference
-		void AddRef();
-
-		// release a reference to this object, once it gets to zero the object is deleted
-		void Release();
-
-	private:
-		volatile LONG		m_refCount;
 	};
 
 	//---------------------------------------------------------------------------
@@ -198,12 +137,153 @@ namespace xenon
 
 	//---------------------------------------------------------------------------
 
+	// http://www.nirsoft.net/kernel_struct/vista/DISPATCHER_HEADER.html
+	// http://www.nirsoft.net/kernel_struct/vista/KEVENT.html
+	struct KernelDispatchHeader
+	{
+		Field<uint32> m_typeAndFlags;
+		Field<uint32> m_signalState;
+		KernelListEntry m_listEntry;
+
+		inline KernelDispatchHeader()
+		{
+			Reset();
+		}
+
+		inline void Reset()
+		{
+			m_typeAndFlags = 0;
+			m_signalState = 0;
+			m_listEntry = KernelListEntry();
+		}
+	};
+
+	// in-memory header for the semaphore
+	struct KernelSemaphoreHeader
+	{
+		KernelDispatchHeader m_dispatchHeader;
+		Field<uint32_t> m_maxCount;
+	};
+
+	//---------------------------------------------------------------------------
+
+	/// Base kernel object
+	class IKernelObject
+	{
+	public:
+		IKernelObject(Kernel* kernel, const KernelObjectType type, const char* name);
+		virtual ~IKernelObject();
+
+		// get owning kernel object
+		inline Kernel* GetOwner() const { return m_kernel; }
+
+		// get type of kernel object
+		inline const KernelObjectType GetType() const { return m_type; }
+
+		// get name of kernel object (may be empty)
+		inline const char* GetName() const { return m_name.empty() ? nullptr : m_name.c_str(); }
+
+		// get index of the object (NOT ID)
+		inline const uint32 GetIndex() const { return m_index; }
+
+		// change the kernel object name
+		void SetObjectName(const char* name);
+
+		// get object id (handle), combines index and type
+		const uint32 GetHandle() const;
+
+		// does this object support refcounting ?
+		// object get's deleted when the refcount goes to zero
+		virtual bool IsRefCounted() const { return false; }
+
+		// does this object support waiting ?
+		// the Wait method is still up to the object
+		virtual bool CanWait() const { return false; }
+
+	private:
+		// object type & name
+		KernelObjectType	m_type;
+		std::string			m_name;
+
+		// internal index in the object map (not an ID yet)
+		uint32				m_index;
+
+		// owner
+		Kernel*				m_kernel;
+	};
+
+	//---------------------------------------------------------------------------
+
+	/// Reference counted handles
+	class IKernelObjectRefCounted : public IKernelObject
+	{
+	public:
+		IKernelObjectRefCounted(Kernel* kernel, const KernelObjectType type, const char* name);
+		virtual ~IKernelObjectRefCounted();
+
+		// close (for CloseHandle)
+		virtual bool IsRefCounted() const { return true; }
+
+		// add a reference
+		void AddRef();
+
+		// release a reference to this object, once it gets to zero the object is deleted
+		void Release();
+
+	private:
+		volatile LONG		m_refCount;
+	};
+
+	//---------------------------------------------------------------------------
+
+	// data block for the aync procedure call
+	class KernelAPCData
+	{
+	public:
+		Field<KernelObjectType> m_type;
+		Field<uint8_t> m_padding;
+		Field<uint8_t> m_processorMode;
+		Field<uint8_t> m_inqueue;
+		Field<Pointer<KernelDispatchHeader>> m_threadPtr;
+		KernelListEntry m_listEntry;
+		Field<MemoryAddress> m_kernelRoutine;
+		Field<MemoryAddress> m_rundownRoutine;
+		Field<MemoryAddress> m_normalRoutine;
+		Field<uint32_t> m_normalContext;
+		Field<uint32_t> m_arg1;
+		Field<uint32_t> m_arg2;
+
+		inline KernelAPCData()
+		{
+			Reset();
+		}
+
+		void Reset()
+		{
+			m_threadPtr = nullptr;
+			m_listEntry = KernelListEntry();
+			m_type = KernelObjectType::APC;
+			m_processorMode = 0;
+			m_processorMode = 0;
+			m_kernelRoutine = MemoryAddress();
+			m_rundownRoutine = MemoryAddress();
+			m_normalRoutine = MemoryAddress();
+			m_inqueue = 0;
+			m_normalContext = 0;
+			m_arg1 = 0;
+			m_arg2 = 0;
+		}
+	};
+	static_assert(sizeof(KernelAPCData) == 40, "Size is invalid");
+
+	//---------------------------------------------------------------------------
+
 	/// Dispatcher
 	class KernelDispatcher
 	{
 	public:
 		KernelDispatcher(native::ICriticalSection* lock);
-		~KernelDispatcher();
+		virtual ~KernelDispatcher();
 
 		void Lock();
 		void Unlock();
@@ -222,7 +302,7 @@ namespace xenon
 	{
 	public:
 		KernelStackMemory(Kernel* kernel, const uint32 size);
-		~KernelStackMemory();
+		virtual ~KernelStackMemory();
 
 		// get base of the stack
 		inline void* GetBase() const { return m_base; }
@@ -246,7 +326,7 @@ namespace xenon
 	{
 	public:
 		KernelThreadMemory(Kernel* kernel, const uint32 stackSize, const uint32 threadId, const uint64 entryPoint, const uint32 cpuIndex);
-		~KernelThreadMemory();
+		virtual ~KernelThreadMemory();
 
 		// get thread stack
 		inline KernelStackMemory& GetStack() { return m_stack; }
@@ -293,7 +373,7 @@ namespace xenon
 	{
 	public:
 		KernelTLS(Kernel* kernel);
-		~KernelTLS();
+		virtual ~KernelTLS();
 
 		// set TLS entry 
 		void Set(const uint32 entryIndex, const uint64 value);
@@ -313,7 +393,7 @@ namespace xenon
 	{
 	public:
 		KernelCriticalSection( Kernel* kernel, native::ICriticalSection* nativeObject );
-		~KernelCriticalSection();
+		virtual ~KernelCriticalSection();
 
 		void Enter();
 		void Leave();
@@ -330,7 +410,7 @@ namespace xenon
 	class IKernelWaitObject : public IKernelObjectRefCounted
 	{
 	public:
-		IKernelWaitObject(Kernel* kernel, const KernelObjectType type, const char* name);
+		IKernelWaitObject(Kernel* kernel, const KernelObjectType type, const char* name = nullptr);
 
 		virtual bool CanWait() const override final { return true; }
 		virtual native::IKernelObject* GetNativeObject() const = 0;
@@ -343,8 +423,8 @@ namespace xenon
 	class KernelEvent : public IKernelWaitObject
 	{
 	public:
-		KernelEvent(Kernel* kernel, native::IEvent* nativeEvent, const char* name = "Event");
-		~KernelEvent();
+		KernelEvent(Kernel* kernel, native::IEvent* nativeEvent, const char* name = nullptr);
+		virtual ~KernelEvent();
 
 		uint32 Set( uint32 priorityIncrement, bool wait);
 		uint32 Pulse(uint32 priorityIncrement, bool wait);
@@ -355,6 +435,65 @@ namespace xenon
 
 	private:
 		native::IEvent*		m_event;
+	};
+
+	//---------------------------------------------------------------------------
+
+	/// Classic semaphore
+	class KernelSemaphore : public IKernelWaitObject
+	{
+	public:
+		KernelSemaphore(Kernel* kernel, native::ISemaphore* nativeSemaphore, const char* name = nullptr);
+		virtual ~KernelSemaphore();
+
+		uint32 Release(uint32 count);
+
+		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;
+		virtual native::IKernelObject* GetNativeObject() const override final;
+
+	private:
+		native::ISemaphore*		m_semaphore;
+	};
+
+	//---------------------------------------------------------------------------
+
+	/// Timer
+	class KernelTimer : public IKernelWaitObject
+	{
+	public:
+		KernelTimer(Kernel* kernel, native::ITimer* nativeTimer, const char* name = nullptr);
+		virtual ~KernelTimer();
+
+		// setup timer
+		bool Setup(int64_t waitTime, int64_t periodMs, MemoryAddress callbackFuncAddress, uint32 callbackArg);
+
+		// cancel pending timer
+		bool Cancel();
+
+		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;
+		virtual native::IKernelObject* GetNativeObject() const override final;
+
+	private:
+		native::ITimer* m_timer;
+	};
+
+	//---------------------------------------------------------------------------
+
+	/// Mutant object
+	class KernelMutant : public IKernelWaitObject
+	{
+	public:
+		KernelMutant(Kernel* kernel, native::IMutant* nativeMutant, const char* name = nullptr);
+		virtual ~KernelMutant();
+
+		// release mutant
+		bool Release();
+
+		virtual uint32 Wait(const uint32 waitReason, const uint32 processorMode, const bool alertable, const int64* optTimeout) override final;
+		virtual native::IKernelObject* GetNativeObject() const override final;
+
+	private:
+		native::IMutant* m_mutant;
 	};
 
 	//---------------------------------------------------------------------------
@@ -444,7 +583,16 @@ namespace xenon
 		IKernelObject* ResolveHandle(const uint32 handle, KernelObjectType requestedType);
 
 		// resolve kernel object from dispatch object
-		IKernelObject* ResolveObject(const uint32 nativeAddres, NativeKernelObjectType requestedType, const bool allowCreate = true);
+		IKernelObject* ResolveObject(Pointer<KernelDispatchHeader> dispatchEntry, NativeKernelObjectType requestedType, const bool allowCreate = true);
+
+		// resolve named kernel object (SLOW)
+		IKernelObject* ResolveNamedObject(const char* name, KernelObjectType requestedType);
+
+		// make a copy of handle
+		bool DuplicateHandle(const uint32 handle, uint32& newHandle);
+
+		// close handle
+		bool CloseHandle(const uint32 handle);
 
 		// set master code table
 		void SetCode(const runtime::CodeTable* code);
@@ -456,7 +604,13 @@ namespace xenon
 		void PostEventNotification(const uint32 eventId, const uint32 eventData);
 
 		// wait for multiple waitable objects
-		uint32 WaitMultiple(const std::vector<IKernelWaitObject*>& waitObjects, const bool waitAll, const uint32 timeout, const bool alertable);
+		uint32 WaitMultiple(const std::vector<IKernelWaitObject*>& waitObjects, const bool waitAll, const uint64* timeout, const bool alertable);
+
+		// signal object and wait
+		uint32 SignalAndWait(IKernelWaitObject* signalObject, IKernelWaitObject* waitObject, const bool alertable, const uint64_t* timeout);
+
+		// bind dispatch header pointer to kernel object
+		void BindDispatchObjectToKernelObject(IKernelObject* object, Pointer<KernelDispatchHeader> dispatchEntry);
 
 		//---
 
@@ -472,13 +626,33 @@ namespace xenon
 		KernelThread* CreateThread(const KernelThreadParams& params);
 
 		/// create an event
-		KernelEvent* CreateEvent(bool initialState, bool manualReset);
+		KernelEvent* CreateEvent(bool initialState, bool manualReset, const char* name = nullptr);
+
+		/// create an semaphore
+		KernelSemaphore* CreateSemaphore(uint32_t initialCount, uint32_t maxCount, const char* name = nullptr);
 
 		/// create a critical section
 		KernelCriticalSection* CreateCriticalSection();
 
 		/// create an event notifier
 		KernelEventNotifier* CreateEventNotifier();
+
+		/// create a timer with manual reset
+		KernelTimer* CreateManualResetTimer(const char* name = nullptr);
+
+		/// create a synchronization timer
+		KernelTimer* CreateSynchronizationTimer(const char* name = nullptr);
+
+		/// create a mutant (mutex)
+		KernelMutant* CreateMutant(const bool initiallyOwned, const char* name = nullptr);
+
+		//----
+
+		// raise IRLQ, returns previous value
+		KernelIrql RaiseIRQL(const KernelIrql level);
+
+		// lower IRQ level, returns previous value
+		KernelIrql LowerIRQL(const KernelIrql level);
 
 		//----
 
@@ -488,6 +662,11 @@ namespace xenon
 	private:
 		static const uint32 MAX_OBJECT = 65536;
 		static const uint32 MAX_TLS = 64;
+
+		//---
+
+		// create kernel object from scratch, used when it first seen in the Resolve
+		IKernelObject* CreateInlinedObject(Pointer<KernelDispatchHeader> nativeAddres, NativeKernelObjectType requestedType);
 
 		//---
 
@@ -513,6 +692,13 @@ namespace xenon
 		uint32 m_freeIndices[MAX_OBJECT];
 		uint32 m_numFreeIndices;
 		std::mutex m_lock;
+
+		// list of mapped objects
+		std::unordered_map<std::string, IKernelObject*> m_namedObjets;
+
+		// map of the dispatch headers to object pointers
+		std::unordered_map<uint32_t, IKernelObject*> m_dispatchHeaderToObject;
+		std::unordered_map<IKernelObject*, uint32_t> m_objectToDispatchHeader;
 
 		// active threads
 		typedef std::vector< KernelThread* > TThreads;
@@ -542,6 +728,9 @@ namespace xenon
 		bool m_tlsFreeEntries[ MAX_TLS ];
 
 		///----
+
+		// IRQ level
+		std::atomic<KernelIrql> m_irqLevel;
 	};
 
 	//---------------------------------------------------------------------------

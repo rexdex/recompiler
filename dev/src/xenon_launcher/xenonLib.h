@@ -272,6 +272,10 @@ namespace xenon
 			: m_address(address)
 		{}
 
+		inline Pointer(T* ptr)
+			: m_address(ptr)
+		{}
+
 		inline Pointer(nullptr_t)
 		{}
 

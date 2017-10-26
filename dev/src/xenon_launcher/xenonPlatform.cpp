@@ -9,6 +9,7 @@
 #include "xenonUserManager.h"
 #include "xenonAudio.h"
 #include "xenonBindings.h"
+#include "xenonTimeBase.h"
 
 #include "../host_core/native.h"
 #include "../host_core/runtimeImage.h"
@@ -53,6 +54,7 @@ namespace xenon
 		, m_userExitRequested(false)
 		, m_traceFile(nullptr)
 		, m_platformLogFileEnabled(false)
+		, m_timeBase(nullptr)
 	{
 	}
 
@@ -190,6 +192,9 @@ namespace xenon
 		GLog.Log("Runtime: Initializing Xenon audio system");
 		m_audio = new Audio(symbols, commandline);
 
+		// create the time base system
+		GLog.Log("Runtime: Initializing Xenon time base");
+		m_timeBase = new TimeBase(commandline);
 
 		// create symbols
 		lib::RegisterXboxCRT(symbols);
@@ -341,6 +346,9 @@ namespace xenon
 	void Platform::Shutdown()
 	{
 		m_kernel->StopAllThreads();
+
+		delete m_timeBase;
+		m_timeBase = nullptr;
 
 		delete m_traceFile;
 		m_traceFile = nullptr;

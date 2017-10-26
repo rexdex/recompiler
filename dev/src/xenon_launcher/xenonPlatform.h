@@ -14,6 +14,7 @@ namespace xenon
 	class UserProfileManager;
 	class Audio;
 	class TraceFile;
+	class TimeBase;
 
 	/// Top level wrapper
 	class Platform : public runtime::IPlatform
@@ -36,6 +37,8 @@ namespace xenon
 		inline UserProfileManager& GetUserProfileManager() const { return *m_users; }
 
 		inline Audio& GetAudio() const { return *m_audio; }
+
+		inline TimeBase& GetTimeBase() const { return *m_timeBase; }
 
 		inline runtime::TraceFile* GetTraceFile() const { return m_traceFile; }
 
@@ -64,6 +67,8 @@ namespace xenon
 		void RequestUserExit();
 		void DebugTrace(const char* txt);
 
+		void RaiseIRQL();
+
 	private:
 		// subsystems
 		Kernel*					m_kernel;		// kernel object container
@@ -73,6 +78,7 @@ namespace xenon
 		Memory*					m_memory;		// memory system
 		UserProfileManager*		m_users;		// user profiles
 		Audio*					m_audio;		// audio system
+		TimeBase*				m_timeBase;		// timer and stuff
 
 		// some runtime data
 		lib::XenonNativeData	m_nativeXexExecutableModuleHandle;
@@ -91,6 +97,8 @@ namespace xenon
 
 		// trace file (may be null)
 		runtime::TraceFile*		m_traceFile;
+
+		// irq levels
 
 		// output log file
 		std::ofstream m_platformLogFile;

@@ -46,8 +46,8 @@ namespace win
 
 	Event::Event(bool initialState, bool manualReset)
 	{
-		GLog.Log("****CREATE NATIVE: MR=%d IS=%d", manualReset, initialState);
 		m_hEvent = CreateEventA(NULL, manualReset, initialState, NULL);
+		DEBUG_CHECK(m_hEvent != NULL);
 	}
 
 	Event::~Event()
@@ -82,12 +82,12 @@ namespace win
 		return m_hEvent;
 	}
 
-
 	//----
 
 	Semaphore::Semaphore(uint32 initalCount, uint32 maxCount)
 	{
 		m_hSemaphore = CreateSemaphore(NULL, initalCount, maxCount, NULL);
+		DEBUG_CHECK(m_hSemaphore != NULL);
 	}
 
 	Semaphore::~Semaphore()
@@ -114,6 +114,96 @@ namespace win
 		return m_hSemaphore;
 	}
 
+	//----
+
+	Timer::Timer(bool manualReset)
+	{	
+		m_hTimer = CreateWaitableTimer(NULL, manualReset, NULL);
+	}
+
+	Timer::~Timer()
+	{
+		CloseHandle(m_hTimer);
+		m_hTimer = NULL;
+	}
+
+	void Timer::WaitOrTimerCallback(PVOID param, DWORD dwTimerLowValue, DWORD dwTimerHighValue)
+	{
+		auto* timer = (Timer*)param;
+
+		timer->m_callbackLock.lock();
+		auto callback = timer->m_callback;
+		timer->m_callbackLock.unlock();
+
+		callback();
+	}
+
+	bool Timer::SetOnce(uint64_t nanosecondsToWait, const TCallbackFunc& func)
+	{
+		std::lock_guard<std::mutex> lock(m_callbackLock);
+
+		m_callback = func;
+
+		LARGE_INTEGER timeout;
+		timeout.QuadPart = nanosecondsToWait / 100;
+		return SetWaitableTimer(m_hTimer, &timeout, 0, &WaitOrTimerCallback, this, FALSE) != FALSE;
+	}
+
+	bool Timer::SetRepeating(uint64_t nanosecondsToWait, uint64_t milisecondPeriod, const TCallbackFunc& func)
+	{
+		std::lock_guard<std::mutex> lock(m_callbackLock);
+
+		m_callback = func;
+
+		LARGE_INTEGER timeout;
+		timeout.QuadPart = nanosecondsToWait / 100;
+		return SetWaitableTimer(m_hTimer, &timeout, (LONG)milisecondPeriod, &WaitOrTimerCallback, this, FALSE) != FALSE;
+	}
+
+	bool Timer::Cancel()
+	{
+		return CancelWaitableTimer(m_hTimer) != FALSE;
+	}
+
+	native::WaitResult Timer::Wait(const uint32 timeout, const bool alertable)
+	{
+		auto ret = WaitForSingleObjectEx(m_hTimer, timeout, alertable);
+		return ToWaitResult(ret);
+	}
+
+	void* Timer::GetNativeHandle() const
+	{
+		return m_hTimer;
+	}
+
+	//----
+
+	Mutant::Mutant(bool initialOwner)
+	{
+		m_hMutant = CreateMutex(NULL, initialOwner, NULL);
+	}
+
+	Mutant::~Mutant()
+	{
+		CloseHandle(m_hMutant);
+		m_hMutant = NULL;
+	}
+
+	bool Mutant::Release()
+	{
+		return ReleaseMutex(m_hMutant) != FALSE;
+	}
+
+	void* Mutant::GetNativeHandle() const
+	{
+		return m_hMutant;
+	}
+
+	native::WaitResult Mutant::Wait(const uint32 timeout, const bool alertable)
+	{
+		auto ret = WaitForSingleObjectEx(m_hMutant, timeout, alertable);
+		return ToWaitResult(ret);
+	}
 
 	//----
 
@@ -186,6 +276,9 @@ namespace win
 		QueueUserAPC((PAPCFUNC)&DeliverAPCs, m_hThread, (ULONG_PTR)this);
 	}
 
+
+	//----
+
 	//----
 
 	Kernel::Kernel()
@@ -214,6 +307,16 @@ namespace win
 		return new Thread(runnable);
 	}
 
+	native::ITimer* Kernel::CreateManualResetTimer()
+	{
+		return new Timer(true);
+	}
+
+	native::ITimer* Kernel::CreateSynchronizationTimer()
+	{
+		return new Timer(false);
+	}
+
 	native::WaitResult Kernel::WaitMultiple(const std::vector<native::IKernelObject*>& objects, const bool waitAll, const uint32 timeOut, const bool alertable)
 	{
 		// collect the handles
@@ -228,6 +331,20 @@ namespace win
 		// wait
 		const auto ret = WaitForMultipleObjectsEx((DWORD)handles.size(), handles.data(), waitAll, timeOut, alertable);
 		return ToWaitResult(ret);
+	}
+
+	native::WaitResult Kernel::SignalAndWait(native::IKernelObject* nativeSignalObject, native::IKernelObject* nativeWaitObject, const uint32 timeOut, const bool alertable)
+	{
+		HANDLE hSignal = nativeSignalObject->GetNativeHandle();
+		HANDLE hWait = nativeWaitObject->GetNativeHandle();
+
+		const auto ret = SignalObjectAndWait(hSignal, hWait, timeOut, alertable);
+		return ToWaitResult(ret);
+	}
+
+	native::IMutant* Kernel::CreateMutant(bool initiallyOpened)
+	{
+		return new Mutant(initiallyOpened);
 	}
 
 	//---

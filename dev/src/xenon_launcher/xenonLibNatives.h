@@ -313,45 +313,6 @@ namespace xenon
 			uint16 Quiet : 4;
 			uint16 Fuse : 4;
 		};
-		
-
-		// http://www.nirsoft.net/kernel_struct/vista/DISPATCHER_HEADER.html
-		// http://www.nirsoft.net/kernel_struct/vista/KEVENT.html
-		struct XDISPATCH_HEADER
-		{
-			union
-			{
-				uint32	TypeFlags;
-
-				struct
-				{
-					uint8 Type;
-
-					union
-					{
-						uint8 Abandoned;
-						uint8 Absolute;
-						uint8 NpxIrql;
-						uint8 Signalling;
-					};
-					union
-					{
-						uint8 Size;
-						uint8 Hand;
-					};
-					union
-					{
-						uint8 Inserted;
-						uint8 DebugActive;
-						uint8 DpcActive;
-					};
-				};
-			};
-
-			uint32 SignalState;
-			uint32 WaitListFLink;
-			uint32 WaitListBLink;
-		};
 
 		struct XCRITICAL_SECTION
 		{
@@ -375,11 +336,6 @@ namespace xenon
 		};
 
 		static_assert(sizeof(XCRITICAL_SECTION) == 28, "Critical section size mismatch");
-
-		struct XEVENT
-		{
-			XDISPATCH_HEADER  Dispatch;
-		};
 
 #pragma pack(push)
 #pragma pack(4)
@@ -761,7 +717,7 @@ namespace xenon
 		extern const NotificationID XN_XMP_STATECHANGED;
 		extern const NotificationID XN_XMP_PLAYBACKBEHAVIORCHANGED;
 		extern const NotificationID XN_XMP_PLAYBACKCONTROLLERCHANGED;
-		extern const NotificationID XN_PARTY_MEMBERS_CHANGED;
+		extern const NotificationID XN_PARTY_MEMBERS_CHANGED;		
 
 	} // lib
 } // xenon
