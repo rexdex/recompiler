@@ -577,6 +577,24 @@ namespace cpu
 
 		ControlReg	CR[8];
 
+		ControlReg	CR0_SO;
+		ControlReg	CR1_SO;
+		ControlReg	CR2_SO;
+		ControlReg	CR3_SO;
+		ControlReg	CR4_SO;
+		ControlReg	CR5_SO;
+		ControlReg	CR6_SO;
+		ControlReg	CR7_SO;
+
+		ControlReg	CR0_EQ;
+		ControlReg	CR1_EQ;
+		ControlReg	CR2_EQ;
+		ControlReg	CR3_EQ;
+		ControlReg	CR4_EQ;
+		ControlReg	CR5_EQ;
+		ControlReg	CR6_EQ;
+		ControlReg	CR7_EQ;
+
 		static const uint32 FPSCR_ZE = 1U << 27;
 		static const uint32 FPSCR_XE = 1U << 28;
 		static const uint32 FPSCR_VE = 1U << 24;
@@ -1689,8 +1707,9 @@ namespace cpu
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
 
+		// System Call
 		template <uint8 CTRL>
-		static CPU_INLINE void sc(CpuRegs& regs, const TReg a)
+		static CPU_INLINE void sc(CpuRegs& regs, TReg* out, const TReg a)
 		{
 
 			regs.XER.ca = (*out < a); // carry assuming there was no carry before
@@ -1910,14 +1929,6 @@ namespace cpu
 			*(int64*)out = (ret & 0xFFFFFFFF);
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
-		
-		// mullhdu - Multiply Low Halfword to DWord Unigned
-		template <uint8 CTRL>
-		static CPU_INLINE void mulhdu(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
-		{
-			*out = mulhi(a, b);
-			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
-		}
 
 		static uint64 mulhi(const uint64 a, const uint64 b)
 		{
@@ -1935,6 +1946,15 @@ namespace cpu
 			uint64 multhi = a_x_b_hi + (a_x_b_mid >> 32) + (b_x_a_mid >> 32) + carry_bit;
 			return multhi;
 		}
+
+		// mullhw - Multiply Low Halfword to Word Unigned
+		template <uint8 CTRL>
+		static CPU_INLINE void mulhdu(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
+		{
+			*out = mulhi(a, b);
+			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
+		}
+
 
 		//---------------------------------------------------------------------------------
 
@@ -2562,6 +2582,21 @@ namespace cpu
 			*out = clz32((uint32)val);
 #endif
 			if (CTRL) cmp::CmpLogicalXER<0>(regs, *out);
+		}
+
+		//Condition Register NOR - TODO
+		template <uint8 CTRL>
+		static CPU_INLINE void crnor(CpuRegs& regs, ControlReg* out, const ControlReg a, const ControlReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+
+		}
+
+		//Condition Register OR - TODO
+		template <uint8 CTRL>
+		static CPU_INLINE void cror(CpuRegs& regs, ControlReg* out, const ControlReg a, const ControlReg b)
+		{
+			
 		}
 
 		//---------------------------------------------------------------------------------
@@ -4039,6 +4074,17 @@ namespace cpu
 			out->AsInt16<1>() = vsat16i(regs, (int16)a.AsInt16<1>() - (int16)b.AsInt16<1>());
 			out->AsInt16<2>() = vsat16i(regs, (int16)a.AsInt16<2>() - (int16)b.AsInt16<2>());
 			out->AsInt16<3>() = vsat16i(regs, (int16)a.AsInt16<3>() - (int16)b.AsInt16<3>());
+		}
+
+		//Vector Subtract Signed Word Saturate TODO: Double Check This
+		template <uint8 CTRL>
+		static CPU_INLINE void vsubsws(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = vsat32i(regs, (int32)a.AsInt32<0>() - (int32)b.AsInt32<0>());
+			out->AsInt32<1>() = vsat32i(regs, (int32)a.AsInt32<1>() - (int32)b.AsInt32<1>());
+			out->AsInt32<2>() = vsat32i(regs, (int32)a.AsInt32<2>() - (int32)b.AsInt32<2>());
+			out->AsInt32<3>() = vsat32i(regs, (int32)a.AsInt32<3>() - (int32)b.AsInt32<3>());
 		}
 		
 		//Vector Subtract Unsigned Byte Saturate
