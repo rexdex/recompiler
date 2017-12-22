@@ -537,7 +537,7 @@ namespace code
 
 			// FAKE XML 
 			m_currentFile->m_codePrinter->Print("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-			m_currentFile->m_codePrinter->Print("  <Project DefaultTargets=\"Build\" ToolsVersion=\"4.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n");
+			m_currentFile->m_codePrinter->Print("  <Project DefaultTargets=\"Build\" ToolsVersion=\"17.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n");
 			m_currentFile->m_codePrinter->Print("    <ItemGroup Label=\"ProjectConfigurations\">\n");
 			m_currentFile->m_codePrinter->Print("      <ProjectConfiguration Include=\"Build|x64\">\n");
 			m_currentFile->m_codePrinter->Print("        <Configuration>Build</Configuration>\n");
@@ -626,7 +626,7 @@ namespace code
 		{
 			wchar_t msBuildPath[512];
 
-			if (GetKeyData(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\14.0", L"MSBuildToolsPath", msBuildPath, sizeof(msBuildPath)))
+			if (GetKeyData(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\17.0", L"MSBuildToolsPath", msBuildPath, sizeof(msBuildPath)))
 				return msBuildPath;
 
 			if (GetKeyData(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\4.0", L"MSBuildToolsPath", msBuildPath, sizeof(msBuildPath)))

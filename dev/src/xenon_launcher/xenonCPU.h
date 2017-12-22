@@ -577,6 +577,24 @@ namespace cpu
 
 		ControlReg	CR[8];
 
+		ControlReg	CR0_SO;
+		ControlReg	CR1_SO;
+		ControlReg	CR2_SO;
+		ControlReg	CR3_SO;
+		ControlReg	CR4_SO;
+		ControlReg	CR5_SO;
+		ControlReg	CR6_SO;
+		ControlReg	CR7_SO;
+
+		ControlReg	CR0_EQ;
+		ControlReg	CR1_EQ;
+		ControlReg	CR2_EQ;
+		ControlReg	CR3_EQ;
+		ControlReg	CR4_EQ;
+		ControlReg	CR5_EQ;
+		ControlReg	CR6_EQ;
+		ControlReg	CR7_EQ;
+
 		static const uint32 FPSCR_ZE = 1U << 27;
 		static const uint32 FPSCR_XE = 1U << 28;
 		static const uint32 FPSCR_VE = 1U << 24;
@@ -1689,6 +1707,15 @@ namespace cpu
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
 
+		// System Call
+		template <uint8 CTRL>
+		static CPU_INLINE void sc(CpuRegs& regs, TReg* out, const TReg a)
+		{
+
+			regs.XER.ca = (*out < a); // carry assuming there was no carry before
+			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
+		}
+
 		// subfe - Subtract From Extended XO-form
 		template <uint8 CTRL>
 		static CPU_INLINE void subfe(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
@@ -1876,6 +1903,19 @@ namespace cpu
 			*out = (uint32)(ret >> 32);
 			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
 		}
+		
+		// mullhd - Multiply Low HalfDword to Word Signed
+		template <uint8 CTRL>
+		static CPU_INLINE void mullhd(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
+		{
+			uint64 ua = EXTS16((uint32)a);
+			uint64 ub = EXTS16((uint32)b);
+			int64 as = (int64&)ua;
+			int64 bs = (int64&)ub;
+			int64 ret = as * bs;
+			*(int64*)out = (ret & 0xFFFFFFFF);
+			if (CTRL) cmp::CmpSignedXER<0>(regs, *(int64*)out, 0);
+		}
 
 		// mullhw - Multiply Low Halfword to Word Signed
 		template <uint8 CTRL>
@@ -1907,7 +1947,7 @@ namespace cpu
 			return multhi;
 		}
 
-		// mullhw - Multiply Low Halfword to Word Signed
+		// mullhw - Multiply Low Halfword to Word Unigned
 		template <uint8 CTRL>
 		static CPU_INLINE void mulhdu(CpuRegs& regs, TReg* out, const TReg a, const TReg b)
 		{
@@ -2542,6 +2582,21 @@ namespace cpu
 			*out = clz32((uint32)val);
 #endif
 			if (CTRL) cmp::CmpLogicalXER<0>(regs, *out);
+		}
+
+		//Condition Register NOR - TODO
+		template <uint8 CTRL>
+		static CPU_INLINE void crnor(CpuRegs& regs, ControlReg* out, const ControlReg a, const ControlReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+
+		}
+
+		//Condition Register OR - TODO
+		template <uint8 CTRL>
+		static CPU_INLINE void cror(CpuRegs& regs, ControlReg* out, const ControlReg a, const ControlReg b)
+		{
+			
 		}
 
 		//---------------------------------------------------------------------------------
@@ -4010,6 +4065,55 @@ namespace cpu
 			out->AsUint16<7>() = a.AsUint16<7>() + b.AsUint16<7>();
 		}
 
+		//Vector Subtract Signed Half Word Saturate TODO: Double Check This
+		template <uint8 CTRL>
+		static CPU_INLINE void vsubshs(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt16<0>() = vsat16i(regs, (int16)a.AsInt16<0>() - (int16)b.AsInt16<0>());
+			out->AsInt16<1>() = vsat16i(regs, (int16)a.AsInt16<1>() - (int16)b.AsInt16<1>());
+			out->AsInt16<2>() = vsat16i(regs, (int16)a.AsInt16<2>() - (int16)b.AsInt16<2>());
+			out->AsInt16<3>() = vsat16i(regs, (int16)a.AsInt16<3>() - (int16)b.AsInt16<3>());
+		}
+
+		//Vector Subtract Signed Word Saturate TODO: Double Check This
+		template <uint8 CTRL>
+		static CPU_INLINE void vsubsws(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt32<0>() = vsat32i(regs, (int32)a.AsInt32<0>() - (int32)b.AsInt32<0>());
+			out->AsInt32<1>() = vsat32i(regs, (int32)a.AsInt32<1>() - (int32)b.AsInt32<1>());
+			out->AsInt32<2>() = vsat32i(regs, (int32)a.AsInt32<2>() - (int32)b.AsInt32<2>());
+			out->AsInt32<3>() = vsat32i(regs, (int32)a.AsInt32<3>() - (int32)b.AsInt32<3>());
+		}
+		
+		//Vector Subtract Unsigned Byte Saturate
+		template <uint8 CTRL>
+		static CPU_INLINE void vsububs(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt8<0>() = vsat8u(regs, (uint8)a.AsInt8<0>() - (uint8)b.AsInt8<0>());
+			out->AsInt8<1>() = vsat8u(regs, (uint8)a.AsInt8<1>() - (uint8)b.AsInt8<1>());
+			out->AsInt8<2>() = vsat8u(regs, (uint8)a.AsInt8<2>() - (uint8)b.AsInt8<2>());
+			out->AsInt8<3>() = vsat8u(regs, (uint8)a.AsInt8<3>() - (uint8)b.AsInt8<3>());
+		}
+
+		//Vector Subtract Unsigned Byte Modulo
+		template <uint8 CTRL>
+		static CPU_INLINE void vsububm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsInt8<0>() = a.AsInt8<0>() - b.AsInt8<0>();
+			out->AsInt8<1>() = a.AsInt8<1>() - b.AsInt8<1>();
+			out->AsInt8<2>() = a.AsInt8<2>() - b.AsInt8<2>();
+			out->AsInt8<3>() = a.AsInt8<3>() - b.AsInt8<3>();
+			out->AsInt8<4>() = a.AsInt8<4>() - b.AsInt8<4>();
+			out->AsInt8<5>() = a.AsInt8<5>() - b.AsInt8<5>();
+			out->AsInt8<6>() = a.AsInt8<6>() - b.AsInt8<6>();
+			out->AsInt8<7>() = a.AsInt8<7>() - b.AsInt8<7>();;
+		}
+
+		
 		template <uint8 CTRL>
 		static CPU_INLINE void vsubuhm(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
 		{
@@ -4093,6 +4197,16 @@ namespace cpu
 			out->AsUint32<1>() = a.AsUint32<1>() + b.AsUint32<1>();
 			out->AsUint32<2>() = a.AsUint32<2>() + b.AsUint32<2>();
 			out->AsUint32<3>() = a.AsUint32<3>() + b.AsUint32<3>();
+		}
+
+		template <uint8 CTRL>
+		static CPU_INLINE void vsubuws(CpuRegs& regs, TVReg* out, const TVReg a, const TVReg b)
+		{
+			ASM_CHECK(CTRL == 0);
+			out->AsUint32<0>() = vsat32(regs, (uint32)a.AsUint32<0>() - (uint32)b.AsUint32<0>());
+			out->AsUint32<1>() = vsat32(regs, (uint32)a.AsUint32<1>() - (uint32)b.AsUint32<1>());
+			out->AsUint32<2>() = vsat32(regs, (uint32)a.AsUint32<2>() - (uint32)b.AsUint32<2>());
+			out->AsUint32<3>() = vsat32(regs, (uint32)a.AsUint32<3>() - (uint32)b.AsUint32<3>());
 		}
 
 		template <uint8 CTRL>
