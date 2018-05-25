@@ -1124,9 +1124,15 @@ namespace xenon
 
 		}
 
-		void Xbox_XamLoaderGetLaunchDataSize()
+		DWORD Xbox_XamLoaderGetLaunchDataSize(LPDWORD size_ptr)
 		{
+			if (!size_ptr)
+			{
+				return X_ERROR_INVALID_PARAMETER;
+			}
 
+			*size_ptr = 0;
+			return X_ERROR_NOT_FOUND;
 		}
 
 		void Xbox_XamContentDelete()
