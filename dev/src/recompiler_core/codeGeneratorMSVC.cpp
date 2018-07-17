@@ -328,7 +328,7 @@ namespace code
 			}
 
 			// windows only shit
-			if (m_runtimePlatform == "win64" || m_runtimePlatform == "win32") 
+			if (m_runtimePlatform == "win64" || m_runtimePlatform == "win32")
 			{
 				m_currentFile->m_codePrinter->Print("BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved ) { return TRUE; }\n");
 			}
@@ -336,7 +336,7 @@ namespace code
 			// get the image info
 			m_currentFile->m_codePrinter->Print("extern \"C\" __declspec(dllexport) void* GetImageInfo()\n");
 			m_currentFile->m_codePrinter->Print("{\n");
-			
+
 			// initialization
 			{
 				m_currentFile->m_codePrinter->Print("\tmemset( &ExportImageInfo, 0, sizeof(ExportImageInfo) );\n");
@@ -372,40 +372,40 @@ namespace code
 		/*
 		const bool Generator::AddInterruptCall(const uint32 type, const uint32 index, std::string& outSymbolName, std::string& outSignature)
 		{
-			// already defined ?
-			for (uint32 i = 0; i < m_exportedInterrupts.size(); ++i)
-			{
-				InterruptInfo& info = m_exportedInterrupts[i];
-				if (info.m_type == type && info.m_index == index)
-				{
-					info.m_useCount += 1;
-					outSymbolName = info.m_name;
-					outSignature = info.m_signature;
-					return true;
-				}
-			}
+		// already defined ?
+		for (uint32 i = 0; i < m_exportedInterrupts.size(); ++i)
+		{
+		InterruptInfo& info = m_exportedInterrupts[i];
+		if (info.m_type == type && info.m_index == index)
+		{
+		info.m_useCount += 1;
+		outSymbolName = info.m_name;
+		outSignature = info.m_signature;
+		return true;
+		}
+		}
 
-			// format symbol name
-			char symbolName[256];
-			sprintf_s(symbolName, "__interrupt_%u_%u", type, index);
+		// format symbol name
+		char symbolName[256];
+		sprintf_s(symbolName, "__interrupt_%u_%u", type, index);
 
-			// format function call signature
-			char symbolSignature[256];
-			sprintf_s(symbolSignature, "extern void %s(const uint64 ip, cpu::CpuRegs& regs)", symbolName);
+		// format function call signature
+		char symbolSignature[256];
+		sprintf_s(symbolSignature, "extern void %s(const uint64 ip, cpu::CpuRegs& regs)", symbolName);
 
-			// create information
-			InterruptInfo info;
-			strcpy_s(info.m_name, symbolName);
-			strcpy_s(info.m_signature, symbolSignature);
-			info.m_type = type;
-			info.m_index = index;
-			info.m_useCount = 1;
-			m_exportedInterrupts.push_back(info);
+		// create information
+		InterruptInfo info;
+		strcpy_s(info.m_name, symbolName);
+		strcpy_s(info.m_signature, symbolSignature);
+		info.m_type = type;
+		info.m_index = index;
+		info.m_useCount = 1;
+		m_exportedInterrupts.push_back(info);
 
-			// use the generated symbol
-			outSymbolName = symbolName;
-			outSignature = symbolSignature;
-			return true;
+		// use the generated symbol
+		outSymbolName = symbolName;
+		outSignature = symbolSignature;
+		return true;
 		}*/
 
 		void Generator::StartBlock(const uint64 addr, const bool multiAddress, const char* optionalFunctionName)
@@ -521,7 +521,7 @@ namespace code
 			m_lastGeneratedCodeAddress = addr;
 			m_blockReturnAddress = addr + 4; // addr + instr size, HACK
 
-			// stats
+											 // stats
 			m_totalNumInstructions += 1;
 			m_currentFile->m_numInstructions += 1;
 		}
@@ -626,6 +626,8 @@ namespace code
 		{
 			wchar_t msBuildPath[512];
 
+			return L"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\";
+
 			if (GetKeyData(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\17.0", L"MSBuildToolsPath", msBuildPath, sizeof(msBuildPath)))
 				return msBuildPath;
 
@@ -672,7 +674,7 @@ namespace code
 			}
 
 			// save files
-			for (uint32 i=0; i<m_files.size(); ++i)
+			for (uint32 i = 0; i<m_files.size(); ++i)
 			{
 				const auto* file = m_files[i];
 				m_logOutput->SetTaskProgress(i, (int)m_files.size());

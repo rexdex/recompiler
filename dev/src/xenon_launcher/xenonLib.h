@@ -372,6 +372,11 @@ namespace xenon
 			return m_address == other.m_address;
 		}
 
+		inline bool const operator ! () const 
+		{ 
+			return m_address == nullptr;
+		}
+
 		inline const bool operator!=(const Pointer<T>& other) const
 		{
 			return m_address != other.m_address;
