@@ -555,7 +555,7 @@ namespace code
 			m_currentFile->m_codePrinter->Print("    <UseDebugLibraries>false</UseDebugLibraries>\n");
 			m_currentFile->m_codePrinter->Printf("    <WholeProgramOptimization>false</WholeProgramOptimization>\n");
 			m_currentFile->m_codePrinter->Print("    <CharacterSet>Unicode</CharacterSet>\n");
-			m_currentFile->m_codePrinter->Print("    <PlatformToolset>v140</PlatformToolset>\n");
+			m_currentFile->m_codePrinter->Print("    <PlatformToolset>v141</PlatformToolset>\n");
 			m_currentFile->m_codePrinter->Print("  </PropertyGroup>\n");
 			m_currentFile->m_codePrinter->Print("  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.props\" />\n");
 			m_currentFile->m_codePrinter->Print("  <ImportGroup Label=\"ExtensionSettings\">\n");
