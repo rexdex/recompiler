@@ -146,9 +146,9 @@ float4 EncodeGamma( float4 val )
 	ret.y = XBoxPWLGamma(saturate(val.y) * 1023.0f) / 255.0f;
 	ret.z = XBoxPWLGamma(saturate(val.z) * 1023.0f) / 255.0f;
 #else
-	ret.x = pow( val.x, GAMMA_ENCODE );
-	ret.y = pow( val.y, GAMMA_ENCODE );
-	ret.z = pow( val.z, GAMMA_ENCODE );
+	ret.x = pow( abs(val.x), GAMMA_ENCODE );
+	ret.y = pow( abs(val.y), GAMMA_ENCODE );
+	ret.z = pow( abs(val.z), GAMMA_ENCODE );
 #endif
 	return ret;
 }
@@ -162,9 +162,9 @@ float4 DecodeGamma( float4 val )
 	ret.y = XBoxPWLDegamma(saturate(val.y) * 255.0f) / 1023.0f;
 	ret.z = XBoxPWLDegamma(saturate(val.z) * 255.0f) / 1023.0f;
 #else
-	ret.x = pow( val.x, GAMMA_DECODE );
-	ret.y = pow( val.y, GAMMA_DECODE );
-	ret.z = pow( val.z, GAMMA_DECODE );
+	ret.x = pow(abs(val.x), GAMMA_DECODE );
+	ret.y = pow(abs(val.y), GAMMA_DECODE );
+	ret.z = pow(abs(val.z), GAMMA_DECODE );
 #endif
 	return ret;
 }

@@ -8,7 +8,7 @@
 
 namespace xenon
 {
-
+#pragma warning (disable : 4995)
 	//---
 
 	class XInputHandler : public IInputDeviceHandler

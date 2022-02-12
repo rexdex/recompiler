@@ -343,7 +343,7 @@ namespace xenon
 			}
 
 			// create the semaphore semaphore
-			auto* semaphore  = GPlatform.GetKernel().CreateSemaphore(count, maxCount, objectName);
+			auto* semaphore = GPlatform.GetKernel().CreateSemaphore(count, maxCount, objectName);
 			if (!semaphore)
 				return X_STATUS_INVALID_PARAMETER;
 
@@ -501,7 +501,7 @@ namespace xenon
 			// not created?
 			if (!timer)
 				return X_STATUS_INVALID_PARAMETER;
-		
+
 			// save handle
 			if (handlePtr.IsValid())
 				*handlePtr = timer->GetHandle();
@@ -991,14 +991,14 @@ namespace xenon
 			}
 			else if (objectType == 0xD01BBEEF) // ExThreadObjectType
 			{
-				nativeAddr = static_cast< xenon::KernelThread* >(object)->GetMemoryBlock().GetThreadDataAddr();
+				nativeAddr = static_cast<xenon::KernelThread*>(object)->GetMemoryBlock().GetThreadDataAddr();
 			}
 			else
 			{
 				if (object->GetType() == xenon::KernelObjectType::Thread)
 				{
 					// a thread ? if so, get the internal thread data
-					nativeAddr = static_cast< xenon::KernelThread* >(object)->GetMemoryBlock().GetThreadDataAddr();
+					nativeAddr = static_cast<xenon::KernelThread*>(object)->GetMemoryBlock().GetThreadDataAddr();
 				}
 				else
 				{
@@ -1076,7 +1076,7 @@ namespace xenon
 			return 1;
 		}
 
-		uint32 Xbox_KeRemoveQueueDpc(Pointer<uint32_t> dpcPtr) 
+		uint32 Xbox_KeRemoveQueueDpc(Pointer<uint32_t> dpcPtr)
 		{
 			Pointer<KernelListEntry> listEntryPtr = MemoryAddress(dpcPtr[1]);
 
@@ -1111,7 +1111,7 @@ namespace xenon
 			*plistPtr = second;
 
 			return first;
-		}		
+		}
 
 		void Xbox_Interrupt20(const uint64_t ip, const uint32_t index, const cpu::CpuRegs& regs)
 		{
@@ -1123,6 +1123,523 @@ namespace xenon
 		{
 
 		}
+
+		uint32_t Xbox_XamLoaderGetLaunchDataSize(Pointer<uint32_t> size_ptr)
+		{
+			if (!size_ptr)
+			{
+				return X_ERROR_INVALID_PARAMETER;
+			}
+
+			*size_ptr = 0;
+			return X_ERROR_NOT_FOUND;
+		}
+
+		void Xbox_XamContentDelete()
+		{
+
+		}
+
+		void Xbox_XamContentFlush()
+		{
+
+		}
+
+		void Xbox_XamContentGetLicenseMask()
+		{
+
+		}
+
+		void Xbox_XamContentGetDeviceData()
+		{
+
+		}
+
+		void Xbox_XamContentLaunchImage()
+		{
+
+		}
+
+		void Xbox_XMsgStartIORequest()
+		{
+
+		}
+
+		void Xbox_XCustomUnregisterDynamicActions()
+		{
+
+		}
+
+		void Xbox_XCustomRegisterDynamicActions()
+		{
+
+		}
+
+		void Xbox_XamLoaderSetLaunchData()
+		{
+
+		}
+
+		void Xbox_XMsgStartIORequestEx()
+		{
+
+		}
+
+		void Xbox_XamVoiceCreate()
+		{
+
+		}
+
+		void Xbox_XamVoiceSubmitPacket()
+		{
+
+		}
+
+		void Xbox_XMsgCancelIORequest()
+		{
+
+		}
+
+		void Xbox_XamVoiceClose()
+		{
+
+		}
+
+		void Xbox_XamVoiceHeadsetPresent()
+		{
+
+		}
+
+		void Xbox_XamUserReadProfileSettings()
+		{
+
+		}
+
+		void Xbox_XamCreateEnumeratorHandle()
+		{
+
+		}
+
+		void Xbox_XamGetPrivateEnumStructureFromHandle()
+		{
+
+		}
+
+		void Xbox_XamSessionCreateHandle()
+		{
+
+		}
+
+		void Xbox_XamSessionRefObjByHandle()
+		{
+
+		}
+
+		void Xbox_XNetLogonGetTitleID()
+		{
+
+		}
+
+		void Xbox_XNetLogonGetMachineID()
+		{
+
+		}
+
+		void Xbox_XamAlloc()
+		{
+
+		}
+
+		void Xbox_XamFree()
+		{
+
+		}
+
+		void Xbox_XamUserWriteProfileSettings()
+		{
+
+		}
+
+		void Xbox_XamGetExecutionId()
+		{
+
+		}
+
+		void Xbox_XamUserGetSigninInfo()
+		{
+
+		}
+
+		void Xbox_XamUserCreateAchievementEnumerator()
+		{
+
+		}
+
+		void Xbox_XCustomGetCurrentGamercard()
+		{
+
+		}
+
+		void Xbox_XCustomGetLastActionPressEx()
+		{
+
+		}
+
+		void Xbox_XNotifyDelayUI()
+		{
+
+		}
+
+		void Xbox_XNotifyPositionUI()
+		{
+
+		}
+
+		void Xbox_XCustomSetDynamicActions()
+		{
+
+		}
+
+		void Xbox_XGetGameRegion()
+		{
+
+		}
+
+		void Xbox_XMsgInProcessCall()
+		{
+
+		}
+
+		void Xbox_XamShowCustomMessageComposeUI()
+		{
+
+		}
+
+		void Xbox_XamShowMarketplaceDownloadItemsUI()
+		{
+
+		}
+
+		void Xbox_XamShowFriendsUI()
+		{
+
+		}
+
+		void Xbox_XamShowGamerCardUIForXUID()
+		{
+
+		}
+
+		void Xbox_XamShowPlayerReviewUI()
+		{
+
+		}
+
+		void Xbox_XamShowMarketplaceUI()
+		{
+
+		}
+
+		void Xbox_XamShowFriendRequestUI()
+		{
+
+		}
+
+		void Xbox_XamShowDirtyDiscErrorUI()
+		{
+
+		}
+
+		void Xbox_XamUserGetName()
+		{
+
+		}
+
+		void Xbox_XamUserAreUsersFriends()
+		{
+
+		}
+
+		void Xbox_XamUserCheckPrivilege()
+		{
+
+		}
+
+		void Xbox_XamGetSystemVersion()
+		{
+
+		}
+
+		void Xbox_InterlockedFlushSList()
+		{
+
+		}
+
+		void Xbox_XeCryptBnQw_SwapDwQwLeBe()
+		{
+
+		}
+
+		void Xbox_XeCryptBnQwNeRsaPubCrypt()
+		{
+
+		}
+
+		void Xbox_XeCryptBnDwLePkcs1Verify()
+		{
+
+		}
+
+		void Xbox_XeCryptRandom()
+		{
+
+		}
+
+		void Xbox_XeCryptAesKey()
+		{
+
+		}
+
+		void Xbox_XeCryptAesCbc()
+		{
+
+		}
+
+		void Xbox_XeCryptBnDwLePkcs1Format()
+		{
+
+		}
+
+		void Xbox_RtlTryEnterCriticalSection()
+		{
+
+		}
+
+		void Xbox_RtlCaptureContext()
+		{
+
+		}
+
+		void Xbox_XeCryptShaInit()
+		{
+
+		}
+
+		void Xbox_XeCryptShaUpdate()
+		{
+
+		}
+
+		void Xbox_XeCryptShaFinal()
+		{
+
+		}
+
+		void Xbox_MmQueryStatistics()
+		{
+
+		}
+
+		void Xbox_XexGetModuleHandle()
+		{
+
+		}
+
+		void Xbox_XexGetModuleSection()
+		{
+
+		}
+
+		void Xbox_NtCreateIoCompletion()
+		{
+
+		}
+
+		void Xbox_NtRemoveIoCompletion()
+		{
+
+		}
+
+		void Xbox_MmCreateKernelStack()
+		{
+
+		}
+
+		void Xbox_MmDeleteKernelStack()
+		{
+
+		}
+
+		void Xbox_KeSetCurrentStackPointers()
+		{
+
+		}
+
+		void Xbox_ObOpenObjectByPointer()
+		{
+
+		}
+
+		void Xbox_ExAllocatePool()
+		{
+
+		}
+
+		void Xbox_NtDeviceIoControlFile()
+		{
+
+		}
+
+		void Xbox_IoDismountVolumeByFileHandle()
+		{
+
+		}
+
+		void Xbox_IoRemoveShareAccess()
+		{
+
+		}
+
+		void Xbox_IoSetShareAccess()
+		{
+
+		}
+
+		void Xbox_IoCheckShareAccess()
+		{
+
+		}
+
+		void Xbox_ObIsTitleObject()
+		{
+
+		}
+
+		void Xbox_RtlUpcaseUnicodeChar()
+		{
+
+		}
+
+		void Xbox_IoCompleteRequest()
+		{
+
+		}
+
+		void Xbox_RtlTimeToTimeFields()
+		{
+
+		}
+
+		void Xbox_RtlTimeFieldsToTime()
+		{
+
+		}
+
+		void Xbox_RtlCompareStringN()
+		{
+
+		}
+
+		void Xbox_ExFreePool()
+		{
+
+		}
+
+		void Xbox_ExAllocatePoolTypeWithTag()
+		{
+
+		}
+
+		void Xbox_IoDeleteDevice()
+		{
+
+		}
+
+		void Xbox_IoCreateDevice()
+		{
+
+		}
+
+		void Xbox_ObReferenceObject()
+		{
+
+		}
+
+		void Xbox_IoInvalidDeviceRequest()
+		{
+
+		}
+
+		void Xbox_FscSetCacheElementCount()
+		{
+
+		}
+
+		void Xbox_IoDismountVolume()
+		{
+
+		}
+
+		void Xbox_XeKeysConsolePrivateKeySign()
+		{
+
+		}
+
+		void Xbox_XeCryptSha()
+		{
+
+		}
+
+		void Xbox_XeKeysConsoleSignatureVerification()
+		{
+
+		}
+
+		void Xbox_StfsCreateDevice()
+		{
+
+		}
+
+		void Xbox_StfsControlDevice()
+		{
+
+		}
+
+		void Xbox_KeTryToAcquireSpinLockAtRaisedIrql()
+		{
+
+		}
+
+		void Xbox_XAudioGetVoiceCategoryVolumeChangeMask()
+		{
+
+		}
+
+		void Xbox_XMAReleaseContext()
+		{
+
+		}
+
+		void Xbox_XMACreateContext()
+		{
+
+		}
+
+		void Xbox_ObLookupAnyThreadByThreadId()
+		{
+
+		}
+
+		void Xbox_RtlImageNtHeader()
+		{
+
+		}
+
+			void Xbox_MmIsAddressValid()
+		{
+
+		}
+
 
 		void RegisterXboxKernel(runtime::Symbols& symbols)
 		{
@@ -1215,6 +1732,120 @@ namespace xenon
 
 			REGISTER(KeRaiseIrqlToDpcLevel);
 			REGISTER(KfLowerIrql);
+
+
+
+
+
+
+			//// testing kernel functions by Squaresome
+			REGISTER(XamLoaderGetLaunchDataSize);
+			//REGISTER(XamContentDelete);
+			//REGISTER(XamContentFlush);
+			//REGISTER(XamContentGetLicenseMask);
+			//REGISTER(XamContentGetDeviceData);
+			//REGISTER(XamContentLaunchImage);
+			//REGISTER(XMsgStartIORequest);
+			//REGISTER(XCustomUnregisterDynamicActions);
+			//REGISTER(XCustomRegisterDynamicActions);
+			//REGISTER(XamLoaderSetLaunchData);
+			//REGISTER(XMsgStartIORequestEx);
+			//REGISTER(XamVoiceCreate);
+			//REGISTER(XamVoiceSubmitPacket);
+			//REGISTER(XMsgCancelIORequest);
+			//REGISTER(XamVoiceClose);
+			//REGISTER(XamVoiceHeadsetPresent);
+			//REGISTER(XamUserReadProfileSettings);
+			//REGISTER(XamCreateEnumeratorHandle);
+			//REGISTER(XamGetPrivateEnumStructureFromHandle);
+			//REGISTER(XamSessionCreateHandle);
+			//REGISTER(XamSessionRefObjByHandle);
+			//REGISTER(XNetLogonGetTitleID);
+			//REGISTER(XNetLogonGetMachineID);
+			//REGISTER(XamAlloc);
+			//REGISTER(XamFree);
+			//REGISTER(XamUserWriteProfileSettings);
+			//REGISTER(XamGetExecutionId);
+			//REGISTER(XamUserGetSigninInfo);
+			//REGISTER(XamUserCreateAchievementEnumerator);
+			//REGISTER(XCustomGetCurrentGamercard);
+			//REGISTER(XCustomGetLastActionPressEx);
+			//REGISTER(XNotifyDelayUI);
+			//REGISTER(XNotifyPositionUI);
+			//REGISTER(XCustomSetDynamicActions);
+			//REGISTER(XGetGameRegion);
+			//REGISTER(XMsgInProcessCall);
+			//REGISTER(XamShowCustomMessageComposeUI);
+			//REGISTER(XamShowMarketplaceDownloadItemsUI);
+			//REGISTER(XamShowFriendsUI);
+			//REGISTER(XamShowGamerCardUIForXUID);
+			//REGISTER(XamShowPlayerReviewUI);
+			//REGISTER(XamShowMarketplaceUI);
+			//REGISTER(XamShowFriendRequestUI);
+			//REGISTER(XamShowDirtyDiscErrorUI);
+			//REGISTER(XamUserGetName);
+			//REGISTER(XamUserAreUsersFriends);
+			//REGISTER(XamUserCheckPrivilege);
+			//REGISTER(XamGetSystemVersion);
+			//REGISTER(InterlockedFlushSList);
+			//REGISTER(XeCryptBnQw_SwapDwQwLeBe);
+			//REGISTER(XeCryptBnQwNeRsaPubCrypt);
+			//REGISTER(XeCryptBnDwLePkcs1Verify);
+			//REGISTER(XeCryptRandom);
+			//REGISTER(XeCryptAesKey);
+			//REGISTER(XeCryptAesCbc);
+			//REGISTER(XeCryptBnDwLePkcs1Format);
+			//REGISTER(RtlTryEnterCriticalSection);
+			//REGISTER(RtlCaptureContext);
+			//REGISTER(XeCryptShaInit);
+			//REGISTER(XeCryptShaUpdate);
+			//REGISTER(XeCryptShaFinal);
+			//REGISTER(MmQueryStatistics);
+			//REGISTER(XexGetModuleHandle);
+			//REGISTER(XexGetModuleSection);
+			//REGISTER(NtCreateIoCompletion);
+			//REGISTER(NtRemoveIoCompletion);
+			//REGISTER(MmCreateKernelStack);
+			//REGISTER(MmDeleteKernelStack);
+			//REGISTER(KeSetCurrentStackPointers);
+			//REGISTER(ObOpenObjectByPointer);
+			//REGISTER(ExAllocatePool);
+			//REGISTER(NtDeviceIoControlFile);
+			//REGISTER(IoDismountVolumeByFileHandle);
+			//REGISTER(IoRemoveShareAccess);
+			//REGISTER(IoSetShareAccess);
+			//REGISTER(IoCheckShareAccess);
+			//REGISTER(ObIsTitleObject);
+			//REGISTER(RtlUpcaseUnicodeChar);
+			//REGISTER(IoCompleteRequest);
+			//REGISTER(RtlTimeToTimeFields);
+			//REGISTER(RtlTimeFieldsToTime);
+			//REGISTER(RtlCompareStringN);
+			//REGISTER(ExFreePool);
+			//REGISTER(ExAllocatePoolTypeWithTag);
+			//REGISTER(IoDeleteDevice);
+			//REGISTER(IoCreateDevice);
+			//REGISTER(ObReferenceObject);
+			//REGISTER(IoInvalidDeviceRequest);
+			//REGISTER(FscSetCacheElementCount);
+			//REGISTER(IoDismountVolume);
+			//REGISTER(XeKeysConsolePrivateKeySign);
+			//REGISTER(XeCryptSha);
+			//REGISTER(XeKeysConsoleSignatureVerification);
+			//REGISTER(StfsCreateDevice);
+			//REGISTER(StfsControlDevice);
+			//REGISTER(KeTryToAcquireSpinLockAtRaisedIrql);
+			//REGISTER(XAudioGetVoiceCategoryVolumeChangeMask);
+			//REGISTER(XMAReleaseContext);
+			//REGISTER(XMACreateContext);
+			//REGISTER(ObLookupAnyThreadByThreadId);
+			//REGISTER(RtlImageNtHeader);
+			//REGISTER(MmIsAddressValid);
+
+
+
+
+
 
 			symbols.RegisterInterrupt(20, (runtime::TInterruptFunc) &Xbox_Interrupt20);
 			symbols.RegisterInterrupt(22, (runtime::TInterruptFunc) &Xbox_Interrupt22);

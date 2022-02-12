@@ -1,0 +1,18 @@
+{
+  "FileVersion": 2,
+  "Id": "bc01375d-057c-48f5-a3e7-89f3bdfe4cc7",
+  "Items": [
+    {
+      "Id": "8126c220-a1b3-4069-af37-ad2a06da09fd",
+      "Command": "-image=\"C:\\xbox360\\Samples\\Instancing\\Instancing.dll\""
+    },
+    {
+      "Id": "08b76b27-0175-4dcd-b08c-2d70d6ec2be7",
+      "Command": "-fsroot=\"C:\\xbox360\\Samples\\Instancing\""
+    },
+    {
+      "Id": "8e11c8c4-6fa2-431d-bd41-4399bb094a59",
+      "Command": "-verbose"
+    }
+  ]
+}
