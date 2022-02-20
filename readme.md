@@ -14,7 +14,7 @@ The idea is simple: *what if you could take the Xbox360 game and run it on your 
 
 - **Memory Layout** - Xbox360 uses BigEndian byte ordering, x86 CPUs use LittleEndian. To be compatible with incoming data that is being read from files and read/written into the memory all memory based operands must be byteswapped. This may pose a significant performance issue.
 
-- **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some cleaver guys in Russia though that figured how :)
+- **Encrypted executable image** - Yup, for various reasons the executables on Xbox360 are encrypted. There are some clever guys in Russia though that figured how :)
 
 - **Different and outdated GPU architecture** - If we want to see any graphics rendered the GPU needs to be emulated. There are two hard nuts to crack: first, the shaders we see will be complied into the GPU compatible format, no HLSL on input, sorry. Those shaders will have to be reverse engineered as well. Secondly, the Xbox360 GPU was using ~10MB of internal memory called EDRAM that was serving as a temporary storage of render target for the duration of rendering. Although some cards today still use similar concept this is never exposed directly to the user. Since there a lot of different ways people used the EDRAM on Xbox this part has to be emulated. To be honest probably differently for every game.
 
