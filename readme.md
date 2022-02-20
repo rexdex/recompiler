@@ -58,7 +58,7 @@ Stuff currently implemented:
 + Basic GPU trace viewer that allows to inspect internal GPU state at each point
 + *Time Machine* tool that makes it possible to find previous instruction that touched given register or memory
 
-## How to run it ?
+## How to run it?
 
 (NOTE: You require Visual Studio 2015 to build and use this project - at present it is entirely Windows-specific with regards to the code and the build process.)
 - Get `wxWidgets 3.1.0` and compile it to obtain the x64 DLLs. Place them in `dev\external\wxWidgets-3.1.0\`.
